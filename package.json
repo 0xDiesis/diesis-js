@@ -1,0 +1,36 @@
+{
+  "name": "@diesis/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Diesis chain — viem extension with exchange, intents, bundles, and patronage",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
+    "./chains": { "import": "./dist/chains.js", "types": "./dist/chains.d.ts" },
+    "./exchange": { "import": "./dist/exchange/index.js", "types": "./dist/exchange/index.d.ts" },
+    "./intents": { "import": "./dist/intents/index.js", "types": "./dist/intents/index.d.ts" },
+    "./bundles": { "import": "./dist/bundles/index.js", "types": "./dist/bundles/index.d.ts" },
+    "./patronage": { "import": "./dist/patronage/index.js", "types": "./dist/patronage/index.d.ts" },
+    "./abi": { "import": "./dist/abi/index.js", "types": "./dist/abi/index.d.ts" }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": ["diesis", "evm", "blockchain", "viem", "defi", "sdk"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0xDiesis/diesis-sdk.git"
+  },
+  "peerDependencies": {
+    "viem": ">=2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "viem": "^2.21.51"
+  },
+  "files": ["dist", "README.md", "LICENSE"]
+}
