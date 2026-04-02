@@ -27,6 +27,10 @@ export { patronageActions } from './patronage/actions.js'
 export type { PatronFund } from './patronage/actions.js'
 
 // ABIs
-export { diesisSettlementAbi, diesisSpotBookAbi, diesisMarketsAbi } from './abi/exchange.js'
-export { diesisStakingAbi } from './abi/staking.js'
-export { diesisPatronAbi } from './abi/patron.js'
+export {
+  IDiesisSettlementAbi,
+  IDiesisSpotBookAbi,
+  IDiesisMarketsAbi,
+  DiesisStakingAbi,
+  DiesisPatronAbi,
+} from './abi/index.js'

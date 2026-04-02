@@ -1,3 +1,7 @@
-export { diesisSettlementAbi, diesisSpotBookAbi, diesisMarketsAbi } from './exchange.js'
-export { diesisStakingAbi } from './staking.js'
-export { diesisPatronAbi } from './patron.js'
+export {
+  IDiesisSettlementAbi,
+  IDiesisSpotBookAbi,
+  IDiesisMarketsAbi,
+  DiesisStakingAbi,
+  DiesisPatronAbi,
+} from './generated/index.js'
