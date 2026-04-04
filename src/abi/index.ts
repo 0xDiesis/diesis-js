@@ -4,4 +4,4 @@ export {
   IDiesisMarketsAbi,
   DiesisStakingAbi,
   DiesisPatronAbi,
-} from './generated/index.js'
+} from './generated/viem/index.js'

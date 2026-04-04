@@ -15,7 +15,7 @@
     "./abi": { "import": "./dist/abi/index.js", "types": "./dist/abi/index.d.ts" }
   },
   "scripts": {
-    "codegen": "abi-typegen generate --artifacts ../diesis-contracts/out --out src/abi/generated --target viem --contracts IDiesisSettlement,IDiesisSpotBook,IDiesisMarkets,DiesisStaking,DiesisPatron --no-wrappers",
+    "codegen": "abi-typegen generate --artifacts ../diesis-contracts/out --out src/abi/generated --target viem,wagmi,ethers,web3js --contracts IDiesisSettlement,IDiesisSpotBook,IDiesisMarkets,DiesisStaking,DiesisPatron --no-wrappers --clean",
     "build": "tsc",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
