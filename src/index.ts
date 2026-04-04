@@ -26,6 +26,10 @@ export type { BundleResult, PreparedBundle } from './bundles/types.js'
 export { patronageActions } from './patronage/actions.js'
 export type { PatronFund } from './patronage/actions.js'
 
+// Staking
+export { stakingReadActions, stakingWriteActions } from './staking/actions.js'
+export type { StakingReadActions, StakingWriteActions, ValidatorInfo, PositionInfo } from './staking/actions.js'
+
 // ABIs
 export {
   IDiesisSettlementAbi,
