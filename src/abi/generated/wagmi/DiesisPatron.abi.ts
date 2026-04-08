@@ -39,6 +39,24 @@ export const DiesisPatronAbi = [
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "fundKeys",
+          "type": "bytes32[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "fees",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "chargePatronBatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "chargePatronGasLimit",
       "outputs": [
@@ -651,6 +669,11 @@ export const DiesisPatronAbi = [
     {
       "inputs": [],
       "name": "InvalidFundKey",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "LengthMismatch",
       "type": "error"
     },
     {

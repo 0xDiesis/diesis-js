@@ -1,7 +1,15 @@
 export {
+  BootstrapConfigAbi,
+  DiesisConfigAbi,
   IDiesisSettlementAbi,
   IDiesisSpotBookAbi,
   IDiesisMarketsAbi,
   DiesisStakingAbi,
   DiesisPatronAbi,
+  IDiesisBootstrapOracleAbi,
+  IDiesisPositionAbi,
+  ILiquidStakedDSAbi,
+  IWrappedDSAbi,
+  DiesisShieldedPoolAbi,
+  DiesisPrivacyPoolsAbi,
 } from './generated/viem/index.js'

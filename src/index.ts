@@ -32,9 +32,17 @@ export type { StakingReadActions, StakingWriteActions, ValidatorInfo, PositionIn
 
 // ABIs
 export {
+  BootstrapConfigAbi,
+  DiesisConfigAbi,
   IDiesisSettlementAbi,
   IDiesisSpotBookAbi,
   IDiesisMarketsAbi,
   DiesisStakingAbi,
   DiesisPatronAbi,
+  IDiesisBootstrapOracleAbi,
+  IDiesisPositionAbi,
+  ILiquidStakedDSAbi,
+  IWrappedDSAbi,
+  DiesisShieldedPoolAbi,
+  DiesisPrivacyPoolsAbi,
 } from './abi/index.js'
