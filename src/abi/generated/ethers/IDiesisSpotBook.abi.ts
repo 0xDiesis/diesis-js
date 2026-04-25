@@ -4,11 +4,6 @@ export const IDiesisSpotBookAbi = [
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
           "name": "orderId",
           "type": "bytes32"
         },
@@ -21,33 +16,26 @@ export const IDiesisSpotBookAbi = [
           "internalType": "uint256",
           "name": "newAmount",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "newFlags",
+          "type": "uint8"
         }
       ],
       "name": "amendOrder",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
+      "outputs": [
         {
           "internalType": "bytes32",
-          "name": "marketId",
+          "name": "newOrderId",
           "type": "bytes32"
         }
       ],
-      "name": "cancelAllOrders",
-      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        },
         {
           "internalType": "bytes32",
           "name": "orderId",
@@ -63,31 +51,176 @@ export const IDiesisSpotBookAbi = [
       "inputs": [
         {
           "internalType": "bytes32",
+          "name": "orderId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fillPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "fillQty",
+          "type": "uint256"
+        }
+      ],
+      "name": "executeSpotFill",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "filledQty",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "executionPrice",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getBestAsk",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "priceTicks",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountLots",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getBestBid",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "priceTicks",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountLots",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
           "name": "marketId",
           "type": "bytes32"
         },
         {
-          "internalType": "enum IDiesisSpotBook.Side",
+          "internalType": "uint8",
+          "name": "levels",
+          "type": "uint8"
+        }
+      ],
+      "name": "getOrderBookDepth",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "bidPrices",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "bidAmounts",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "askPrices",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "askAmounts",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getUserOrders",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "orderIds",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint8",
           "name": "side",
           "type": "uint8"
         },
         {
           "internalType": "uint256",
-          "name": "price",
+          "name": "priceTicks",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "amountLots",
           "type": "uint256"
         },
         {
-          "internalType": "enum IDiesisSpotBook.OrderType",
-          "name": "orderType",
+          "internalType": "uint8",
+          "name": "flags",
           "type": "uint8"
         }
       ],
-      "name": "placeOrder",
+      "name": "submitLimitOrder",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -106,28 +239,23 @@ export const IDiesisSpotBookAbi = [
           "type": "bytes32"
         },
         {
-          "internalType": "enum IDiesisSpotBook.Side",
+          "internalType": "uint8",
           "name": "side",
           "type": "uint8"
         },
         {
           "internalType": "uint256",
-          "name": "price",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "expiryBlock",
+          "name": "amountLots",
           "type": "uint256"
         }
       ],
-      "name": "placeOrderGTD",
+      "name": "submitMarketOrder",
       "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "filledAmount",
+          "type": "uint256"
+        },
         {
           "internalType": "bytes32",
           "name": "orderId",
@@ -143,44 +271,13 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": true,
           "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "clearingPrice",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "totalVolume",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "numFills",
-          "type": "uint256"
-        }
-      ],
-      "name": "BatchAuctionCleared",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
           "name": "orderId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "marketId",
           "type": "bytes32"
         },
         {
@@ -199,13 +296,13 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": true,
           "internalType": "bytes32",
-          "name": "marketId",
+          "name": "orderId",
           "type": "bytes32"
         },
         {
           "indexed": true,
           "internalType": "bytes32",
-          "name": "orderId",
+          "name": "marketId",
           "type": "bytes32"
         },
         {
@@ -217,13 +314,13 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "fillPrice",
+          "name": "fillQty",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "fillAmount",
+          "name": "fillPrice",
           "type": "uint256"
         },
         {
@@ -235,7 +332,7 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": false,
           "internalType": "bool",
-          "name": "isMaker",
+          "name": "complete",
           "type": "bool"
         }
       ],
@@ -248,13 +345,13 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": true,
           "internalType": "bytes32",
-          "name": "marketId",
+          "name": "orderId",
           "type": "bytes32"
         },
         {
           "indexed": true,
           "internalType": "bytes32",
-          "name": "orderId",
+          "name": "marketId",
           "type": "bytes32"
         },
         {
@@ -284,7 +381,7 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": false,
           "internalType": "uint8",
-          "name": "orderType",
+          "name": "flags",
           "type": "uint8"
         }
       ],

@@ -515,5 +515,10 @@ export const IDiesisBootstrapOracleAbi = [
       "inputs": [],
       "name": "ZeroAddress",
       "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAmount",
+      "type": "error"
     }
   ] as const;

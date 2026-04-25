@@ -104,7 +104,7 @@ export const DiesisPatronAbi = [
       "outputs": [
         {
           "internalType": "bytes32",
-          "name": "",
+          "name": "key",
           "type": "bytes32"
         }
       ],

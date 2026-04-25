@@ -3,47 +3,32 @@ export const IDiesisMarketsAbi = [
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "baseAsset",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "quoteToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "tickSize",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "lotSize",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "maxLeverage",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "maintenanceMarginBps",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "oracleSource",
-          "type": "address"
-        }
-      ],
-      "name": "createPerpMarket",
-      "outputs": [
-        {
           "internalType": "bytes32",
           "name": "marketId",
           "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "currentPrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "referencePrice",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "thresholdBps",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkCircuitBreaker",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "tripped",
+          "type": "uint256"
         }
       ],
       "stateMutability": "nonpayable",
@@ -62,14 +47,14 @@ export const IDiesisMarketsAbi = [
           "type": "address"
         },
         {
-          "internalType": "uint256",
+          "internalType": "uint64",
           "name": "tickSize",
-          "type": "uint256"
+          "type": "uint64"
         },
         {
-          "internalType": "uint256",
+          "internalType": "uint64",
           "name": "lotSize",
-          "type": "uint256"
+          "type": "uint64"
         },
         {
           "internalType": "uint256",
@@ -102,42 +87,22 @@ export const IDiesisMarketsAbi = [
           "components": [
             {
               "internalType": "bytes32",
-              "name": "marketId",
+              "name": "slot0",
               "type": "bytes32"
             },
             {
-              "internalType": "address",
-              "name": "baseToken",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "quoteToken",
-              "type": "address"
-            },
-            {
-              "internalType": "uint8",
-              "name": "marketType",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint8",
-              "name": "status",
-              "type": "uint8"
+              "internalType": "bytes32",
+              "name": "slot1",
+              "type": "bytes32"
             },
             {
               "internalType": "uint256",
-              "name": "tickSize",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "lotSize",
+              "name": "maxOpenInterest",
               "type": "uint256"
             }
           ],
-          "internalType": "struct IDiesisMarkets.MarketInfo",
-          "name": "",
+          "internalType": "struct IDiesisMarkets.PackedMarket",
+          "name": "market",
           "type": "tuple"
         }
       ],
@@ -150,28 +115,16 @@ export const IDiesisMarketsAbi = [
           "internalType": "bytes32",
           "name": "marketId",
           "type": "bytes32"
-        },
-        {
-          "internalType": "string",
-          "name": "reason",
-          "type": "string"
-        }
-      ],
-      "name": "pauseMarket",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
         }
       ],
       "name": "resumeMarket",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "success",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -187,7 +140,7 @@ export const IDiesisMarketsAbi = [
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "priceChange",
+          "name": "priceDeviation",
           "type": "uint256"
         },
         {
@@ -229,38 +182,6 @@ export const IDiesisMarketsAbi = [
         }
       ],
       "name": "MarketCreated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "reason",
-          "type": "string"
-        }
-      ],
-      "name": "MarketPaused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "MarketResumed",
       "type": "event"
     }
   ] as const;
