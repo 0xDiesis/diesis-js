@@ -167,9 +167,9 @@ export const IDiesisPositionAbi = [
           "type": "uint256"
         },
         {
-          "internalType": "uint32",
+          "internalType": "uint40",
           "name": "lockDuration",
-          "type": "uint32"
+          "type": "uint40"
         }
       ],
       "name": "lockPosition",
@@ -302,9 +302,9 @@ export const IDiesisPositionAbi = [
               "type": "uint256"
             },
             {
-              "internalType": "uint32",
+              "internalType": "uint40",
               "name": "lockedUntil",
-              "type": "uint32"
+              "type": "uint40"
             },
             {
               "internalType": "uint256[]",

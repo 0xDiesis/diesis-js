@@ -2463,6 +2463,11 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
+      "name": "SamePosition",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "SelfStakeTooLow",
       "type": "error"
     },

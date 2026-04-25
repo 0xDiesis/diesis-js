@@ -71,11 +71,6 @@ export const IDiesisBootstrapOracleAbi = [
           "type": "uint256"
         },
         {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
           "internalType": "uint40",
           "name": "rewardCutoffTimestamp",
           "type": "uint40"
