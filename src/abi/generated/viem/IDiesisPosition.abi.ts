@@ -740,11 +740,6 @@ export const IDiesisPositionAbi = [
           "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "withdrawAmount",
-          "type": "uint256"
-        },
-        {
           "internalType": "address payable",
           "name": "recipient",
           "type": "address"

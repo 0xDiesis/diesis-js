@@ -76,16 +76,6 @@ export const IDiesisBootstrapOracleAbi = [
           "type": "address"
         },
         {
-          "internalType": "uint8",
-          "name": "saleTier",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint8",
-          "name": "lockTier",
-          "type": "uint8"
-        },
-        {
           "internalType": "uint40",
           "name": "rewardCutoffTimestamp",
           "type": "uint40"
@@ -479,6 +469,11 @@ export const IDiesisBootstrapOracleAbi = [
     {
       "inputs": [],
       "name": "AlreadyInitialized",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "BatchTooLarge",
       "type": "error"
     },
     {
