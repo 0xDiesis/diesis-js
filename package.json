@@ -51,6 +51,13 @@
     "codegen": "abi-typegen generate --artifacts ../diesis/contracts/out --out src/abi/generated --target viem,wagmi,ethers,web3js --contracts IDiesisSettlement,IDiesisSpotBook,IDiesisMarkets,DiesisStaking,DiesisPatron,DiesisConfig,IDiesisBootstrapOracle,BootstrapConfig,IDiesisPosition,ILiquidStakedDS,IWrappedDS,DiesisShieldedPool,DiesisPrivacyPools --no-wrappers --clean",
     "build": "tsc",
     "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
+    "typecheck": "tsc --noEmit",
+    "quality": "npm run lint && npm run typecheck && npm run format:check",
+    "quality:fix": "npm run lint:fix && npm run format && npm run typecheck",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
@@ -70,10 +77,14 @@
     "viem": ">=2.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
     "@tanstack/react-query": "^5.96.2",
     "@wagmi/core": "^3.4.1",
+    "eslint": "^9.38.0",
     "ethers": "^6.16.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.7.3",
+    "typescript-eslint": "^8.46.3",
     "viem": "^2.21.51",
     "wagmi": "^3.6.0",
     "web3": "^4.16.0"
