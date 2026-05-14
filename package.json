@@ -58,6 +58,7 @@
     "typecheck": "tsc --noEmit",
     "quality": "npm run lint && npm run typecheck && npm run format:check",
     "quality:fix": "npm run lint:fix && npm run format && npm run typecheck",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [

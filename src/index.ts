@@ -5,8 +5,14 @@ export { diesis, diesisTestnet } from './chains.js'
 export * as addresses from './addresses.js'
 
 // Client action decorators
-export { diesisPublicActions, type DiesisPublicActions } from './actions/public.js'
-export { diesisWalletActions, type DiesisWalletActions } from './actions/wallet.js'
+export {
+  diesisPublicActions,
+  type DiesisPublicActions,
+} from './actions/public.js'
+export {
+  diesisWalletActions,
+  type DiesisWalletActions,
+} from './actions/wallet.js'
 
 // Exchange
 export { marketId } from './exchange/utils.js'
@@ -14,8 +20,16 @@ export { exchangePublicActions } from './exchange/actions.js'
 export * from './exchange/types.js'
 
 // Intents
-export { signOrderIntent, signTradingKeyAuthorization } from './intents/signing.js'
-export type { OrderIntent, SignedOrderIntent, TradingKeyAuthorization } from './intents/types.js'
+export {
+  signOrderIntent,
+  signTradingKeyAuthorization,
+} from './intents/signing.js'
+export { OrderFlags } from './intents/types.js'
+export type {
+  OrderIntent,
+  SignedOrderIntent,
+  TradingKeyAuthorization,
+} from './intents/types.js'
 
 // Bundles
 export { bundleActions } from './bundles/actions.js'
@@ -28,7 +42,12 @@ export type { PatronFund } from './patronage/actions.js'
 
 // Staking
 export { stakingReadActions, stakingWriteActions } from './staking/actions.js'
-export type { StakingReadActions, StakingWriteActions, ValidatorInfo, PositionInfo } from './staking/actions.js'
+export type {
+  StakingReadActions,
+  StakingWriteActions,
+  ValidatorInfo,
+  PositionInfo,
+} from './staking/actions.js'
 
 // ABIs
 export {
