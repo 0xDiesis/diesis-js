@@ -112,6 +112,7 @@ const result = await publicClient.submitBundle({
 
 // Check status
 const status = await publicClient.getBundleStatus({ planHash: result.planHash })
+console.log(status.members, status.includedBlockNumber, status.failure)
 ```
 
 ## Network Status
@@ -131,12 +132,12 @@ All canonical system contract and precompile addresses are available:
 ```typescript
 import { addresses } from '@diesis/sdk'
 
-addresses.DIESIS_STAKING     // 0xD1E5150000000000000000000000000000000001
-addresses.DIESIS_SETTLEMENT  // 0xD1E5150000000000000000000000000000005E71
-addresses.DIESIS_SPOT_BOOK   // 0xD1E515000000000000000000000000000000590D
-addresses.DIESIS_MARKETS     // 0xD1E515000000000000000000000000000000B00C
-addresses.WRAPPED_DS         // 0xD1E51500000000000000000000000000000000D5
-addresses.MULTICALL3         // 0xcA11bde05977b3631167028862bE2a173976CA90
+addresses.DIESIS_STAKING // 0xD1E5150000000000000000000000000000000001
+addresses.DIESIS_SETTLEMENT // 0xD1E5150000000000000000000000000000005E71
+addresses.DIESIS_SPOT_BOOK // 0xD1E515000000000000000000000000000000590D
+addresses.DIESIS_MARKETS // 0xD1E515000000000000000000000000000000B00C
+addresses.WRAPPED_DS // 0xD1E51500000000000000000000000000000000D5
+addresses.MULTICALL3 // 0xcA11bde05977b3631167028862bE2a173976CA90
 ```
 
 ## ABIs
@@ -144,7 +145,11 @@ addresses.MULTICALL3         // 0xcA11bde05977b3631167028862bE2a173976CA90
 Typed ABI constants for contract interactions:
 
 ```typescript
-import { diesisSettlementAbi, diesisSpotBookAbi, diesisMarketsAbi } from '@diesis/sdk/abi'
+import {
+  diesisSettlementAbi,
+  diesisSpotBookAbi,
+  diesisMarketsAbi,
+} from '@diesis/sdk/abi'
 ```
 
 ## Sub-path Exports
@@ -161,10 +166,10 @@ The SDK supports granular imports:
 
 ## Chain IDs
 
-| Network | Chain ID |
-|---------|----------|
-| Diesis Mainnet | 1980 |
-| Diesis Testnet | 19803 |
+| Network        | Chain ID |
+| -------------- | -------- |
+| Diesis Mainnet | 1980     |
+| Diesis Testnet | 19803    |
 
 ## License
 

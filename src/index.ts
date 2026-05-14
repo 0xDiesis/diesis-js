@@ -34,7 +34,16 @@ export type {
 // Bundles
 export { bundleActions } from './bundles/actions.js'
 export { ExecutionFlags, BUNDLE_ONLY_SENTINEL } from './bundles/types.js'
-export type { BundleResult, PreparedBundle } from './bundles/types.js'
+export type {
+  BundleFailure,
+  BundleMember,
+  BundleMemberRole,
+  BundleOrdering,
+  BundleStatus,
+  BundleStatusResult,
+  PreparedBundle,
+  SubmitBundleResult,
+} from './bundles/types.js'
 
 // Patronage
 export { patronageActions } from './patronage/actions.js'
