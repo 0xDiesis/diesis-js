@@ -483,6 +483,11 @@ export const IDiesisBootstrapOracleAbi = [
     },
     {
       "inputs": [],
+      "name": "InvalidQuorumThreshold",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "NotActiveValidator",
       "type": "error"
     },

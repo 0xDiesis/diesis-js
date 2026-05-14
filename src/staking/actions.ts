@@ -6,13 +6,13 @@ import { DIESIS_STAKING } from '../addresses.js'
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export interface ValidatorInfo {
-  status: bigint
-  totalStaked: bigint
-  authority: Address
-  registeredEpoch: bigint
-  registeredAt: bigint
-  suspendedAt: bigint
-  suspendedEpoch: bigint
+  operator: Address
+  flags: bigint
+  bonded: bigint
+  joinedEpoch: bigint
+  joinedAt: bigint
+  heldAt: bigint
+  heldEpoch: bigint
 }
 
 export interface PositionInfo {
@@ -38,10 +38,10 @@ export type StakingReadActions = {
   getLatestFinalizedEpoch: () => Promise<bigint>
   /** Get circulating supply. */
   getCirculatingSupply: () => Promise<bigint>
-  /** Look up validator ID by authority address. */
+  /** Look up validator ID by operator address. */
   getValidatorByAddress: (params: { address: Address }) => Promise<bigint>
-  /** Check if a validator is a cheater (slashed). */
-  isCheater: (params: { validatorId: bigint }) => Promise<boolean>
+  /** Check if a validator currently has a slashable fault. */
+  isSlashable: (params: { validatorId: bigint }) => Promise<boolean>
 }
 
 export function stakingReadActions<TTransport extends Transport, TChain extends Chain | undefined>(
@@ -52,18 +52,18 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
       const result = await readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'validators',
+        functionName: 'validatorLedger',
         args: [validatorId],
       })
-      const [status, totalStaked, authority, registeredEpoch, registeredAt, suspendedAt, suspendedEpoch] = result as [bigint, bigint, Address, bigint, bigint, bigint, bigint]
-      return { status, totalStaked, authority, registeredEpoch, registeredAt, suspendedAt, suspendedEpoch }
+      const [operator, flags, bonded, joinedEpoch, joinedAt, heldAt, heldEpoch] = result
+      return { operator, flags, bonded, joinedEpoch, joinedAt, heldAt, heldEpoch }
     },
 
     getPosition: async ({ tokenId }) => {
       const result = await readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'positions',
+        functionName: 'bondLots',
         args: [tokenId],
       })
       const [validatorId, amount, entryEpoch] = result as [bigint, bigint, bigint]
@@ -114,13 +114,13 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
         args: [address],
       }) as Promise<bigint>,
 
-    isCheater: ({ validatorId }) =>
+    isSlashable: ({ validatorId }) =>
       readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'isCheater',
+        functionName: 'isSlashable',
         args: [validatorId],
-      }) as Promise<boolean>,
+      }) as unknown as Promise<boolean>,
   }
 }
 
@@ -139,7 +139,7 @@ export type StakingWriteActions = {
   compoundRewards: (params: { tokenId: bigint }) => Promise<Hash>
   /** Register a new validator. */
   registerValidator: (params: { pubkey: `0x${string}`; selfStake: bigint }) => Promise<Hash>
-  /** Set per-validator commission rate (validator authority only). */
+  /** Set per-validator commission rate (validator operator only). */
   setValidatorCommission: (params: { validatorId: bigint; rate: bigint }) => Promise<Hash>
   /** Withdraw a validator and release pubkey for reuse. */
   withdrawValidator: (params: { validatorId: bigint }) => Promise<Hash>

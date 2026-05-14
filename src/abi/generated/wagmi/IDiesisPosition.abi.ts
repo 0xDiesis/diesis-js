@@ -181,6 +181,24 @@ export const IDiesisPositionAbi = [
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint40",
+          "name": "lockDuration",
+          "type": "uint40"
+        }
+      ],
+      "name": "lockPositionFor",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "fromTokenId",
           "type": "uint256"
         },

@@ -47,7 +47,7 @@ export type {
 
 // Patronage
 export { patronageActions } from './patronage/actions.js'
-export type { PatronFund } from './patronage/actions.js'
+export type { GasGrant } from './patronage/actions.js'
 
 // Staking
 export { stakingReadActions, stakingWriteActions } from './staking/actions.js'

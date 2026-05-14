@@ -13,19 +13,6 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "CHEATER_MASK",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "DIESIS_POSITION",
       "outputs": [
         {
@@ -39,7 +26,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "DOUBLESIGN_BIT",
+      "name": "FAULT_EQUIVOCATION",
       "outputs": [
         {
           "internalType": "uint256",
@@ -52,7 +39,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "JAILED_BIT",
+      "name": "FAULT_GOVERNANCE",
       "outputs": [
         {
           "internalType": "uint256",
@@ -65,7 +52,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "OFFLINE_AVG_BIT",
+      "name": "FAULT_LIVENESS",
       "outputs": [
         {
           "internalType": "uint256",
@@ -78,7 +65,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "OFFLINE_BIT",
+      "name": "FAULT_PERFORMANCE",
       "outputs": [
         {
           "internalType": "uint256",
@@ -91,7 +78,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "OK_STATUS",
+      "name": "FAULT_SLASHABLE",
       "outputs": [
         {
           "internalType": "uint256",
@@ -104,7 +91,33 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "WITHDRAWN_BIT",
+      "name": "MAX_COMMISSION_STEP",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VALIDATOR_ACTIVE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VALIDATOR_EXITING",
       "outputs": [
         {
           "internalType": "uint256",
@@ -249,6 +262,35 @@ export const DiesisStakingAbi = [
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "bondLots",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "validatorId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "entryEpoch",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "delegator",
           "type": "address"
@@ -308,25 +350,6 @@ export const DiesisStakingAbi = [
       "name": "burnTokens",
       "outputs": [],
       "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "cheaterRefundRatio",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -463,6 +486,40 @@ export const DiesisStakingAbi = [
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "exitTickets",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "components": [
             {
               "internalType": "uint256[]",
@@ -577,6 +634,19 @@ export const DiesisStakingAbi = [
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "increaseStakeForPosition",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "sealedEpoch",
           "type": "uint256"
         },
@@ -680,7 +750,7 @@ export const DiesisStakingAbi = [
           "type": "uint256"
         }
       ],
-      "name": "isCheater",
+      "name": "isSlashable",
       "outputs": [
         {
           "internalType": "bool",
@@ -884,35 +954,6 @@ export const DiesisStakingAbi = [
         {
           "internalType": "uint256",
           "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "positions",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "validatorId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "entryEpoch",
           "type": "uint256"
         }
       ],
@@ -1199,7 +1240,7 @@ export const DiesisStakingAbi = [
           "type": "uint256"
         }
       ],
-      "name": "setSlashingRefund",
+      "name": "setSlashRefundRatio",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1259,6 +1300,25 @@ export const DiesisStakingAbi = [
       "name": "setValidatorCommission",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "slashRefundRatio",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -1517,40 +1577,6 @@ export const DiesisStakingAbi = [
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "unstakeRequests",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "epoch",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
           "internalType": "address",
           "name": "",
           "type": "address"
@@ -1590,6 +1616,55 @@ export const DiesisStakingAbi = [
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "validatorId",
+          "type": "uint256"
+        }
+      ],
+      "name": "validatorLedger",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "flags",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bonded",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "joinedEpoch",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "joinedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "heldAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "heldEpoch",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -1613,60 +1688,11 @@ export const DiesisStakingAbi = [
           "type": "uint256"
         }
       ],
-      "name": "validatorSelfStakePosition",
+      "name": "validatorSelfBondLot",
       "outputs": [
         {
           "internalType": "uint256",
           "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "validators",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "status",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalStaked",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "authority",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "registeredEpoch",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "registeredAt",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "suspendedAt",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "suspendedEpoch",
           "type": "uint256"
         }
       ],
@@ -1927,7 +1953,7 @@ export const DiesisStakingAbi = [
           "type": "uint256"
         }
       ],
-      "name": "SlashingRefundUpdated",
+      "name": "SlashRefundRatioUpdated",
       "type": "event"
     },
     {
@@ -2346,11 +2372,6 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "FullySlashed",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "InsufficientStake",
       "type": "error"
     },
@@ -2401,22 +2422,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "NotACheater",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "NotPositionOwner",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NothingAccrued",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ObserverCallFailed",
       "type": "error"
     },
     {
@@ -2473,6 +2479,11 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
+      "name": "SlashableValidatorInstantExitDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "TreasuryUnconfigured",
       "type": "error"
     },
@@ -2503,7 +2514,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "ValidatorNotSuspended",
+      "name": "ValidatorNotSlashable",
       "type": "error"
     }
   ] as const;

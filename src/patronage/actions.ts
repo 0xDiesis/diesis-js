@@ -1,19 +1,21 @@
-import type { Client, Transport, Chain, Hex, Address } from 'viem'
+import type { Client, Transport, Chain, Hex } from 'viem'
 
-export interface PatronFund {
+export interface GasGrant {
+  grantId: Hex
   balance: bigint
-  patron: Address
-  fundType: number
+  totalContributed: bigint
+  totalSpent: bigint
+  paused: boolean
 }
 
 export type PatronageActions = {
-  getPatronFund: (params: { fundKey: Hex }) => Promise<PatronFund>
+  getGrant: (params: { grantId: Hex }) => Promise<GasGrant>
 }
 
 export function patronageActions<TTransport extends Transport, TChain extends Chain | undefined>(
   client: Client<TTransport, TChain>,
 ): PatronageActions {
   return {
-    getPatronFund: (params) => client.request({ method: 'diesis_getPatronFund' as any, params: [params.fundKey] } as any),
+    getGrant: (params) => client.request({ method: 'diesis_getGrant' as any, params: [params.grantId] } as any),
   }
 }

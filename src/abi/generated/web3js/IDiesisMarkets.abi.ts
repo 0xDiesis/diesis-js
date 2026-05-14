@@ -76,6 +76,50 @@ export const IDiesisMarketsAbi = [
     {
       "inputs": [
         {
+          "internalType": "bytes11",
+          "name": "symbol",
+          "type": "bytes11"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "initialSupply",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "dsBond",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "usdcFee",
+          "type": "uint256"
+        }
+      ],
+      "name": "deployTokenAndSpotBook",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes32",
           "name": "marketId",
           "type": "bytes32"

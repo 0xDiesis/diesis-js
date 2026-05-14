@@ -23,8 +23,26 @@ export const DiesisPatronAbi = [
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
           "internalType": "bytes32",
-          "name": "fundKey",
+          "name": "grantId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "assignAccountGrant",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "grantId",
           "type": "bytes32"
         },
         {
@@ -33,7 +51,7 @@ export const DiesisPatronAbi = [
           "type": "uint256"
         }
       ],
-      "name": "chargePatron",
+      "name": "chargeGrant",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -42,7 +60,7 @@ export const DiesisPatronAbi = [
       "inputs": [
         {
           "internalType": "bytes32[]",
-          "name": "fundKeys",
+          "name": "grantIds",
           "type": "bytes32[]"
         },
         {
@@ -51,14 +69,14 @@ export const DiesisPatronAbi = [
           "type": "uint256[]"
         }
       ],
-      "name": "chargePatronBatch",
+      "name": "chargeGrantBatch",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "chargePatronGasLimit",
+      "name": "chargeGrantGasLimit",
       "outputs": [
         {
           "internalType": "uint256",
@@ -73,39 +91,33 @@ export const DiesisPatronAbi = [
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "fundKey",
+          "name": "grantId",
           "type": "bytes32"
         }
       ],
-      "name": "deposit",
+      "name": "contribute",
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes",
-          "name": "input",
-          "type": "bytes"
-        }
-      ],
-      "name": "fundKeyForApproval",
+      "inputs": [],
+      "name": "grantGasOverhead",
       "outputs": [
         {
-          "internalType": "bytes32",
-          "name": "key",
-          "type": "bytes32"
+          "internalType": "uint256",
+          "name": "resolveGas",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "chargeGas",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalOverhead",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -115,16 +127,11 @@ export const DiesisPatronAbi = [
       "inputs": [
         {
           "internalType": "address",
-          "name": "target",
+          "name": "account",
           "type": "address"
-        },
-        {
-          "internalType": "bytes",
-          "name": "input",
-          "type": "bytes"
         }
       ],
-      "name": "fundKeyForFunction",
+      "name": "grantIdForAccount",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -138,12 +145,12 @@ export const DiesisPatronAbi = [
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "nonce",
-          "type": "uint256"
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
         }
       ],
-      "name": "fundKeyForOnboarding",
+      "name": "grantIdForCampaign",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -167,7 +174,20 @@ export const DiesisPatronAbi = [
           "type": "address"
         }
       ],
-      "name": "fundKeyForReferral",
+      "name": "grantIdForReferral",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "result",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "grantIdForWelcome",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -181,68 +201,37 @@ export const DiesisPatronAbi = [
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        }
-      ],
-      "name": "fundKeyForSender",
-      "outputs": [
-        {
           "internalType": "bytes32",
-          "name": "result",
+          "name": "grantId",
           "type": "bytes32"
         }
       ],
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "sender",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes",
-          "name": "input",
-          "type": "bytes"
-        }
-      ],
-      "name": "fundKeyForSenderFunction",
+      "name": "grantInfo",
       "outputs": [
         {
-          "internalType": "bytes32",
-          "name": "result",
-          "type": "bytes32"
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "balance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalContributed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalSpent",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IDiesisPatron.GrantInfo",
+          "name": "info",
+          "type": "tuple"
         }
       ],
-      "stateMutability": "pure",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "target",
-          "type": "address"
-        }
-      ],
-      "name": "fundKeyForTarget",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "result",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "pure",
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -253,7 +242,7 @@ export const DiesisPatronAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "funds",
+      "name": "grants",
       "outputs": [
         {
           "internalType": "uint256",
@@ -276,12 +265,12 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "owner",
+      "name": "onboardingTxLimit",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -289,22 +278,12 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "patronGasOverhead",
+      "name": "owner",
       "outputs": [
         {
-          "internalType": "uint256",
-          "name": "resolveGas",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "chargeGas",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalOverhead",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "",
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -321,24 +300,6 @@ export const DiesisPatronAbi = [
         }
       ],
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "fundKey",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "reclaimFunds",
-      "outputs": [],
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -376,7 +337,7 @@ export const DiesisPatronAbi = [
           "type": "uint256"
         }
       ],
-      "name": "resolvePatron",
+      "name": "resolveGrant",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -389,7 +350,7 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "resolvePatronGasLimit",
+      "name": "resolveGrantGasLimit",
       "outputs": [
         {
           "internalType": "uint256",
@@ -478,6 +439,19 @@ export const DiesisPatronAbi = [
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateOnboardingTxLimit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "staking_",
           "type": "address"
@@ -489,28 +463,40 @@ export const DiesisPatronAbi = [
       "type": "function"
     },
     {
-      "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
           "internalType": "bytes32",
-          "name": "fundKey",
+          "name": "grantId",
           "type": "bytes32"
         },
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "contributor",
-          "type": "address"
-        },
-        {
-          "indexed": false,
           "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
         }
       ],
-      "name": "FundsDeposited",
+      "name": "withdrawContribution",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "grantId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AccountGrantAssigned",
       "type": "event"
     },
     {
@@ -519,7 +505,26 @@ export const DiesisPatronAbi = [
         {
           "indexed": true,
           "internalType": "bytes32",
-          "name": "fundKey",
+          "name": "grantId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "GrantCharged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "grantId",
           "type": "bytes32"
         },
         {
@@ -535,7 +540,7 @@ export const DiesisPatronAbi = [
           "type": "uint256"
         }
       ],
-      "name": "FundsReclaimed",
+      "name": "GrantContributed",
       "type": "event"
     },
     {
@@ -554,7 +559,45 @@ export const DiesisPatronAbi = [
           "type": "uint256"
         }
       ],
-      "name": "GasLimitsUpdated",
+      "name": "GrantGasLimitsUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "grantId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "contributor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "GrantWithdrawn",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "limit",
+          "type": "uint256"
+        }
+      ],
+      "name": "OnboardingTxLimitUpdated",
       "type": "event"
     },
     {
@@ -580,25 +623,6 @@ export const DiesisPatronAbi = [
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "fundKey",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "fee",
-          "type": "uint256"
-        }
-      ],
-      "name": "PatronCharged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "bool",
           "name": "paused",
@@ -614,7 +638,7 @@ export const DiesisPatronAbi = [
         {
           "indexed": true,
           "internalType": "address",
-          "name": "patron",
+          "name": "referrer",
           "type": "address"
         },
         {
@@ -626,11 +650,11 @@ export const DiesisPatronAbi = [
         {
           "indexed": false,
           "internalType": "bytes32",
-          "name": "fundKey",
+          "name": "grantId",
           "type": "bytes32"
         }
       ],
-      "name": "ReferralSet",
+      "name": "ReferralGrantSet",
       "type": "event"
     },
     {
@@ -648,7 +672,7 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "CannotReclaimInPatronizedTx",
+      "name": "CannotWithdrawInSponsoredTx",
       "type": "error"
     },
     {
@@ -658,7 +682,7 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "InsufficientFundBalance",
+      "name": "InsufficientGrantBalance",
       "type": "error"
     },
     {
@@ -668,7 +692,7 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "InvalidFundKey",
+      "name": "InvalidGrantId",
       "type": "error"
     },
     {
@@ -683,7 +707,7 @@ export const DiesisPatronAbi = [
     },
     {
       "inputs": [],
-      "name": "NoContribution",
+      "name": "NoGrantShare",
       "type": "error"
     },
     {
