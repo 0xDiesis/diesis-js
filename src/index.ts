@@ -68,6 +68,15 @@ export type {
 export { patronageActions } from './patronage/actions.js'
 export type { GasGrant } from './patronage/actions.js'
 
+// Privacy
+export { privacyReadActions, privacyWriteActions } from './privacy/actions.js'
+export type {
+  PrivacyProvider,
+  PrivacyReadActions,
+  PrivacyWriteActions,
+  ShieldedPoolState,
+} from './privacy/actions.js'
+
 // Staking
 export { stakingReadActions, stakingWriteActions } from './staking/actions.js'
 export type {

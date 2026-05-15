@@ -8,6 +8,10 @@ import {
   patronageActions,
   type PatronageActions,
 } from '../patronage/actions.js'
+import {
+  privacyReadActions,
+  type PrivacyReadActions,
+} from '../privacy/actions.js'
 
 export interface NetworkRules {
   [key: string]: unknown
@@ -31,6 +35,7 @@ export interface TransactionStatus {
 export type DiesisPublicActions = ExchangePublicActions &
   BundleActions &
   PatronageActions & {
+    privacy: PrivacyReadActions['privacy']
     getRules: () => Promise<NetworkRules>
     getPipelineStatus: () => Promise<PipelineStatus>
     getTransactionStatus: (params: { hash: Hex }) => Promise<TransactionStatus>
@@ -50,10 +55,12 @@ export function diesisPublicActions<
   const exchange = exchangePublicActions(client)
   const bundles = bundleActions(client)
   const patronage = patronageActions(client)
+  const privacy = privacyReadActions(client)
   return {
     ...exchange,
     ...bundles,
     ...patronage,
+    ...privacy,
     getRules: () =>
       client.request({
         method: 'diesis_getRules' as never,

@@ -30,6 +30,10 @@
       "import": "./dist/patronage/index.js",
       "types": "./dist/patronage/index.d.ts"
     },
+    "./privacy": {
+      "import": "./dist/privacy/index.js",
+      "types": "./dist/privacy/index.d.ts"
+    },
     "./abi": {
       "import": "./dist/abi/index.js",
       "types": "./dist/abi/index.d.ts"

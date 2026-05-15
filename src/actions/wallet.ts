@@ -12,31 +12,36 @@ import type {
   SignedOrderIntent,
   TradingKeyAuthorization,
 } from '../intents/types.js'
+import {
+  privacyWriteActions,
+  type PrivacyWriteActions,
+} from '../privacy/actions.js'
 
-export type DiesisWalletActions = ExchangeWalletActions & {
-  sendTransactionSync: (params: {
-    to: `0x${string}`
-    value?: bigint
-    data?: Hex
-  }) => Promise<{ hash: Hex; receipt: Record<string, unknown> }>
-  /**
-   * Sign a v2 order intent.
-   *
-   * `verifyingContract` must be the address of the spot or perp book precompile
-   * the intent is routed to (see `DIESIS_SPOT_BOOK` / `DIESIS_PERPS_BOOK` in
-   * `../addresses`). Mismatch causes on-chain signature rejection.
-   */
-  signOrderIntent: (
-    intent: OrderIntent,
-    verifyingContract: Address,
-  ) => Promise<SignedOrderIntent>
-  signTradingKeyAuthorization: (auth: TradingKeyAuthorization) => Promise<Hex>
-  submitIntent: (params: { intent: SignedOrderIntent }) => Promise<Hex>
-  sendStealthBundle: (params: {
-    fundingTx: Hex
-    announceTx: Hex
-  }) => Promise<{ planHash: Hex; status: string }>
-}
+export type DiesisWalletActions = ExchangeWalletActions &
+  PrivacyWriteActions & {
+    sendTransactionSync: (params: {
+      to: `0x${string}`
+      value?: bigint
+      data?: Hex
+    }) => Promise<{ hash: Hex; receipt: Record<string, unknown> }>
+    /**
+     * Sign a v2 order intent.
+     *
+     * `verifyingContract` must be the address of the spot or perp book precompile
+     * the intent is routed to (see `DIESIS_SPOT_BOOK` / `DIESIS_PERPS_BOOK` in
+     * `../addresses`). Mismatch causes on-chain signature rejection.
+     */
+    signOrderIntent: (
+      intent: OrderIntent,
+      verifyingContract: Address,
+    ) => Promise<SignedOrderIntent>
+    signTradingKeyAuthorization: (auth: TradingKeyAuthorization) => Promise<Hex>
+    submitIntent: (params: { intent: SignedOrderIntent }) => Promise<Hex>
+    sendStealthBundle: (params: {
+      fundingTx: Hex
+      announceTx: Hex
+    }) => Promise<{ planHash: Hex; status: string }>
+  }
 
 export function diesisWalletActions<
   TTransport extends Transport,
@@ -44,8 +49,10 @@ export function diesisWalletActions<
   TAccount extends Account,
 >(client: Client<TTransport, TChain, TAccount>): DiesisWalletActions {
   const exchange = exchangeWalletActions(client)
+  const privacy = privacyWriteActions(client)
   return {
     ...exchange,
+    ...privacy,
     sendTransactionSync: (params) =>
       client.request({
         method: 'diesis_sendRawTransactionSync' as never,
