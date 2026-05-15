@@ -5,7 +5,12 @@ import type {
   Chain,
   Hex,
   Address,
+  Client,
+  TypedDataDomain,
 } from 'viem'
+import { writeContract } from 'viem/actions'
+import { IDiesisSettlementAbi } from '../abi/index.js'
+import { DIESIS_SETTLEMENT } from '../addresses.js'
 import type {
   OrderIntent,
   SignedOrderIntent,
@@ -19,7 +24,7 @@ import type {
  * exactly. Any reordering or renaming will change the struct hash and break
  * signature verification on-chain.
  */
-const ORDER_INTENT_TYPES = {
+export const ORDER_INTENT_TYPES = {
   OrderIntent: [
     { name: 'trader', type: 'address' },
     { name: 'marketId', type: 'bytes32' },
@@ -54,7 +59,10 @@ const TRADING_KEY_TYPES = {
  * `verifyingContract` must be the address of the spot or perp book precompile
  * the intent is routed to — same address the on-chain side verifies against.
  */
-function getOrderIntentDomain(chainId: number, verifyingContract: Address) {
+export function getOrderIntentDomain(
+  chainId: number,
+  verifyingContract: Address,
+): TypedDataDomain {
   return {
     name: 'Diesis Exchange',
     version: '2',
@@ -63,19 +71,12 @@ function getOrderIntentDomain(chainId: number, verifyingContract: Address) {
   } as const
 }
 
-/** Sign a gasless order intent using EIP-712 typed data (v2). */
-export async function signOrderIntent<
-  TTransport extends Transport,
-  TChain extends Chain,
-  TAccount extends Account,
->(
-  client: WalletClient<TTransport, TChain, TAccount>,
+export function getOrderIntentTypedData(
   intent: OrderIntent,
   verifyingContract: Address,
-): Promise<SignedOrderIntent> {
-  const chainId = client.chain?.id ?? 1980
-  const signature = await client.signTypedData({
-    account: client.account,
+  chainId: number = 1980,
+) {
+  return {
     domain: getOrderIntentDomain(chainId, verifyingContract),
     types: ORDER_INTENT_TYPES,
     primaryType: 'OrderIntent',
@@ -94,6 +95,41 @@ export async function signOrderIntent<
       conductorFeeBps: intent.conductorFeeBps,
       maxConductorFee: intent.maxConductorFee,
     },
+  } as const
+}
+
+export interface OrderIntentAccount {
+  address: Address
+  signTypedData: (typedData: ReturnType<typeof getOrderIntentTypedData>) => Promise<Hex>
+}
+
+/** Sign a gasless order intent with an arbitrary local or wallet-backed account. */
+export async function signOrderIntentWithAccount(
+  account: OrderIntentAccount,
+  intent: OrderIntent,
+  verifyingContract: Address,
+  chainId: number = 1980,
+): Promise<SignedOrderIntent> {
+  const signature = await account.signTypedData(
+    getOrderIntentTypedData(intent, verifyingContract, chainId),
+  )
+  return { intent, signature, signer: account.address }
+}
+
+/** Sign a gasless order intent using EIP-712 typed data (v2). */
+export async function signOrderIntent<
+  TTransport extends Transport,
+  TChain extends Chain,
+  TAccount extends Account,
+>(
+  client: WalletClient<TTransport, TChain, TAccount>,
+  intent: OrderIntent,
+  verifyingContract: Address,
+): Promise<SignedOrderIntent> {
+  const chainId = client.chain?.id ?? 1980
+  const signature = await client.signTypedData({
+    account: client.account,
+    ...getOrderIntentTypedData(intent, verifyingContract, chainId),
   })
   return { intent, signature, signer: client.account.address }
 }
@@ -118,5 +154,55 @@ export async function signTradingKeyAuthorization<
     types: TRADING_KEY_TYPES,
     primaryType: 'TradingKeyAuthorization',
     message: auth,
+  })
+}
+
+export interface RegisterTradingKeyParameters {
+  tradingKey: Address
+  validUntil: bigint | number
+  maxOrderNotional: bigint
+  allowedMarketsMask: Hex
+  canWithdraw?: boolean
+}
+
+export interface RevokeTradingKeyParameters {
+  tradingKey: Address
+}
+
+type SettlementWalletClient = Client<Transport, Chain | undefined, Account>
+
+/** Register a settlement trading key for the connected wallet account. */
+export function registerTradingKey(
+  client: SettlementWalletClient,
+  params: RegisterTradingKeyParameters,
+): Promise<Hex> {
+  return writeContract(client, {
+    address: DIESIS_SETTLEMENT,
+    abi: IDiesisSettlementAbi,
+    account: client.account,
+    chain: client.chain,
+    functionName: 'registerTradingKey',
+    args: [
+      params.tradingKey,
+      BigInt(params.validUntil),
+      params.maxOrderNotional,
+      params.allowedMarketsMask,
+      params.canWithdraw ?? false,
+    ],
+  })
+}
+
+/** Revoke a settlement trading key for the connected wallet account. */
+export function revokeTradingKey(
+  client: SettlementWalletClient,
+  params: RevokeTradingKeyParameters,
+): Promise<Hex> {
+  return writeContract(client, {
+    address: DIESIS_SETTLEMENT,
+    abi: IDiesisSettlementAbi,
+    account: client.account,
+    chain: client.chain,
+    functionName: 'revokeTradingKey',
+    args: [params.tradingKey],
   })
 }

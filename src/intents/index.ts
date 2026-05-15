@@ -1,7 +1,17 @@
-export { signOrderIntent, signTradingKeyAuthorization } from './signing.js'
+export {
+  ORDER_INTENT_TYPES,
+  getOrderIntentDomain,
+  getOrderIntentTypedData,
+  registerTradingKey,
+  revokeTradingKey,
+  signOrderIntent,
+  signOrderIntentWithAccount,
+  signTradingKeyAuthorization,
+} from './signing.js'
 export { OrderFlags } from './types.js'
 export type {
-  OrderIntent,
-  SignedOrderIntent,
-  TradingKeyAuthorization,
-} from './types.js'
+  OrderIntentAccount,
+  RegisterTradingKeyParameters,
+  RevokeTradingKeyParameters,
+} from './signing.js'
+export type { OrderIntent, SignedOrderIntent, TradingKeyAuthorization } from './types.js'

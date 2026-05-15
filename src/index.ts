@@ -21,15 +21,24 @@ export * from './exchange/types.js'
 
 // Intents
 export {
+  ORDER_INTENT_TYPES,
+  getOrderIntentDomain,
+  getOrderIntentTypedData,
+  registerTradingKey,
+  revokeTradingKey,
   signOrderIntent,
+  signOrderIntentWithAccount,
   signTradingKeyAuthorization,
 } from './intents/signing.js'
 export { OrderFlags } from './intents/types.js'
 export type {
+  OrderIntentAccount,
   OrderIntent,
+  RegisterTradingKeyParameters,
+  RevokeTradingKeyParameters,
   SignedOrderIntent,
   TradingKeyAuthorization,
-} from './intents/types.js'
+} from './intents/index.js'
 
 // Bundles
 export { bundleActions } from './bundles/actions.js'
