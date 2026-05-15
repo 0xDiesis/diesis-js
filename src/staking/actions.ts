@@ -1,4 +1,12 @@
-import type { Client, Transport, Chain, Account, Address, Hash } from 'viem'
+import type {
+  Client,
+  Transport,
+  Chain,
+  Account,
+  Address,
+  Hash,
+  WriteContractParameters,
+} from 'viem'
 import { readContract, writeContract } from 'viem/actions'
 import { DiesisStakingAbi } from '../abi/index.js'
 import { DIESIS_STAKING } from '../addresses.js'
@@ -44,9 +52,10 @@ export type StakingReadActions = {
   isSlashable: (params: { validatorId: bigint }) => Promise<boolean>
 }
 
-export function stakingReadActions<TTransport extends Transport, TChain extends Chain | undefined>(
-  client: Client<TTransport, TChain>,
-): StakingReadActions {
+export function stakingReadActions<
+  TTransport extends Transport,
+  TChain extends Chain | undefined,
+>(client: Client<TTransport, TChain>): StakingReadActions {
   return {
     getValidator: async ({ validatorId }) => {
       const result = await readContract(client, {
@@ -55,8 +64,24 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
         functionName: 'nodeLedger',
         args: [validatorId],
       })
-      const [operator, marks, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint] = result
-      return { operator, marks, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint }
+      const [
+        operator,
+        marks,
+        bonded,
+        joinedCheckpoint,
+        joinedAt,
+        heldAt,
+        heldCheckpoint,
+      ] = result
+      return {
+        operator,
+        marks,
+        bonded,
+        joinedCheckpoint,
+        joinedAt,
+        heldAt,
+        heldCheckpoint,
+      }
     },
 
     getPosition: async ({ tokenId }) => {
@@ -66,7 +91,11 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
         functionName: 'stakeLots',
         args: [tokenId],
       })
-      const [validatorId, amount, entryCheckpoint] = result as [bigint, bigint, bigint]
+      const [validatorId, amount, entryCheckpoint] = result as [
+        bigint,
+        bigint,
+        bigint,
+      ]
       return { validatorId, amount, entryCheckpoint }
     },
 
@@ -130,41 +159,121 @@ export type StakingWriteActions = {
   /** Stake native tokens to a validator (via DiesisStaking directly). */
   stake: (params: { validatorId: bigint; amount: bigint }) => Promise<Hash>
   /** Request unstake from a position. */
-  requestUnstake: (params: { tokenId: bigint; requestId: bigint; amount: bigint }) => Promise<Hash>
+  requestUnstake: (params: {
+    tokenId: bigint
+    requestId: bigint
+    amount: bigint
+  }) => Promise<Hash>
   /** Complete an unstake request after cooldown. */
-  completeUnstake: (params: { tokenId: bigint; requestId: bigint }) => Promise<Hash>
+  completeUnstake: (params: {
+    tokenId: bigint
+    requestId: bigint
+  }) => Promise<Hash>
   /** Harvest (claim) rewards for a position. */
   harvestRewards: (params: { tokenId: bigint }) => Promise<Hash>
   /** Compound (restake) rewards for a position. */
   compoundRewards: (params: { tokenId: bigint }) => Promise<Hash>
   /** Register a new validator. */
-  registerValidator: (params: { pubkey: `0x${string}`; selfStake: bigint }) => Promise<Hash>
-  /** Set per-validator commission rate (validator operator only). */
-  setValidatorCommission: (params: { validatorId: bigint; rate: bigint }) => Promise<Hash>
+  registerValidator: (params: {
+    pubkey: `0x${string}`
+    operatorBond: bigint
+  }) => Promise<Hash>
+  /** Schedule a per-validator operator reward cut (validator operator only). */
+  setOperatorTakeRate: (params: {
+    validatorId: bigint
+    rate: bigint
+  }) => Promise<Hash>
   /** Withdraw a validator and release pubkey for reuse. */
   withdrawValidator: (params: { validatorId: bigint }) => Promise<Hash>
 }
 
-export function stakingWriteActions<TTransport extends Transport, TChain extends Chain, TAccount extends Account>(
-  client: Client<TTransport, TChain, TAccount>,
-): StakingWriteActions {
-  const write = (functionName: string, args: unknown[], value?: bigint) =>
-    writeContract(client, {
-      address: DIESIS_STAKING,
-      abi: DiesisStakingAbi,
-      functionName,
-      args,
-      ...(value !== undefined ? { value } : {}),
-    } as any)
+export function stakingWriteActions<
+  TTransport extends Transport,
+  TChain extends Chain | undefined,
+  TAccount extends Account,
+>(client: Client<TTransport, TChain, TAccount>): StakingWriteActions {
+  type StakingWriteParameters = WriteContractParameters<
+    typeof DiesisStakingAbi,
+    keyof StakingWriteActions & string
+  >
+  const walletClient = client as Client<Transport, Chain | undefined, Account>
+  const submit = (parameters: StakingWriteParameters): Promise<Hash> =>
+    writeContract(walletClient, parameters)
 
   return {
-    stake: ({ validatorId, amount }) => write('stake', [validatorId], amount),
-    requestUnstake: ({ tokenId, requestId, amount }) => write('requestUnstake', [tokenId, requestId, amount]),
-    completeUnstake: ({ tokenId, requestId }) => write('completeUnstake', [tokenId, requestId]),
-    harvestRewards: ({ tokenId }) => write('harvestRewards', [tokenId]),
-    compoundRewards: ({ tokenId }) => write('compoundRewards', [tokenId]),
-    registerValidator: ({ pubkey, selfStake }) => write('registerValidator', [pubkey], selfStake),
-    setValidatorCommission: ({ validatorId, rate }) => write('setValidatorCommission', [validatorId, rate]),
-    withdrawValidator: ({ validatorId }) => write('withdrawValidator', [validatorId]),
+    stake: ({ validatorId, amount }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'stake',
+        args: [validatorId],
+        value: amount,
+      }),
+    requestUnstake: ({ tokenId, requestId, amount }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'requestUnstake',
+        args: [tokenId, requestId, amount],
+      }),
+    completeUnstake: ({ tokenId, requestId }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'completeUnstake',
+        args: [tokenId, requestId],
+      }),
+    harvestRewards: ({ tokenId }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'harvestRewards',
+        args: [tokenId],
+      }),
+    compoundRewards: ({ tokenId }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'compoundRewards',
+        args: [tokenId],
+      }),
+    registerValidator: ({ pubkey, operatorBond }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'registerValidator',
+        args: [pubkey],
+        value: operatorBond,
+      }),
+    setOperatorTakeRate: ({ validatorId, rate }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'setOperatorTakeRate',
+        args: [validatorId, rate],
+      }),
+    withdrawValidator: ({ validatorId }) =>
+      submit({
+        address: DIESIS_STAKING,
+        abi: DiesisStakingAbi,
+        account: client.account,
+        chain: client.chain,
+        functionName: 'withdrawValidator',
+        args: [validatorId],
+      }),
   }
 }

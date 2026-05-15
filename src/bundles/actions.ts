@@ -27,18 +27,18 @@ export function bundleActions<
   return {
     prepareBundle: (params) =>
       client.request({
-        method: 'diesis_prepareBundle' as any,
+        method: 'diesis_prepareBundle' as never,
         params: [params],
-      } as any),
+      } as never),
     submitBundle: (params) =>
       client.request({
-        method: 'diesis_submitBundle' as any,
+        method: 'diesis_submitBundle' as never,
         params: [params],
-      } as any),
+      } as never),
     getBundleStatus: (params) =>
       client.request({
-        method: 'diesis_getBundleStatus' as any,
+        method: 'diesis_getBundleStatus' as never,
         params: [params],
-      } as any),
+      } as never),
   }
 }

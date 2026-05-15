@@ -1,5 +1,16 @@
-import type { WalletClient, Account, Transport, Chain, Hex, Address } from 'viem'
-import type { OrderIntent, SignedOrderIntent, TradingKeyAuthorization } from './types.js'
+import type {
+  WalletClient,
+  Account,
+  Transport,
+  Chain,
+  Hex,
+  Address,
+} from 'viem'
+import type {
+  OrderIntent,
+  SignedOrderIntent,
+  TradingKeyAuthorization,
+} from './types.js'
 
 /**
  * EIP-712 v2 type for the OrderIntent struct.
@@ -53,7 +64,11 @@ function getOrderIntentDomain(chainId: number, verifyingContract: Address) {
 }
 
 /** Sign a gasless order intent using EIP-712 typed data (v2). */
-export async function signOrderIntent<TTransport extends Transport, TChain extends Chain, TAccount extends Account>(
+export async function signOrderIntent<
+  TTransport extends Transport,
+  TChain extends Chain,
+  TAccount extends Account,
+>(
   client: WalletClient<TTransport, TChain, TAccount>,
   intent: OrderIntent,
   verifyingContract: Address,
@@ -84,7 +99,11 @@ export async function signOrderIntent<TTransport extends Transport, TChain exten
 }
 
 /** Sign a trading key authorization using EIP-712 typed data. */
-export async function signTradingKeyAuthorization<TTransport extends Transport, TChain extends Chain, TAccount extends Account>(
+export async function signTradingKeyAuthorization<
+  TTransport extends Transport,
+  TChain extends Chain,
+  TAccount extends Account,
+>(
   client: WalletClient<TTransport, TChain, TAccount>,
   auth: TradingKeyAuthorization,
 ): Promise<Hex> {

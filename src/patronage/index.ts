@@ -1,1 +1,5 @@
-export { patronageActions, type PatronageActions, type GasGrant } from './actions.js'
+export {
+  patronageActions,
+  type PatronageActions,
+  type GasGrant,
+} from './actions.js'

@@ -20,7 +20,10 @@ export const diesisTestnet = defineChain({
     default: { http: ['https://rpc.testnet.diesis.xyz'] },
   },
   blockExplorers: {
-    default: { name: 'Diesis Testnet Explorer', url: 'https://explorer.testnet.diesis.xyz' },
+    default: {
+      name: 'Diesis Testnet Explorer',
+      url: 'https://explorer.testnet.diesis.xyz',
+    },
   },
   testnet: true,
 })
