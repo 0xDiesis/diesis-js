@@ -17,6 +17,8 @@ import type {
   TradingKeyAuthorization,
 } from './types.js'
 
+const DIESIS_SETTLEMENT_ADDRESS = DIESIS_SETTLEMENT.toLowerCase() as Address
+
 /**
  * EIP-712 v2 type for the OrderIntent struct.
  *
@@ -179,7 +181,7 @@ export function registerTradingKey(
   params: RegisterTradingKeyParameters,
 ): Promise<Hex> {
   return writeContract(client, {
-    address: DIESIS_SETTLEMENT,
+    address: DIESIS_SETTLEMENT_ADDRESS,
     abi: IDiesisSettlementAbi,
     account: client.account,
     chain: client.chain,
@@ -200,7 +202,7 @@ export function revokeTradingKey(
   params: RevokeTradingKeyParameters,
 ): Promise<Hex> {
   return writeContract(client, {
-    address: DIESIS_SETTLEMENT,
+    address: DIESIS_SETTLEMENT_ADDRESS,
     abi: IDiesisSettlementAbi,
     account: client.account,
     chain: client.chain,
