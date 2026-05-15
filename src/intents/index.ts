@@ -14,4 +14,8 @@ export type {
   RegisterTradingKeyParameters,
   RevokeTradingKeyParameters,
 } from './signing.js'
-export type { OrderIntent, SignedOrderIntent, TradingKeyAuthorization } from './types.js'
+export type {
+  OrderIntent,
+  SignedOrderIntent,
+  TradingKeyAuthorization,
+} from './types.js'

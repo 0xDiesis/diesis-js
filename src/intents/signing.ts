@@ -100,7 +100,9 @@ export function getOrderIntentTypedData(
 
 export interface OrderIntentAccount {
   address: Address
-  signTypedData: (typedData: ReturnType<typeof getOrderIntentTypedData>) => Promise<Hex>
+  signTypedData: (
+    typedData: ReturnType<typeof getOrderIntentTypedData>,
+  ) => Promise<Hex>
 }
 
 /** Sign a gasless order intent with an arbitrary local or wallet-backed account. */
