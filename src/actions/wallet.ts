@@ -1,5 +1,9 @@
 import type { Client, Transport, Chain, Account, Hex, Address } from 'viem'
 import {
+  exchangeWalletActions,
+  type ExchangeWalletActions,
+} from '../exchange/actions.js'
+import {
   signOrderIntent,
   signTradingKeyAuthorization,
 } from '../intents/signing.js'
@@ -9,7 +13,7 @@ import type {
   TradingKeyAuthorization,
 } from '../intents/types.js'
 
-export type DiesisWalletActions = {
+export type DiesisWalletActions = ExchangeWalletActions & {
   sendTransactionSync: (params: {
     to: `0x${string}`
     value?: bigint
@@ -39,7 +43,9 @@ export function diesisWalletActions<
   TChain extends Chain,
   TAccount extends Account,
 >(client: Client<TTransport, TChain, TAccount>): DiesisWalletActions {
+  const exchange = exchangeWalletActions(client)
   return {
+    ...exchange,
     sendTransactionSync: (params) =>
       client.request({
         method: 'diesis_sendRawTransactionSync' as never,

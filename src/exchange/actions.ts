@@ -1,4 +1,14 @@
-import type { Client, Transport, Chain, Hex, Address } from 'viem'
+import type {
+  Account,
+  Client,
+  Transport,
+  Chain,
+  Hex,
+  Address,
+  Hash,
+} from 'viem'
+import { readContract, writeContract } from 'viem/actions'
+import { DIESIS_ERC20_FACTORY } from '../addresses.js'
 import type {
   OrderBook,
   MarketInfo,
@@ -7,6 +17,78 @@ import type {
   FundingRate,
   FillEstimate,
 } from './types.js'
+
+export const DiesisErc20FactoryAbi = [
+  {
+    type: 'function',
+    name: 'deploy',
+    stateMutability: 'nonpayable',
+    inputs: [
+      {
+        name: 'params',
+        type: 'tuple',
+        components: [
+          { name: 'symbol', type: 'bytes11' },
+          { name: 'name', type: 'string' },
+          { name: 'initialSupply', type: 'uint256' },
+          { name: 'deployer', type: 'address' },
+        ],
+      },
+    ],
+    outputs: [{ name: 'tokenAddress', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'predictAddress',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'deployer', type: 'address' },
+      { name: 'symbol', type: 'bytes11' },
+    ],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    type: 'function',
+    name: 'templateBytecodeHash',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'bytes32' }],
+  },
+  {
+    type: 'function',
+    name: 'proposeTemplateUpdate',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'newHash', type: 'bytes32' }],
+    outputs: [],
+  },
+  {
+    type: 'function',
+    name: 'executeTemplateUpdate',
+    stateMutability: 'nonpayable',
+    inputs: [],
+    outputs: [],
+  },
+] as const
+
+export type Erc20FactoryDeployParams = {
+  symbol: Hex
+  name: string
+  initialSupply: bigint
+  deployer: Address
+}
+
+export function erc20Symbol(symbol: string): Hex {
+  if (!/^[A-Za-z0-9]{2,11}$/.test(symbol)) {
+    throw new Error(
+      'ERC-20 factory symbol must be 2-11 ASCII alphanumeric characters',
+    )
+  }
+  let hex = '0x'
+  for (let i = 0; i < symbol.length; i += 1) {
+    hex += symbol.charCodeAt(i).toString(16).padStart(2, '0')
+  }
+  return hex.padEnd(24, '0') as Hex
+}
 
 /**
  * Cycle A2.1 — perp-deployment state, mirrors
@@ -74,6 +156,20 @@ export type ExchangePublicActions = {
     proposeMetadataUpdate: (
       params: ProposeMetadataUpdateParams,
     ) => Promise<{ unlockBlock: bigint }>
+    // A2.1.1 — direct EVM dispatch to the ERC-20 factory precompile.
+    predictErc20Address: (params: {
+      deployer: Address
+      symbol: Hex
+    }) => Promise<Address>
+    getErc20TemplateBytecodeHash: () => Promise<Hex>
+  }
+}
+
+export type ExchangeWalletActions = {
+  exchange: {
+    deployErc20: (params: Erc20FactoryDeployParams) => Promise<Hash>
+    proposeErc20TemplateUpdate: (params: { newHash: Hex }) => Promise<Hash>
+    executeErc20TemplateUpdate: () => Promise<Hash>
   }
 }
 
@@ -138,6 +234,61 @@ export function exchangePublicActions<
           method: 'exchange_proposeMetadataUpdate' as never,
           params: [params],
         } as never),
+      predictErc20Address: ({ deployer, symbol }) =>
+        readContract(client, {
+          address: DIESIS_ERC20_FACTORY,
+          abi: DiesisErc20FactoryAbi,
+          functionName: 'predictAddress',
+          args: [deployer, symbol],
+        }) as Promise<Address>,
+      getErc20TemplateBytecodeHash: () =>
+        readContract(client, {
+          address: DIESIS_ERC20_FACTORY,
+          abi: DiesisErc20FactoryAbi,
+          functionName: 'templateBytecodeHash',
+        }) as Promise<Hex>,
+    },
+  }
+}
+
+export function exchangeWalletActions<
+  TTransport extends Transport,
+  TChain extends Chain | undefined,
+  TAccount extends Account,
+>(client: Client<TTransport, TChain, TAccount>): ExchangeWalletActions {
+  const walletClient = client as Client<Transport, Chain | undefined, Account>
+  const submit = (
+    parameters: Parameters<typeof writeContract>[1],
+  ): Promise<Hash> => writeContract(walletClient, parameters)
+
+  return {
+    exchange: {
+      deployErc20: (params) =>
+        submit({
+          address: DIESIS_ERC20_FACTORY,
+          abi: DiesisErc20FactoryAbi,
+          account: client.account,
+          chain: client.chain,
+          functionName: 'deploy',
+          args: [params],
+        }),
+      proposeErc20TemplateUpdate: ({ newHash }) =>
+        submit({
+          address: DIESIS_ERC20_FACTORY,
+          abi: DiesisErc20FactoryAbi,
+          account: client.account,
+          chain: client.chain,
+          functionName: 'proposeTemplateUpdate',
+          args: [newHash],
+        }),
+      executeErc20TemplateUpdate: () =>
+        submit({
+          address: DIESIS_ERC20_FACTORY,
+          abi: DiesisErc20FactoryAbi,
+          account: client.account,
+          chain: client.chain,
+          functionName: 'executeTemplateUpdate',
+        }),
     },
   }
 }

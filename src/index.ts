@@ -16,7 +16,17 @@ export {
 
 // Exchange
 export { marketId } from './exchange/utils.js'
-export { exchangePublicActions } from './exchange/actions.js'
+export {
+  DiesisErc20FactoryAbi,
+  erc20Symbol,
+  exchangePublicActions,
+  exchangeWalletActions,
+} from './exchange/actions.js'
+export type {
+  Erc20FactoryDeployParams,
+  ExchangePublicActions,
+  ExchangeWalletActions,
+} from './exchange/actions.js'
 export * from './exchange/types.js'
 
 // Intents
