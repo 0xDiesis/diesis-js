@@ -78,6 +78,19 @@ export const DiesisStakingAbi = [
   },
   {
     inputs: [],
+    name: '_MARK_PROBATION_MASK',
+    outputs: [
+      {
+        internalType: 'uint16',
+        name: '',
+        type: 'uint16',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: '_MARK_PROTOCOL_BREACH',
     outputs: [
       {
@@ -539,9 +552,14 @@ export const DiesisStakingAbi = [
         type: 'uint128',
       },
       {
-        internalType: 'uint64',
+        internalType: 'uint48',
+        name: 'validatorId',
+        type: 'uint48',
+      },
+      {
+        internalType: 'uint40',
         name: 'checkpoint',
-        type: 'uint64',
+        type: 'uint40',
       },
       {
         internalType: 'uint40',
