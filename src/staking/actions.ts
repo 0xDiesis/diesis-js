@@ -9,16 +9,16 @@ export interface ValidatorInfo {
   operator: Address
   flags: bigint
   bonded: bigint
-  joinedEpoch: bigint
+  joinedCheckpoint: bigint
   joinedAt: bigint
   heldAt: bigint
-  heldEpoch: bigint
+  heldCheckpoint: bigint
 }
 
 export interface PositionInfo {
   validatorId: bigint
   amount: bigint
-  entryEpoch: bigint
+  entryCheckpoint: bigint
 }
 
 // ── Read actions ───────────────────────────────────────────────────────────
@@ -34,8 +34,8 @@ export type StakingReadActions = {
   getAggregateActiveStake: () => Promise<bigint>
   /** Get aggregate total stake. */
   getAggregateStake: () => Promise<bigint>
-  /** Get the latest finalized epoch. */
-  getLatestFinalizedEpoch: () => Promise<bigint>
+  /** Get the latest finalized checkpoint. */
+  getLatestFinalizedCheckpoint: () => Promise<bigint>
   /** Get circulating supply. */
   getCirculatingSupply: () => Promise<bigint>
   /** Look up validator ID by operator address. */
@@ -52,22 +52,22 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
       const result = await readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'validatorLedger',
+        functionName: 'nodeLedger',
         args: [validatorId],
       })
-      const [operator, flags, bonded, joinedEpoch, joinedAt, heldAt, heldEpoch] = result
-      return { operator, flags, bonded, joinedEpoch, joinedAt, heldAt, heldEpoch }
+      const [operator, flags, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint] = result
+      return { operator, flags, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint }
     },
 
     getPosition: async ({ tokenId }) => {
       const result = await readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'bondLots',
+        functionName: 'stakeLots',
         args: [tokenId],
       })
-      const [validatorId, amount, entryEpoch] = result as [bigint, bigint, bigint]
-      return { validatorId, amount, entryEpoch }
+      const [validatorId, amount, entryCheckpoint] = result as [bigint, bigint, bigint]
+      return { validatorId, amount, entryCheckpoint }
     },
 
     getUnclaimedRewards: ({ tokenId }) =>
@@ -92,11 +92,11 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
         functionName: 'aggregateStake',
       }) as Promise<bigint>,
 
-    getLatestFinalizedEpoch: () =>
+    getLatestFinalizedCheckpoint: () =>
       readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'latestFinalizedEpoch',
+        functionName: 'latestFinalizedCheckpoint',
       }) as Promise<bigint>,
 
     getCirculatingSupply: () =>
@@ -110,7 +110,7 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
       readContract(client, {
         address: DIESIS_STAKING,
         abi: DiesisStakingAbi,
-        functionName: 'validatorByAddress',
+        functionName: 'nodeIdByOperator',
         args: [address],
       }) as Promise<bigint>,
 

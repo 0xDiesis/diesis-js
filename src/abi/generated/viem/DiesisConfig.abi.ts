@@ -52,7 +52,7 @@ export const DiesisConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_AVG_UPTIME_EPOCH_WINDOW",
+      "name": "DEFAULT_AVG_UPTIME_CHECKPOINT_WINDOW",
       "outputs": [
         {
           "internalType": "uint32",
@@ -195,7 +195,7 @@ export const DiesisConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_WITHDRAWAL_PERIOD_EPOCHS",
+      "name": "DEFAULT_WITHDRAWAL_PERIOD_CHECKPOINTS",
       "outputs": [
         {
           "internalType": "uint256",
@@ -377,7 +377,7 @@ export const DiesisConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "WITHDRAWAL_PERIOD_EPOCHS_LOWER",
+      "name": "WITHDRAWAL_PERIOD_CHECKPOINTS_LOWER",
       "outputs": [
         {
           "internalType": "uint256",
@@ -390,7 +390,7 @@ export const DiesisConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "WITHDRAWAL_PERIOD_EPOCHS_UPPER",
+      "name": "WITHDRAWAL_PERIOD_CHECKPOINTS_UPPER",
       "outputs": [
         {
           "internalType": "uint256",
@@ -429,7 +429,7 @@ export const DiesisConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "averageUptimeEpochWindow",
+      "name": "averageUptimeCheckpointWindow",
       "outputs": [
         {
           "internalType": "uint32",
@@ -611,7 +611,7 @@ export const DiesisConfigAbi = [
           "type": "uint32"
         }
       ],
-      "name": "updateAverageUptimeEpochWindow",
+      "name": "updateAverageUptimeCheckpointWindow",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -767,7 +767,7 @@ export const DiesisConfigAbi = [
           "type": "uint256"
         }
       ],
-      "name": "updateWithdrawalPeriodEpochs",
+      "name": "updateWithdrawalPeriodCheckpoints",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -800,7 +800,7 @@ export const DiesisConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "withdrawalPeriodEpochs",
+      "name": "withdrawalPeriodCheckpoints",
       "outputs": [
         {
           "internalType": "uint256",
@@ -834,7 +834,7 @@ export const DiesisConfigAbi = [
           "type": "uint32"
         }
       ],
-      "name": "AverageUptimeEpochWindowUpdated",
+      "name": "AverageUptimeCheckpointWindowUpdated",
       "type": "event"
     },
     {
@@ -1009,7 +1009,7 @@ export const DiesisConfigAbi = [
           "type": "uint256"
         }
       ],
-      "name": "WithdrawalPeriodEpochsUpdated",
+      "name": "WithdrawalPeriodCheckpointsUpdated",
       "type": "event"
     },
     {
