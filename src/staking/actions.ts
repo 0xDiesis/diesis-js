@@ -7,7 +7,7 @@ import { DIESIS_STAKING } from '../addresses.js'
 
 export interface ValidatorInfo {
   operator: Address
-  flags: bigint
+  marks: bigint
   bonded: bigint
   joinedCheckpoint: bigint
   joinedAt: bigint
@@ -55,8 +55,8 @@ export function stakingReadActions<TTransport extends Transport, TChain extends 
         functionName: 'nodeLedger',
         args: [validatorId],
       })
-      const [operator, flags, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint] = result
-      return { operator, flags, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint }
+      const [operator, marks, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint] = result
+      return { operator, marks, bonded, joinedCheckpoint, joinedAt, heldAt, heldCheckpoint }
     },
 
     getPosition: async ({ tokenId }) => {

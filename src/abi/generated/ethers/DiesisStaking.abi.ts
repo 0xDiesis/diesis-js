@@ -26,7 +26,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "_MARK_CONFLICTING_VOTE",
+      "name": "_MARK_EQUIVOCATION",
       "outputs": [
         {
           "internalType": "uint16",
@@ -39,7 +39,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "_MARK_COUNCIL_HOLD",
+      "name": "_MARK_EVIDENCE_MASK",
       "outputs": [
         {
           "internalType": "uint16",
@@ -52,7 +52,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "_MARK_EXIT_REQUESTED",
+      "name": "_MARK_INACTIVE_MASK",
       "outputs": [
         {
           "internalType": "uint16",
@@ -65,7 +65,7 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "_MARK_MISSED_DUTY",
+      "name": "_MARK_OPERATOR_REVIEW",
       "outputs": [
         {
           "internalType": "uint16",
@@ -78,7 +78,20 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "_MARK_NONE",
+      "name": "_MARK_PROTOCOL_BREACH",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "_MARK_SCORE_DRIFT",
       "outputs": [
         {
           "internalType": "uint16",
@@ -104,7 +117,33 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
-      "name": "_MARK_WEAK_PERFORMANCE",
+      "name": "_MARK_UPTIME_DRIFT",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "_NODE_ACTIVE",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "_NODE_EXITING",
       "outputs": [
         {
           "internalType": "uint16",
@@ -439,7 +478,7 @@ export const DiesisStakingAbi = [
       "name": "config",
       "outputs": [
         {
-          "internalType": "contract DiesisConfig",
+          "internalType": "contract IDiesisConfig",
           "name": "",
           "type": "address"
         }
@@ -896,7 +935,7 @@ export const DiesisStakingAbi = [
         },
         {
           "internalType": "uint256",
-          "name": "flags",
+          "name": "marks",
           "type": "uint256"
         },
         {
@@ -2186,7 +2225,7 @@ export const DiesisStakingAbi = [
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "newStatus",
+          "name": "newMarks",
           "type": "uint256"
         }
       ],

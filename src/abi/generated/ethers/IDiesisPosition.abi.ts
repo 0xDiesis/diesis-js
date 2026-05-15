@@ -903,6 +903,37 @@ export const IDiesisPositionAbi = [
           "type": "uint256"
         },
         {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "withdrawAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        }
+      ],
+      "name": "InstantWithdrawExecuted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
           "indexed": true,
           "internalType": "address",
           "name": "recipient",
@@ -1142,6 +1173,25 @@ export const IDiesisPositionAbi = [
       "inputs": [
         {
           "indexed": true,
+          "internalType": "uint32",
+          "name": "validatorId_",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "feeBps",
+          "type": "uint256"
+        }
+      ],
+      "name": "ValidatorExitFeeSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
@@ -1173,6 +1223,11 @@ export const IDiesisPositionAbi = [
     },
     {
       "inputs": [],
+      "name": "ExitFeeTooHigh",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "HasOutstandingDebt",
       "type": "error"
     },
@@ -1194,6 +1249,11 @@ export const IDiesisPositionAbi = [
     {
       "inputs": [],
       "name": "NotAuthorized",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotLockManager",
       "type": "error"
     },
     {
@@ -1229,6 +1289,11 @@ export const IDiesisPositionAbi = [
     {
       "inputs": [],
       "name": "ValidatorMismatch",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroAddress",
       "type": "error"
     }
   ] as const;
