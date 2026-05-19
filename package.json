@@ -52,7 +52,7 @@
     }
   },
   "scripts": {
-    "codegen": "abi-typegen generate --artifacts ../diesis/contracts/out --out src/abi/generated --target viem,wagmi,ethers,web3js --contracts IDiesisSettlement,IDiesisSpotBook,IDiesisMarkets,DiesisStaking,DiesisPatron,DiesisConfig,IDiesisBootstrapOracle,BootstrapConfig,IDiesisPosition,ILiquidStakedDS,IWrappedDS,DiesisShieldedPool,DiesisPrivacyPools --no-wrappers --clean",
+    "codegen": "pnpm --dir ../diesis/contracts abi:generate",
     "build": "tsc",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
@@ -80,6 +80,9 @@
   },
   "peerDependencies": {
     "viem": ">=2.0.0"
+  },
+  "dependencies": {
+    "@diesis/contracts": "file:../diesis/contracts"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",

@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@diesis/contracts':
+        specifier: file:../diesis/contracts
+        version: file:../diesis/contracts
     devDependencies:
       '@eslint/js':
         specifier: ^9.38.0
@@ -49,6 +53,9 @@ packages:
 
   '@adraffy/ens-normalize@1.11.1':
     resolution: {integrity: sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ==}
+
+  '@diesis/contracts@file:../diesis/contracts':
+    resolution: {directory: ../diesis/contracts, type: directory}
 
   '@eslint-community/eslint-utils@4.9.1':
     resolution: {integrity: sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ==}
@@ -1017,6 +1024,8 @@ snapshots:
   '@adraffy/ens-normalize@1.10.1': {}
 
   '@adraffy/ens-normalize@1.11.1': {}
+
+  '@diesis/contracts@file:../diesis/contracts': {}
 
   '@eslint-community/eslint-utils@4.9.1(eslint@9.39.4)':
     dependencies:
