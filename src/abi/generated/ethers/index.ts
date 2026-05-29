@@ -1,1 +1,1 @@
-export * from '@diesis/contracts/abi/ethers';
+export * from '@diesis/contracts/abi/ethers'
