@@ -21,4 +21,4 @@ export {
   IDiesisStateWriterAbi,
   ILiquidStakedDSAbi,
   IWrappedDSAbi,
-} from '@diesis/contracts/abi';
+} from '@diesis/contracts/abi'
