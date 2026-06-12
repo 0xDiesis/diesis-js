@@ -55,8 +55,8 @@
     "codegen": "pnpm --dir ../diesis/contracts abi:generate",
     "build": "tsc",
     "clean": "rm -rf dist",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
     "typecheck": "tsc --noEmit",
@@ -64,6 +64,10 @@
     "quality:fix": "npm run lint:fix && npm run format && npm run typecheck",
     "prepare": "npm run build",
     "prepublishOnly": "npm run clean && npm run build"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.13.0"
   },
   "keywords": [
     "diesis",
@@ -85,16 +89,16 @@
     "@diesis/contracts": "file:../diesis/contracts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
-    "@tanstack/react-query": "^5.96.2",
-    "@wagmi/core": "^3.4.1",
-    "eslint": "^9.38.0",
+    "@eslint/js": "^10.0.1",
+    "@tanstack/react-query": "^5.101.0",
+    "@wagmi/core": "^3.5.0",
+    "eslint": "^10.4.1",
     "ethers": "^6.16.0",
-    "prettier": "^3.6.2",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.46.3",
-    "viem": "^2.21.51",
-    "wagmi": "^3.6.0",
+    "prettier": "^3.8.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0",
+    "viem": "^2.52.2",
+    "wagmi": "^3.6.16",
     "web3": "^4.16.0"
   },
   "files": [
