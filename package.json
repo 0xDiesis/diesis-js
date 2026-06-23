@@ -14,6 +14,14 @@
       "import": "./dist/chains.js",
       "types": "./dist/chains.d.ts"
     },
+    "./addresses": {
+      "import": "./dist/addresses.js",
+      "types": "./dist/addresses.d.ts"
+    },
+    "./staking": {
+      "import": "./dist/staking/actions.js",
+      "types": "./dist/staking/actions.d.ts"
+    },
     "./exchange": {
       "import": "./dist/exchange/index.js",
       "types": "./dist/exchange/index.d.ts"
