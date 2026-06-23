@@ -49,9 +49,13 @@ export interface MarketInfo {
   lotSize: bigint
 }
 export interface TradingAccount {
-  available: bigint
-  lockedInOrders: bigint
-  lockedInMargin: bigint
+  user?: Address
+  balances?: TokenBalance[]
+  open_order_count?: number
+  open_position_count?: number
+  available?: bigint
+  lockedInOrders?: bigint
+  lockedInMargin?: bigint
 }
 export interface Position {
   marketId: Hex
@@ -78,6 +82,23 @@ export interface FundingRate {
   rate: bigint
   timestamp: bigint
 }
+export interface FundingRateInfo {
+  market_id: Hex
+  current_rate_bps: number
+  cumulative_index: string | number | bigint
+}
+export interface InsuranceFundStatus {
+  market_id: Hex
+  market_balance: string | number | bigint
+  global_balance: string | number | bigint
+}
+export interface TokenBalance {
+  token: Address
+  available: string | number | bigint
+  locked: string | number | bigint
+  total: string | number | bigint
+}
+export type MarkPrice = [marketId: Hex, price: string | number | bigint]
 export interface FillEstimate {
   avgPrice: bigint
   totalCost: bigint

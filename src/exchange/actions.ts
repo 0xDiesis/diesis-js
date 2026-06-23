@@ -14,8 +14,10 @@ import type {
   MarketInfo,
   TradingAccount,
   Trade,
-  FundingRate,
+  FundingRateInfo,
+  InsuranceFundStatus,
   FillEstimate,
+  MarkPrice,
 } from './types.js'
 
 export const DiesisErc20FactoryAbi = [
@@ -141,7 +143,11 @@ export type ExchangePublicActions = {
     getMarket: (params: { marketId: Hex }) => Promise<MarketInfo>
     getAccount: (params: { address: Address }) => Promise<TradingAccount>
     getTrades: (params: { marketId: Hex; limit?: number }) => Promise<Trade[]>
-    getFundingRates: (params: { marketId: Hex }) => Promise<FundingRate[]>
+    getFundingRates: (params: { marketId: Hex }) => Promise<FundingRateInfo>
+    getMarkPrices: (params: { marketIds: Hex[] }) => Promise<MarkPrice[]>
+    getInsuranceFund: (params: {
+      marketId: Hex
+    }) => Promise<InsuranceFundStatus>
     estimateFill: (params: {
       marketId: Hex
       side: number
@@ -151,8 +157,8 @@ export type ExchangePublicActions = {
     deployPerp: (params: DeployPerpParams) => Promise<{ marketId: Hex }>
     getMarketDeploymentState: (params: {
       marketId: Hex
-    }) => Promise<PerpDeploymentState>
-    getOperatorBalance: (params: { operator: Address }) => Promise<bigint>
+    }) => Promise<PerpDeploymentState | null>
+    getOperatorBalance: (params: { operator: Address }) => Promise<Hex>
     proposeMetadataUpdate: (
       params: ProposeMetadataUpdateParams,
     ) => Promise<{ unlockBlock: bigint }>
@@ -207,6 +213,16 @@ export function exchangePublicActions<
       getFundingRates: (params) =>
         client.request({
           method: 'exchange_getFundingRates' as never,
+          params: [params.marketId],
+        } as never),
+      getMarkPrices: (params) =>
+        client.request({
+          method: 'exchange_getMarkPrices' as never,
+          params: [params.marketIds],
+        } as never),
+      getInsuranceFund: (params) =>
+        client.request({
+          method: 'exchange_getInsuranceFund' as never,
           params: [params.marketId],
         } as never),
       estimateFill: (params) =>
