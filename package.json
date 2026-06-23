@@ -18,6 +18,10 @@
       "import": "./dist/addresses.js",
       "types": "./dist/addresses.d.ts"
     },
+    "./names": {
+      "import": "./dist/names.js",
+      "types": "./dist/names.d.ts"
+    },
     "./staking": {
       "import": "./dist/staking/actions.js",
       "types": "./dist/staking/actions.d.ts"
@@ -98,15 +102,15 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tanstack/react-query": "^5.101.0",
-    "@wagmi/core": "^3.5.0",
+    "@tanstack/react-query": "^5.101.1",
+    "@wagmi/core": "^3.5.2",
     "eslint": "^10.4.1",
-    "ethers": "^6.16.0",
+    "ethers": "^6.17.0",
     "prettier": "^3.8.4",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.0",
-    "viem": "^2.52.2",
-    "wagmi": "^3.6.16",
+    "typescript-eslint": "^8.62.0",
+    "viem": "^2.53.1",
+    "wagmi": "^3.6.18",
     "web3": "^4.16.0"
   },
   "files": [

@@ -4,6 +4,18 @@ export { diesis, diesisTestnet } from './chains.js'
 // Addresses
 export * as addresses from './addresses.js'
 
+// Names
+export {
+  diesisNamehash,
+  genesisPrecompileNames,
+  nameServiceContracts,
+  nameServiceRecordTypes,
+  normalizeDiesisName,
+  resolveGenesisPrecompileName,
+  reverseResolveGenesisPrecompile,
+} from './names.js'
+export type { GenesisPrecompileName, NameServiceRecordType } from './names.js'
+
 // Client action decorators
 export {
   diesisPublicActions,
@@ -101,4 +113,16 @@ export {
   IWrappedDSAbi,
   DiesisShieldedPoolAbi,
   DiesisPrivacyPoolsAbi,
+  DiesisBaseRegistrarAbi,
+  DiesisNamePolicyAbi,
+  DiesisNameRegistryAbi,
+  DiesisNameVerifierAbi,
+  DiesisPublicResolverAbi,
+  DiesisReverseRegistrarAbi,
+  IDiesisBaseRegistrarAbi,
+  IDiesisNamePolicyAbi,
+  IDiesisNameRegistryAbi,
+  IDiesisNameVerifierAbi,
+  IDiesisPublicResolverAbi,
+  IDiesisReverseRegistrarAbi,
 } from './abi/index.js'
