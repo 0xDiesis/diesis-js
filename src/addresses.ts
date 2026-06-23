@@ -55,5 +55,5 @@ export const POSEIDON = '0x0000000000000000000000000000000000000200' as Address
 
 // Ecosystem
 export const MULTICALL3 =
-  '0xca11bde05977b3631167028862be2a173976ca90' as Address
+  '0xca11bde05977b3631167028862be2a173976ca11' as Address
 export const PERMIT2 = '0x000000000022d473030f116ddee9f6b43ac78ba3' as Address

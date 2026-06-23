@@ -5,14 +5,10 @@ export enum Side {
   Sell = 1,
 }
 export enum OrderType {
-  LimitGTC = 0,
-  LimitGTD = 1,
-  LimitIOC = 2,
-  LimitFOK = 3,
-  LimitPostOnly = 4,
-  Market = 5,
-  StopLimit = 6,
-  StopMarket = 7,
+  Limit = 0,
+  Market = 1,
+  StopLimit = 2,
+  StopMarket = 3,
 }
 export enum MarginType {
   Cross = 0,

@@ -71,18 +71,26 @@ const id = marketId(baseTokenAddress, quoteTokenAddress, 0) // 0 = Spot
 Sign order intents off-chain using EIP-712 typed data, then submit them for gasless execution:
 
 ```typescript
-import { signOrderIntent } from '@diesis/sdk'
+import { addresses, OrderFlags, OrderType } from '@diesis/sdk'
 
-const signedIntent = await walletClient.signOrderIntent({
-  marketId: '0x...',
-  side: 0,
-  price: 50000000000000000000000n,
-  amount: 1000000000000000000n,
-  orderType: 0, // LimitGTC
-  nonce: 1n,
-  expiry: BigInt(Math.floor(Date.now() / 1000) + 3600),
-  reduceOnly: false,
-})
+const signedIntent = await walletClient.signOrderIntent(
+  {
+    trader: walletClient.account.address,
+    marketId: '0x...',
+    side: 0,
+    orderType: OrderType.Limit,
+    price: 50000000000000000000000n,
+    amount: 1000000000000000000n,
+    triggerPrice: 0n,
+    nonce: 1n,
+    expiry: BigInt(Math.floor(Date.now() / 1000) + 3600),
+    flags: OrderFlags.NONE,
+    conductor: '0x0000000000000000000000000000000000000000',
+    conductorFeeBps: 0,
+    maxConductorFee: 0n,
+  },
+  addresses.DIESIS_SPOT_BOOK,
+)
 
 // Submit the signed intent
 const intentHash = await walletClient.submitIntent({ intent: signedIntent })
@@ -137,7 +145,7 @@ addresses.DIESIS_SETTLEMENT // 0xD1E5150000000000000000000000000000005E71
 addresses.DIESIS_SPOT_BOOK // 0xD1E515000000000000000000000000000000590D
 addresses.DIESIS_MARKETS // 0xD1E515000000000000000000000000000000B00C
 addresses.WRAPPED_DS // 0xD1E51500000000000000000000000000000000D5
-addresses.MULTICALL3 // 0xcA11bde05977b3631167028862bE2a173976CA90
+addresses.MULTICALL3 // 0xcA11bde05977b3631167028862bE2a173976CA11
 ```
 
 ## ABIs
