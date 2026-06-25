@@ -1,6 +1,7 @@
 export {
   BootstrapConfigAbi,
   DiesisConfigAbi,
+  DiesisCoreVaultAbi,
   DiesisPatronAbi,
   DiesisBaseRegistrarAbi,
   DiesisNamePolicyAbi,
@@ -15,6 +16,7 @@ export {
   IDiesisBaseRegistrarAbi,
   IDiesisBuybackBurnAbi,
   IDiesisConductorsAbi,
+  IDiesisCoreVaultAbi,
   IDiesisErc20FactoryAbi,
   IDiesisIssuanceAuctionAbi,
   IDiesisMarginAbi,
