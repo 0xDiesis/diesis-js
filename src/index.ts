@@ -112,6 +112,7 @@ export {
   IDiesisCoreVaultAbi,
   IDiesisPositionAbi,
   ILiquidStakedDSAbi,
+  IValidatorShareAbi,
   IWrappedDSAbi,
   DiesisShieldedPoolAbi,
   DiesisPrivacyPoolsAbi,

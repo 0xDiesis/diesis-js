@@ -34,5 +34,6 @@ export {
   IDiesisSpotBookAbi,
   IDiesisStateWriterAbi,
   ILiquidStakedDSAbi,
+  IValidatorShareAbi,
   IWrappedDSAbi,
 } from '@diesis/contracts/abi'
