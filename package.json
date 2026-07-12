@@ -76,7 +76,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude 'test/browser/**'",
     "test:browser": "playwright test",
     "quality": "pnpm run lint && pnpm run typecheck && pnpm run format:check",
     "quality:fix": "pnpm run lint:fix && pnpm run format && pnpm run typecheck",
