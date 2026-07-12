@@ -7,23 +7,28 @@ import type {
   Hex,
   Transport,
 } from 'viem'
-import { zeroAddress } from 'viem'
+import { encodeFunctionData, zeroAddress } from 'viem'
 import { readContract, writeContract } from 'viem/actions'
 import { DiesisPrivacyPoolsAbi, DiesisShieldedPoolAbi } from '../abi/index.js'
 import { PRIVACY_POOLS, SHIELDED_POOL } from '../addresses.js'
+import { BN254_SCALAR_R } from './field.js'
+
+const ZERO_BYTES32 = `0x${'00'.repeat(32)}` as Hex
 
 export interface ShieldedPoolState {
+  artifactClass: Hex
   denomination: bigint
   depth: bigint
   maxLeaves: bigint
   rootHistorySize: bigint
-  bootstrapOwner: Address
   currentRootIndex: bigint
   initialized: boolean
   nextIndex: bigint
+  outstandingNotes: bigint
   root: Hex
+  transferVerifier: Address
   treeInitialized: boolean
-  verifier: Address
+  withdrawVerifier: Address
 }
 
 export interface PrivacyProvider {
@@ -32,59 +37,200 @@ export interface PrivacyProvider {
   associationSetRoot: Hex
 }
 
+export interface DepositShieldedV1Parameters {
+  commitment: Hex
+  encryptedNote: Hex
+}
+
+export interface TransactShieldedV1Parameters {
+  proof: Hex
+  merkleRoot: Hex
+  nullifiers: readonly [Hex, Hex]
+  commitments: readonly [Hex, Hex]
+  activeCount: 1 | 2
+  encryptedOutputs: Hex
+}
+
+export interface WithdrawShieldedV1Parameters {
+  proof: Hex
+  merkleRoot: Hex
+  nullifier: Hex
+  recipient: Address
+  relayer?: Address
+  fee?: bigint
+}
+
+function assertHexBytes(value: Hex, length: number, label: string): void {
+  if (
+    !/^0x(?:[0-9a-fA-F]{2})*$/.test(value) ||
+    (value.length - 2) / 2 !== length
+  ) {
+    throw new RangeError(`${label} must be exactly ${length} bytes`)
+  }
+}
+
+function assertActiveField(value: Hex, label: string): void {
+  assertHexBytes(value, 32, label)
+  const field = BigInt(value)
+  if (field === 0n || field >= BN254_SCALAR_R) {
+    throw new RangeError(`${label} must be a nonzero canonical field element`)
+  }
+}
+
+function assertRoot(value: Hex): void {
+  assertHexBytes(value, 32, 'Merkle root')
+  if (BigInt(value) >= BN254_SCALAR_R) {
+    throw new RangeError('Merkle root must be a canonical field element')
+  }
+}
+
+function validateDeposit(parameters: DepositShieldedV1Parameters): void {
+  assertActiveField(parameters.commitment, 'commitment')
+  assertHexBytes(parameters.encryptedNote, 169, 'encrypted note')
+}
+
+function validateTransfer(parameters: TransactShieldedV1Parameters): void {
+  assertHexBytes(parameters.proof, 256, 'Groth16 proof')
+  assertRoot(parameters.merkleRoot)
+  assertActiveField(parameters.nullifiers[0], 'nullifier 0')
+  assertActiveField(parameters.commitments[0], 'commitment 0')
+  if (parameters.activeCount === 1) {
+    if (
+      parameters.nullifiers[1] !== ZERO_BYTES32 ||
+      parameters.commitments[1] !== ZERO_BYTES32
+    ) {
+      throw new Error('inactive transfer slots must be zero')
+    }
+  } else {
+    assertActiveField(parameters.nullifiers[1], 'nullifier 1')
+    assertActiveField(parameters.commitments[1], 'commitment 1')
+    if (parameters.nullifiers[0] === parameters.nullifiers[1]) {
+      throw new Error('active nullifiers must be distinct')
+    }
+    if (parameters.commitments[0] === parameters.commitments[1]) {
+      throw new Error('active commitments must be distinct')
+    }
+  }
+  assertHexBytes(
+    parameters.encryptedOutputs,
+    parameters.activeCount * 169,
+    'encrypted outputs',
+  )
+}
+
+function normalizedWithdrawal(parameters: WithdrawShieldedV1Parameters) {
+  assertHexBytes(parameters.proof, 256, 'Groth16 proof')
+  assertRoot(parameters.merkleRoot)
+  assertActiveField(parameters.nullifier, 'nullifier')
+  if (parameters.recipient === zeroAddress) {
+    throw new Error('withdrawal recipient must be nonzero')
+  }
+  const relayer = parameters.relayer ?? zeroAddress
+  const fee = parameters.fee ?? 0n
+  if (fee < 0n || fee > 1_000_000_000_000_000_000n) {
+    throw new Error('withdrawal fee exceeds denomination')
+  }
+  if ((fee === 0n) !== (relayer === zeroAddress)) {
+    throw new Error('withdrawal relayer and fee are inconsistent')
+  }
+  return { relayer, fee }
+}
+
+export function encodeDepositShieldedV1(
+  parameters: DepositShieldedV1Parameters,
+): Hex {
+  validateDeposit(parameters)
+  return encodeFunctionData({
+    abi: DiesisShieldedPoolAbi,
+    functionName: 'deposit',
+    args: [parameters.commitment, parameters.encryptedNote],
+  })
+}
+
+export function encodeTransactShieldedV1(
+  parameters: TransactShieldedV1Parameters,
+): Hex {
+  validateTransfer(parameters)
+  return encodeFunctionData({
+    abi: DiesisShieldedPoolAbi,
+    functionName: 'transact',
+    args: [
+      parameters.proof,
+      parameters.merkleRoot,
+      parameters.nullifiers,
+      parameters.commitments,
+      parameters.activeCount,
+      parameters.encryptedOutputs,
+    ],
+  })
+}
+
+export function encodeWithdrawShieldedV1(
+  parameters: WithdrawShieldedV1Parameters,
+): Hex {
+  const { relayer, fee } = normalizedWithdrawal(parameters)
+  return encodeFunctionData({
+    abi: DiesisShieldedPoolAbi,
+    functionName: 'withdraw',
+    args: [
+      parameters.proof,
+      parameters.merkleRoot,
+      parameters.nullifier,
+      parameters.recipient,
+      relayer,
+      fee,
+    ],
+  })
+}
+
 export type PrivacyReadActions = {
   privacy: {
     getShieldedPoolState: () => Promise<ShieldedPoolState>
     getShieldedPoolRoot: () => Promise<Hex>
-    isKnownShieldedRoot: (params: { root: Hex }) => Promise<boolean>
-    isShieldedNullifierSpent: (params: { nullifier: Hex }) => Promise<boolean>
-    getShieldedRootHistory: (params: { index: bigint }) => Promise<Hex>
-    getPrivacyProvider: (params: {
+    isKnownShieldedRoot: (parameters: { root: Hex }) => Promise<boolean>
+    isShieldedNullifierSpent: (parameters: {
+      nullifier: Hex
+    }) => Promise<boolean>
+    getShieldedRootHistory: (parameters: { index: bigint }) => Promise<Hex>
+    getPrivacyProvider: (parameters: {
       provider: Address
     }) => Promise<PrivacyProvider>
     getPrivacyProviderCount: () => Promise<bigint>
-    getPrivacyProviderAddress: (params: { index: bigint }) => Promise<Address>
+    getPrivacyProviderAddress: (parameters: {
+      index: bigint
+    }) => Promise<Address>
     getPrivacyPoolsOwner: () => Promise<Address>
+    getPrivacyPoolsPendingOwner: () => Promise<Address>
     getPrivacyPoolsVerifier: () => Promise<Address>
+    verifyAssociation: (parameters: {
+      proof: Hex
+      associationSetRoot: Hex
+      nullifier: Hex
+      provider: Address
+    }) => Promise<boolean>
   }
 }
 
 export type PrivacyWriteActions = {
   privacy: {
-    depositShielded: (params: {
-      commitment: Hex
-      value: bigint
-    }) => Promise<Hash>
-    transactShielded: (params: {
-      proof: Hex
-      merkleRoot: Hex
-      nullifiers: Hex[]
-      commitments: Hex[]
-      extDataHash: Hex
-    }) => Promise<Hash>
-    withdrawShielded: (params: {
-      proof: Hex
-      merkleRoot: Hex
-      nullifierHash: Hex
-      recipient: Address
-      amount: bigint
-      relayer?: Address
-      fee?: bigint
-    }) => Promise<Hash>
-    registerPrivacyProvider: (params: {
+    depositShielded: (
+      parameters: DepositShieldedV1Parameters & { value: bigint },
+    ) => Promise<Hash>
+    transactShielded: (
+      parameters: TransactShieldedV1Parameters,
+    ) => Promise<Hash>
+    withdrawShielded: (
+      parameters: WithdrawShieldedV1Parameters,
+    ) => Promise<Hash>
+    registerPrivacyProvider: (parameters: {
       provider: Address
       name: string
     }) => Promise<Hash>
-    updateAssociationSet: (params: { newRoot: Hex }) => Promise<Hash>
-    verifyAssociation: (params: {
-      proof: Hex
-      associationSetRoot: Hex
-      nullifier: Hex
-      provider: Address
-    }) => Promise<Hash>
-    transferPrivacyPoolsOwnership: (params: {
+    updateAssociationSet: (parameters: { newRoot: Hex }) => Promise<Hash>
+    transferPrivacyPoolsOwnership: (parameters: {
       newOwner: Address
     }) => Promise<Hash>
+    acceptPrivacyPoolsOwnership: () => Promise<Hash>
   }
 }
 
@@ -92,156 +238,182 @@ export function privacyReadActions<
   TTransport extends Transport,
   TChain extends Chain | undefined,
 >(client: Client<TTransport, TChain>): PrivacyReadActions {
+  const read = (parameters: unknown): Promise<unknown> =>
+    readContract(client, parameters as never) as Promise<unknown>
   return {
     privacy: {
       getShieldedPoolState: async () => {
         const [
+          artifactClass,
           denomination,
           depth,
           maxLeaves,
           rootHistorySize,
-          bootstrapOwner,
           currentRootIndex,
           initialized,
           nextIndex,
+          outstandingNotes,
           root,
+          transferVerifier,
           treeInitialized,
-          verifier,
+          withdrawVerifier,
         ] = await Promise.all([
-          readContract(client, {
+          read({
+            address: SHIELDED_POOL,
+            abi: DiesisShieldedPoolAbi,
+            functionName: 'artifactClass',
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'DENOMINATION',
-          }) as Promise<bigint>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'DEPTH',
-          }) as Promise<bigint>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'MAX_LEAVES',
-          }) as Promise<bigint>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'ROOT_HISTORY_SIZE',
-          }) as Promise<bigint>,
-          readContract(client, {
-            address: SHIELDED_POOL,
-            abi: DiesisShieldedPoolAbi,
-            functionName: 'bootstrapOwner',
-          }) as Promise<Address>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'currentRootIndex',
-          }) as Promise<bigint>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'initialized',
-          }) as Promise<boolean>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'nextIndex',
-          }) as Promise<bigint>,
-          readContract(client, {
+          }),
+          read({
+            address: SHIELDED_POOL,
+            abi: DiesisShieldedPoolAbi,
+            functionName: 'outstandingNotes',
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'root',
-          }) as Promise<Hex>,
-          readContract(client, {
+          }),
+          read({
+            address: SHIELDED_POOL,
+            abi: DiesisShieldedPoolAbi,
+            functionName: 'transferVerifier',
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
             functionName: 'treeInitialized',
-          }) as Promise<boolean>,
-          readContract(client, {
+          }),
+          read({
             address: SHIELDED_POOL,
             abi: DiesisShieldedPoolAbi,
-            functionName: 'verifierAddr',
-          }) as Promise<Address>,
+            functionName: 'withdrawVerifier',
+          }),
         ])
         return {
-          denomination,
-          depth,
-          maxLeaves,
-          rootHistorySize,
-          bootstrapOwner,
-          currentRootIndex,
-          initialized,
-          nextIndex,
-          root,
-          treeInitialized,
-          verifier,
+          artifactClass: artifactClass as Hex,
+          denomination: denomination as bigint,
+          depth: depth as bigint,
+          maxLeaves: maxLeaves as bigint,
+          rootHistorySize: rootHistorySize as bigint,
+          currentRootIndex: currentRootIndex as bigint,
+          initialized: initialized as boolean,
+          nextIndex: nextIndex as bigint,
+          outstandingNotes: outstandingNotes as bigint,
+          root: root as Hex,
+          transferVerifier: transferVerifier as Address,
+          treeInitialized: treeInitialized as boolean,
+          withdrawVerifier: withdrawVerifier as Address,
         }
       },
       getShieldedPoolRoot: () =>
-        readContract(client, {
+        read({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           functionName: 'root',
         }) as Promise<Hex>,
       isKnownShieldedRoot: ({ root }) =>
-        readContract(client, {
+        read({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           functionName: 'isKnownRoot',
           args: [root],
         }) as Promise<boolean>,
       isShieldedNullifierSpent: ({ nullifier }) =>
-        readContract(client, {
+        read({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           functionName: 'nullifiers',
           args: [nullifier],
         }) as Promise<boolean>,
       getShieldedRootHistory: ({ index }) =>
-        readContract(client, {
+        read({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           functionName: 'rootHistory',
           args: [index],
         }) as Promise<Hex>,
       getPrivacyProvider: async ({ provider }) => {
-        const [name, registered, associationSetRoot] = (await readContract(
-          client,
-          {
-            address: PRIVACY_POOLS,
-            abi: DiesisPrivacyPoolsAbi,
-            functionName: 'providers',
-            args: [provider],
-          },
-        )) as [string, boolean, Hex]
+        const [name, registered, associationSetRoot] = (await read({
+          address: PRIVACY_POOLS,
+          abi: DiesisPrivacyPoolsAbi,
+          functionName: 'providers',
+          args: [provider],
+        })) as [string, boolean, Hex]
         return { name, registered, associationSetRoot }
       },
       getPrivacyProviderCount: () =>
-        readContract(client, {
+        read({
           address: PRIVACY_POOLS,
           abi: DiesisPrivacyPoolsAbi,
           functionName: 'providerCount',
         }) as Promise<bigint>,
       getPrivacyProviderAddress: ({ index }) =>
-        readContract(client, {
+        read({
           address: PRIVACY_POOLS,
           abi: DiesisPrivacyPoolsAbi,
           functionName: 'providerList',
           args: [index],
         }) as Promise<Address>,
       getPrivacyPoolsOwner: () =>
-        readContract(client, {
+        read({
           address: PRIVACY_POOLS,
           abi: DiesisPrivacyPoolsAbi,
           functionName: 'owner',
         }) as Promise<Address>,
-      getPrivacyPoolsVerifier: () =>
-        readContract(client, {
+      getPrivacyPoolsPendingOwner: () =>
+        read({
           address: PRIVACY_POOLS,
           abi: DiesisPrivacyPoolsAbi,
-          functionName: 'verifierAddr',
+          functionName: 'pendingOwner',
         }) as Promise<Address>,
+      getPrivacyPoolsVerifier: () =>
+        read({
+          address: PRIVACY_POOLS,
+          abi: DiesisPrivacyPoolsAbi,
+          functionName: 'associationVerifier',
+        }) as Promise<Address>,
+      verifyAssociation: ({ proof, associationSetRoot, nullifier, provider }) =>
+        read({
+          address: PRIVACY_POOLS,
+          abi: DiesisPrivacyPoolsAbi,
+          functionName: 'verifyAssociation',
+          args: [proof, associationSetRoot, nullifier, provider],
+        }) as Promise<boolean>,
     },
   }
 }
@@ -256,56 +428,54 @@ export function privacyWriteActions<
     writeContract(walletClient, parameters as never) as Promise<Hash>
   return {
     privacy: {
-      depositShielded: ({ commitment, value }) =>
-        submit({
+      depositShielded: (parameters) => {
+        validateDeposit(parameters)
+        return submit({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           account: client.account,
           chain: client.chain,
           functionName: 'deposit',
-          args: [commitment],
-          value,
-        }),
-      transactShielded: ({
-        proof,
-        merkleRoot,
-        nullifiers,
-        commitments,
-        extDataHash,
-      }) =>
-        submit({
+          args: [parameters.commitment, parameters.encryptedNote],
+          value: parameters.value,
+        })
+      },
+      transactShielded: (parameters) => {
+        validateTransfer(parameters)
+        return submit({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           account: client.account,
           chain: client.chain,
           functionName: 'transact',
-          args: [proof, merkleRoot, nullifiers, commitments, extDataHash],
-        }),
-      withdrawShielded: ({
-        proof,
-        merkleRoot,
-        nullifierHash,
-        recipient,
-        amount,
-        relayer = zeroAddress,
-        fee = 0n,
-      }) =>
-        submit({
+          args: [
+            parameters.proof,
+            parameters.merkleRoot,
+            parameters.nullifiers,
+            parameters.commitments,
+            parameters.activeCount,
+            parameters.encryptedOutputs,
+          ],
+        })
+      },
+      withdrawShielded: (parameters) => {
+        const { relayer, fee } = normalizedWithdrawal(parameters)
+        return submit({
           address: SHIELDED_POOL,
           abi: DiesisShieldedPoolAbi,
           account: client.account,
           chain: client.chain,
           functionName: 'withdraw',
           args: [
-            proof,
-            merkleRoot,
-            nullifierHash,
-            recipient,
-            amount,
+            parameters.proof,
+            parameters.merkleRoot,
+            parameters.nullifier,
+            parameters.recipient,
             relayer,
             fee,
           ],
-        }),
+        })
+      },
       registerPrivacyProvider: ({ provider, name }) =>
         submit({
           address: PRIVACY_POOLS,
@@ -324,15 +494,6 @@ export function privacyWriteActions<
           functionName: 'updateAssociationSet',
           args: [newRoot],
         }),
-      verifyAssociation: ({ proof, associationSetRoot, nullifier, provider }) =>
-        submit({
-          address: PRIVACY_POOLS,
-          abi: DiesisPrivacyPoolsAbi,
-          account: client.account,
-          chain: client.chain,
-          functionName: 'verifyAssociation',
-          args: [proof, associationSetRoot, nullifier, provider],
-        }),
       transferPrivacyPoolsOwnership: ({ newOwner }) =>
         submit({
           address: PRIVACY_POOLS,
@@ -341,6 +502,14 @@ export function privacyWriteActions<
           chain: client.chain,
           functionName: 'transferOwnership',
           args: [newOwner],
+        }),
+      acceptPrivacyPoolsOwnership: () =>
+        submit({
+          address: PRIVACY_POOLS,
+          abi: DiesisPrivacyPoolsAbi,
+          account: client.account,
+          chain: client.chain,
+          functionName: 'acceptOwnership',
         }),
     },
   }
