@@ -1,11 +1,10 @@
-import { buildPoseidon } from 'circomlibjs'
-
 import { NOTE_V1, NULLIFIER_V1, OWNER_KEY_V1 } from './domains.js'
 import {
   assertFieldElement,
   randomNonzeroFieldElement,
   type RandomBytes,
 } from './field.js'
+import { poseidonHash } from './poseidon.js'
 
 export interface NoteV1 {
   ownerPublic: bigint
@@ -17,14 +16,6 @@ export interface SpendableNoteV1 {
   spendSecret: bigint
   rho: bigint
   rseed: bigint
-}
-
-const poseidonPromise = buildPoseidon()
-
-async function poseidon(inputs: readonly bigint[]): Promise<bigint> {
-  for (const input of inputs) assertFieldElement(input)
-  const instance = await poseidonPromise
-  return assertFieldElement(instance.F.toObject(instance(inputs)))
 }
 
 export function assertNoteV1(note: NoteV1): NoteV1 {
@@ -40,12 +31,12 @@ export function assertNoteV1(note: NoteV1): NoteV1 {
 export function deriveOwnerPublicV1(spendSecret: bigint): Promise<bigint> {
   assertFieldElement(spendSecret)
   if (spendSecret === 0n) throw new RangeError('spend secret must be nonzero')
-  return poseidon([OWNER_KEY_V1, spendSecret])
+  return poseidonHash([OWNER_KEY_V1, spendSecret])
 }
 
 export async function deriveCommitmentV1(note: NoteV1): Promise<bigint> {
   assertNoteV1(note)
-  return poseidon([NOTE_V1, note.ownerPublic, note.rho, note.rseed])
+  return poseidonHash([NOTE_V1, note.ownerPublic, note.rho, note.rseed])
 }
 
 export function deriveNullifierV1(note: SpendableNoteV1): Promise<bigint> {
@@ -55,7 +46,7 @@ export function deriveNullifierV1(note: SpendableNoteV1): Promise<bigint> {
   if (note.spendSecret === 0n || note.rho === 0n || note.rseed === 0n) {
     throw new RangeError('spendable note values must be nonzero field elements')
   }
-  return poseidon([NULLIFIER_V1, note.spendSecret, note.rho, note.rseed])
+  return poseidonHash([NULLIFIER_V1, note.spendSecret, note.rho, note.rseed])
 }
 
 export async function createNoteV1(
