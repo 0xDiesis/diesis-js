@@ -29,7 +29,7 @@ function deterministicRandomBytes(): (length: number) => Uint8Array {
 
 describe('encrypted note envelope V1', () => {
   it('round-trips exactly 169 bytes with an injected CSPRNG', async () => {
-    const envelope = encryptNoteEnvelopeV1({
+    const envelope = await encryptNoteEnvelopeV1({
       note,
       recipientPublicKey: recipient.publicKey,
       context,
@@ -53,7 +53,7 @@ describe('encrypted note envelope V1', () => {
   ] as const)(
     'treats %s AAD tampering as a scan miss',
     async (_name, patch) => {
-      const envelope = encryptNoteEnvelopeV1({
+      const envelope = await encryptNoteEnvelopeV1({
         note,
         recipientPublicKey: recipient.publicKey,
         context,
@@ -70,7 +70,7 @@ describe('encrypted note envelope V1', () => {
   )
 
   it('treats ciphertext corruption and the wrong scanning key as scan misses', async () => {
-    const envelope = encryptNoteEnvelopeV1({
+    const envelope = await encryptNoteEnvelopeV1({
       note,
       recipientPublicKey: recipient.publicKey,
       context,
@@ -92,5 +92,29 @@ describe('encrypted note envelope V1', () => {
     await expect(
       scanNoteEnvelopeV1(new Uint8Array(168), recipient.privateKey, context),
     ).rejects.toThrow('invalid encrypted note envelope')
+  })
+
+  it('refuses to encrypt a note under an unrelated commitment', async () => {
+    await expect(
+      encryptNoteEnvelopeV1({
+        note,
+        recipientPublicKey: recipient.publicKey,
+        context: { ...context, commitment: context.commitment + 1n },
+        randomBytes: deterministicRandomBytes(),
+      }),
+    ).rejects.toThrow('note commitment mismatch')
+  })
+
+  it('treats an unknown envelope version as a scan miss', async () => {
+    const envelope = await encryptNoteEnvelopeV1({
+      note,
+      recipientPublicKey: recipient.publicKey,
+      context,
+      randomBytes: deterministicRandomBytes(),
+    })
+    envelope[0] = 2
+    await expect(
+      scanNoteEnvelopeV1(envelope, recipient.privateKey, context),
+    ).resolves.toBeNull()
   })
 })

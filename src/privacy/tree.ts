@@ -50,7 +50,8 @@ function compareEvents(
 }
 
 function assertPosition(event: CanonicalPrivacyEventV1): void {
-  if (event.blockNumber < 0n || event.blockHash.length === 0) {
+  if (event.blockNumber < 0n || !/^0x[0-9a-fA-F]{64}$/.test(event.blockHash)) {
+    if (event.blockNumber >= 0n) throw new Error('invalid canonical block hash')
     throw new Error('invalid canonical event position')
   }
   for (const value of [event.transactionIndex, event.logIndex]) {
@@ -91,6 +92,7 @@ export class PrivacyTreeV1 {
     )
     const events = [...sourceEvents].sort(compareEvents)
     const blockHashes = new Map<bigint, string>()
+    const seenCommitments = new Set<bigint>()
     let previousPosition: string | undefined
     let nextIndex = 0n
     let root = zeroes[NOTE_TREE_DEPTH_V1]!
@@ -101,6 +103,7 @@ export class PrivacyTreeV1 {
     ): Promise<void> => {
       assertFieldElement(leaf)
       if (leaf === 0n) throw new Error('tree leaf must be nonzero')
+      if (seenCommitments.has(leaf)) throw new Error('duplicate commitment')
       if (expectedIndex !== nextIndex) {
         throw new Error('non-contiguous leaf index')
       }
@@ -121,6 +124,7 @@ export class PrivacyTreeV1 {
         nodes[level + 1]!.set(cursor, current)
       }
       nextIndex += 1n
+      seenCommitments.add(leaf)
       root = current
     }
 
@@ -131,11 +135,15 @@ export class PrivacyTreeV1 {
       if (position === previousPosition)
         throw new Error('duplicate canonical log position')
       previousPosition = position
+      const normalizedBlockHash = event.blockHash.toLowerCase()
       const knownBlockHash = blockHashes.get(event.blockNumber)
-      if (knownBlockHash !== undefined && knownBlockHash !== event.blockHash) {
+      if (
+        knownBlockHash !== undefined &&
+        knownBlockHash !== normalizedBlockHash
+      ) {
         throw new Error('mixed canonical block hashes')
       }
-      blockHashes.set(event.blockNumber, event.blockHash)
+      blockHashes.set(event.blockNumber, normalizedBlockHash)
 
       if (event.kind === 'deposit') {
         await insert(event.commitment, event.leafIndex)

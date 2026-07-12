@@ -125,7 +125,7 @@ export function scanningKeyPairFromPrivateKey(
   }
 }
 
-export function encryptNoteEnvelopeV1({
+export async function encryptNoteEnvelopeV1({
   note,
   recipientPublicKey,
   context,
@@ -135,8 +135,11 @@ export function encryptNoteEnvelopeV1({
   recipientPublicKey: Uint8Array
   context: NoteEnvelopeContextV1
   randomBytes?: RandomBytes
-}): Uint8Array {
+}): Promise<Uint8Array> {
   assertExactBytes(recipientPublicKey, PUBLIC_KEY_BYTES, 'scanning public key')
+  if ((await deriveCommitmentV1(note)) !== context.commitment) {
+    throw new Error('note commitment mismatch')
+  }
   const ephemeralPrivateKey = randomBytes(PRIVATE_KEY_BYTES)
   const nonce = randomBytes(NONCE_BYTES)
   assertExactBytes(

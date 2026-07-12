@@ -11,6 +11,7 @@ import {
 const poseidon = await buildPoseidon()
 const hash = (left: bigint, right: bigint): bigint =>
   poseidon.F.toObject(poseidon([left, right]))
+const blockHash = (byte: string): string => `0x${byte.repeat(32)}`
 
 function rootOf(leaves: readonly bigint[]): bigint {
   let level = [...leaves]
@@ -35,11 +36,11 @@ const deposit = (
   leafIndex: bigint,
   resultingRoot: bigint,
   blockNumber = 1n,
-  blockHash = '0xaaa',
+  canonicalBlockHash = blockHash('aa'),
 ): CanonicalPrivacyEventV1 => ({
   kind: 'deposit',
   blockNumber,
-  blockHash,
+  blockHash: canonicalBlockHash,
   transactionIndex: 0,
   logIndex: 0,
   commitment,
@@ -63,7 +64,7 @@ describe('canonical privacy event tree reconstruction', () => {
       {
         kind: 'transfer',
         blockNumber: 2n,
-        blockHash: '0xbbb',
+        blockHash: blockHash('bb'),
         transactionIndex: 0,
         logIndex: 0,
         commitments: [12n, 13n],
@@ -100,9 +101,9 @@ describe('canonical privacy event tree reconstruction', () => {
     ).rejects.toThrow(/resulting root mismatch/)
     await expect(
       PrivacyTreeV1.fromCanonicalEvents([
-        deposit(11n, 0n, firstRoot, 1n, '0xaaa'),
+        deposit(11n, 0n, firstRoot, 1n, blockHash('aa')),
         {
-          ...deposit(12n, 1n, rootOf([11n, 12n]), 1n, '0xbbb'),
+          ...deposit(12n, 1n, rootOf([11n, 12n]), 1n, blockHash('bb')),
           transactionIndex: 1,
         },
       ]),
@@ -113,14 +114,28 @@ describe('canonical privacy event tree reconstruction', () => {
     const common = deposit(11n, 0n, rootOf([11n]))
     const oldTree = await PrivacyTreeV1.fromCanonicalEvents([
       common,
-      deposit(12n, 1n, rootOf([11n, 12n]), 2n, '0xold'),
+      deposit(12n, 1n, rootOf([11n, 12n]), 2n, blockHash('12')),
     ])
     const survivingTree = await PrivacyTreeV1.fromCanonicalEvents([
       common,
-      deposit(13n, 1n, rootOf([11n, 13n]), 2n, '0xnew'),
+      deposit(13n, 1n, rootOf([11n, 13n]), 2n, blockHash('13')),
     ])
 
     expect(oldTree.root).not.toBe(survivingTree.root)
     expect(survivingTree.leaf(1n)).toBe(13n)
+  })
+
+  it('rejects malformed block identities and duplicate commitments', async () => {
+    await expect(
+      PrivacyTreeV1.fromCanonicalEvents([
+        deposit(11n, 0n, rootOf([11n]), 1n, '0xshort'),
+      ]),
+    ).rejects.toThrow(/canonical block hash/)
+    await expect(
+      PrivacyTreeV1.fromCanonicalEvents([
+        deposit(11n, 0n, rootOf([11n])),
+        deposit(11n, 1n, rootOf([11n, 11n]), 2n, blockHash('bb')),
+      ]),
+    ).rejects.toThrow(/duplicate commitment/)
   })
 })
