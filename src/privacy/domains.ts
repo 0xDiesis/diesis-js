@@ -1,0 +1,13 @@
+// Generated from contracts/circuits/vectors/privacy-v1.json.
+export const OWNER_KEY_V1 =
+  0x256971d4f36f29fd116ea590b04fdc7dabbe3712c26e56357292b45f9c4e24f6n
+export const NOTE_V1 =
+  0x0feb85500be436d10018971d7fa7ffdea6bf0936d475c96c1068f72fc052aba8n
+export const NULLIFIER_V1 =
+  0x1d2784a3e2a445928a61d7121f4ccdc99c5c4ab87b9733edb5711fb82919d706n
+export const TRANSFER_BINDING_V1 =
+  0x2a05d02532e0eab784932e94f33997d9ff63814f83f96ec9c7548b5ec3d2d632n
+export const WITHDRAW_BINDING_V1 =
+  0x0899dd3b0ba3d93f6fad5d5abc91b7bc886afe03330172c69e5d9d8a10729fabn
+export const ASSOCIATION_LEAF_V1 =
+  0x02a1f48f99b58d7aa9e2a13f9da0a6636b122c051e2469e5d743022503b14e9en
