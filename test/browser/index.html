@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diesis privacy browser test</title>
+  </head>
+  <body>
+    <script type="module">
+      import {
+        ENCRYPTED_NOTE_V1_BYTES,
+        deriveOwnerPublicV1,
+        fieldToBytes,
+        frame,
+      } from '/src/privacy/index.ts'
+
+      try {
+        const owner = await deriveOwnerPublicV1(1n)
+        const framed = frame(new TextEncoder().encode('browser'), [
+          fieldToBytes(owner),
+        ])
+        const worker = new Worker('/src/privacy/worker-runtime.ts', {
+          type: 'module',
+        })
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('worker load timeout')),
+            10_000,
+          )
+          worker.addEventListener('error', (event) => {
+            clearTimeout(timeout)
+            reject(new Error(event.message))
+          })
+          worker.addEventListener('message', () => {
+            clearTimeout(timeout)
+            resolve(undefined)
+          })
+          worker.postMessage({ type: 'diesis-privacy-browser-smoke-v1' })
+          // The runtime intentionally ignores the smoke message; successful
+          // module evaluation is observable by the absence of an error.
+          setTimeout(() => {
+            clearTimeout(timeout)
+            resolve(undefined)
+          }, 100)
+        })
+        worker.terminate()
+        window.__privacyResult = {
+          ok: true,
+          envelopeBytes: ENCRYPTED_NOTE_V1_BYTES,
+          framedBytes: framed.length,
+          owner: owner.toString(),
+        }
+      } catch (error) {
+        window.__privacyResult = { ok: false, error: String(error) }
+      }
+    </script>
+  </body>
+</html>

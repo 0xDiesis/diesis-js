@@ -46,6 +46,10 @@
       "import": "./dist/privacy/index.js",
       "types": "./dist/privacy/index.d.ts"
     },
+    "./privacy/worker-runtime": {
+      "import": "./dist/privacy/worker-runtime.js",
+      "types": "./dist/privacy/worker-runtime.d.ts"
+    },
     "./abi": {
       "import": "./dist/abi/index.js",
       "types": "./dist/abi/index.d.ts"
@@ -104,7 +108,7 @@
     "@noble/ciphers": "1.3.0",
     "@noble/curves": "2.2.0",
     "@noble/hashes": "2.2.0",
-    "circomlibjs": "0.1.7",
+    "poseidon-lite": "0.3.0",
     "snarkjs": "0.7.6"
   },
   "devDependencies": {
@@ -113,14 +117,16 @@
     "@tanstack/react-query": "^5.101.1",
     "@types/node": "24.12.3",
     "@wagmi/core": "^3.5.2",
+    "circomlibjs": "0.1.7",
     "eslint": "^10.4.1",
     "ethers": "^6.17.0",
     "prettier": "^3.8.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.0",
     "viem": "^2.53.1",
-    "wagmi": "^3.6.18",
+    "vite": "8.1.4",
     "vitest": "4.1.9",
+    "wagmi": "^3.6.18",
     "web3": "^4.16.0"
   },
   "files": [

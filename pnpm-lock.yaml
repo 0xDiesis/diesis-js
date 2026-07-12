@@ -20,9 +20,9 @@ importers:
       '@noble/hashes':
         specifier: 2.2.0
         version: 2.2.0
-      circomlibjs:
-        specifier: 0.1.7
-        version: 0.1.7
+      poseidon-lite:
+        specifier: 0.3.0
+        version: 0.3.0
       snarkjs:
         specifier: 0.7.6
         version: 0.7.6
@@ -42,6 +42,9 @@ importers:
       '@wagmi/core':
         specifier: ^3.5.2
         version: 3.6.1(@tanstack/query-core@5.101.2)(react@19.2.6)(typescript@6.0.3)(use-sync-external-store@1.4.0(react@19.2.6))(viem@2.55.1(typescript@6.0.3)(zod@3.25.76))
+      circomlibjs:
+        specifier: 0.1.7
+        version: 0.1.7
       eslint:
         specifier: ^10.4.1
         version: 10.4.1
@@ -60,6 +63,9 @@ importers:
       viem:
         specifier: ^2.53.1
         version: 2.55.1(typescript@6.0.3)(zod@3.25.76)
+      vite:
+        specifier: 8.1.4
+        version: 8.1.4(@types/node@24.12.3)
       vitest:
         specifier: 4.1.9
         version: 4.1.9(@types/node@24.12.3)(vite@8.1.4(@types/node@24.12.3))
@@ -1256,6 +1262,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  poseidon-lite@0.3.0:
+    resolution: {integrity: sha512-ilJj4MIve4uBEG7SrtPqUUNkvpJ/pLVbndxa0WvebcQqeIhe+h72JR4g0EvwchUzm9sOQDlOjiDNmRAgxNZl4A==}
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -2260,7 +2269,7 @@ snapshots:
       debug: 4.4.3
       minimatch: 10.2.5
       semver: 7.8.0
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -2681,10 +2690,6 @@ snapshots:
 
   fastfile@0.0.20: {}
 
-  fdir@6.5.0(picomatch@4.0.4):
-    optionalDependencies:
-      picomatch: 4.0.4
-
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
       picomatch: 4.0.5
@@ -3018,6 +3023,8 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
+  poseidon-lite@0.3.0: {}
+
   possible-typed-array-names@1.1.0: {}
 
   postcss@8.5.17:
@@ -3134,8 +3141,8 @@ snapshots:
 
   tinyglobby@0.2.16:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.5)
+      picomatch: 4.0.5
 
   tinyglobby@0.2.17:
     dependencies:
