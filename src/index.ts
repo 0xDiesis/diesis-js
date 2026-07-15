@@ -27,19 +27,7 @@ export {
 } from './actions/wallet.js'
 
 // Exchange
-export { marketId } from './exchange/utils.js'
-export {
-  DiesisErc20FactoryAbi,
-  erc20Symbol,
-  exchangePublicActions,
-  exchangeWalletActions,
-} from './exchange/actions.js'
-export type {
-  Erc20FactoryDeployParams,
-  ExchangePublicActions,
-  ExchangeWalletActions,
-} from './exchange/actions.js'
-export * from './exchange/types.js'
+export * from './exchange/index.js'
 
 // Intents
 export {

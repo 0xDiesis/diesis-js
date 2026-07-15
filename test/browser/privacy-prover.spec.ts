@@ -28,11 +28,20 @@ test('privacy entry and proof worker load without Node-only imports', async ({
     () =>
       (
         window as unknown as {
-          __privacyResult: { envelopeBytes: number; framedBytes: number }
+          __privacyResult: {
+            envelopeBytes: number
+            framedBytes: number
+            hftCalldata: string
+            hftBatch: string
+          }
         }
       ).__privacyResult,
   )
   expect(result.envelopeBytes).toBe(169)
   expect(result.framedBytes).toBeGreaterThan(32)
+  expect(result.hftCalldata.slice(0, 10)).toBe('0x881c51de')
+  expect(result.hftBatch).toBe(
+    `0x44584132020000000001000005000038${'01'.repeat(16)}${'11'.repeat(32)}00070000`,
+  )
   expect(browserErrors).toEqual([])
 })

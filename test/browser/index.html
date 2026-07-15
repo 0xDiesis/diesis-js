@@ -13,6 +13,10 @@
         fieldToBytes,
         frame,
       } from '/src/privacy/index.ts'
+      import {
+        encodeExchangeActionBatchV2,
+        prepareExchangeActionsV2Transaction,
+      } from '/src/exchange/index.ts'
 
       try {
         const owner = await deriveOwnerPublicV1(1n)
@@ -49,6 +53,31 @@
           envelopeBytes: ENCRYPTED_NOTE_V1_BYTES,
           framedBytes: framed.length,
           owner: owner.toString(),
+          hftCalldata: prepareExchangeActionsV2Transaction({
+            book: 'spot',
+            batch: {
+              atomicity: 'atomicAll',
+              actions: [
+                {
+                  kind: 'cancelMarketChunk',
+                  clientActionId: `0x${'01'.repeat(16)}`,
+                  marketId: `0x${'11'.repeat(32)}`,
+                  maxOrders: 7,
+                },
+              ],
+            },
+          }).data,
+          hftBatch: encodeExchangeActionBatchV2({
+            atomicity: 'atomicAll',
+            actions: [
+              {
+                kind: 'cancelMarketChunk',
+                clientActionId: `0x${'01'.repeat(16)}`,
+                marketId: `0x${'11'.repeat(32)}`,
+                maxOrders: 7,
+              },
+            ],
+          }),
         }
       } catch (error) {
         window.__privacyResult = { ok: false, error: String(error) }

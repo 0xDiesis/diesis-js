@@ -66,6 +66,70 @@ import { marketId } from '@diesis/sdk'
 const id = marketId(baseTokenAddress, quoteTokenAddress, 0) // 0 = Spot
 ```
 
+### Direct Exchange Action V2 Transactions
+
+Professional order flow uses ordinary signed EVM transactions sent directly to
+the spot or perpetual book precompile. The batch has one Ethereum sender and one
+Ethereum transaction nonce; V2 does not add per-action signatures or action
+nonces.
+
+```typescript
+import {
+  prepareExchangeActionsV2Transaction,
+  sendExchangeActionsV2Transaction,
+} from '@diesis/sdk/exchange'
+
+const batch = {
+  atomicity: 'atomicAll',
+  actions: [
+    {
+      kind: 'place',
+      clientActionId: '0x000102030405060708090a0b0c0d0e0f',
+      marketId: '0x...',
+      side: 'buy',
+      orderKind: 'limit',
+      timeInForce: { kind: 'gtc' },
+      postOnly: false,
+      reduceOnly: false,
+      marginType: 'cross',
+      priceTicks: 100n,
+      quantityLots: 5n,
+      maxFills: 2,
+      maxPriceLevels: 1,
+    },
+  ],
+} as const
+
+// Deterministic `to`, `data`, and zero value for simulation or estimation.
+const request = prepareExchangeActionsV2Transaction({ book: 'spot', batch })
+await publicClient.call({ ...request, account: walletClient.account.address })
+
+// Local signing followed by exact eth_sendRawTransaction submission.
+const hash = await sendExchangeActionsV2Transaction(walletClient, {
+  book: 'spot',
+  batch,
+  transaction: {
+    nonce: 7,
+    gas: 500_000n,
+    maxFeePerGas: 100n,
+    maxPriorityFeePerGas: 1n,
+  },
+})
+```
+
+The perpetual V2 wire is frozen for tooling parity, but execution remains
+protocol-gated until the Lane B activation revision. The existing sponsored
+`diesis_submitIntent` relay remains the retail/gasless path, not the
+professional low-latency path.
+
+Scoped session keys are principal-authorized settlement transactions. Build
+their action bitmap with `exchangeActionScopeV2`, then call
+`prepareAuthorizeSessionKeyV2Transaction` or
+`prepareRevokeSessionKeyV2Transaction`. A zero spend cap is uncapped, a zero
+market mask permits no markets, and an all-ones market mask is the explicit
+all-markets sentinel. Cancel schedules are regular V2 actions with bounded
+market lists, expected renewal counters, and bounded trigger chunks.
+
 ## Gasless Intents
 
 Sign order intents off-chain using EIP-712 typed data, then submit them for gasless execution:
