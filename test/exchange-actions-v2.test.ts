@@ -15,6 +15,7 @@ import {
   decodeExchangeActionBatchV2,
   decodeExchangeActionsV2Result,
   encodeExchangeActionBatchV2,
+  exchangeActionBatchV2AdmissionWork,
   EXCHANGE_ACTION_V2_LIMITS,
   prepareExchangeActionsV2Transaction,
   sendExchangeActionsV2Transaction,
@@ -424,6 +425,128 @@ describe('canonical exchange action V2 wire', () => {
         actions: [cancelChunk(1), cancelChunk(2)],
       }),
     ).toThrow(/radix writes.*4096.*2048/)
+  })
+
+  it('reserves one extra L3 Remove only for IOC and market places', () => {
+    const l3For = (configure: (p: PlaceActionV2) => PlaceActionV2): number =>
+      exchangeActionBatchV2AdmissionWork({
+        atomicity: 'atomicAll',
+        actions: [configure(place())],
+      }).l3Logs
+
+    // GTC/GTD/FOK limit rest without a remainder cancel: 2*fills + 1 = 5.
+    expect(l3For((p) => p)).toBe(5)
+    expect(
+      l3For((p) => ({ ...p, timeInForce: { kind: 'gtd', expiry: 9n } })),
+    ).toBe(5)
+    expect(l3For((p) => ({ ...p, timeInForce: { kind: 'fok' } }))).toBe(5)
+    // Post-only rests with zero fills: exactly one AddTail.
+    expect(
+      l3For((p) => ({
+        ...p,
+        postOnly: true,
+        maxFills: 0,
+        maxPriceLevels: 0,
+      })),
+    ).toBe(1)
+    // IOC and market (IOC) reserve the extra remainder Remove: 6.
+    expect(l3For((p) => ({ ...p, timeInForce: { kind: 'ioc' } }))).toBe(6)
+    expect(
+      l3For((p) => ({
+        ...p,
+        orderKind: 'market',
+        timeInForce: { kind: 'ioc' },
+        priceTicks: 0n,
+      })),
+    ).toBe(6)
+    // Market FOK reserves the extra slot conservatively (over-reservation is safe).
+    expect(
+      l3For((p) => ({
+        ...p,
+        orderKind: 'market',
+        timeInForce: { kind: 'fok' },
+        priceTicks: 0n,
+      })),
+    ).toBe(6)
+  })
+
+  it('reserves the extra L3 for IOC/market cancel-replace replacements', () => {
+    const replace = (
+      timeInForce: PlaceActionV2['timeInForce'],
+      replacementOrderKind: PlaceActionV2['orderKind'],
+      priceTicks: bigint,
+    ): ExchangeActionBatchV2 => ({
+      atomicity: 'atomicAll',
+      actions: [
+        {
+          kind: 'cancelReplace',
+          clientActionId: repeated(1, 16),
+          marketId: repeated(0x11, 32),
+          cancelTarget: 'orderId',
+          targetId: repeated(0x21, 32),
+          replacementSide: 'sell',
+          replacementOrderKind,
+          replacementTimeInForce: timeInForce,
+          replacementPostOnly: false,
+          replacementReduceOnly: false,
+          replacementMarginType: 'cross',
+          replacementPriceTicks: priceTicks,
+          replacementQuantityLots: 3n,
+          maxFills: 2,
+          maxPriceLevels: 1,
+        },
+      ],
+    })
+    // GTC replacement: cancel Remove (1) + place 2*2+1 = 5 -> 6 total.
+    expect(
+      exchangeActionBatchV2AdmissionWork(
+        replace({ kind: 'gtc' }, 'limit', 101n),
+      ).l3Logs,
+    ).toBe(6)
+    // IOC/market replacement: one extra remainder Remove -> 7 total.
+    expect(
+      exchangeActionBatchV2AdmissionWork(
+        replace({ kind: 'ioc' }, 'limit', 101n),
+      ).l3Logs,
+    ).toBe(7)
+    expect(
+      exchangeActionBatchV2AdmissionWork(replace({ kind: 'ioc' }, 'market', 0n))
+        .l3Logs,
+    ).toBe(7)
+  })
+
+  it('bounds IOC emission within max_log_bytes at the reservation boundary', () => {
+    // Four IOC places at seven fills each: the corrected 2*fills + 2
+    // reservation totals 33792 log bytes, and its true emission equals the
+    // reservation, so the reserved total is what any log-byte ceiling checks.
+    // The equivalent GTC batch reserves exactly 32640 (<= max_log_bytes).
+    const iocPlace = (client: number): PlaceActionV2 => ({
+      ...place(client),
+      timeInForce: { kind: 'ioc' },
+      maxFills: 7,
+      maxPriceLevels: 7,
+    })
+    const gtcPlace = (client: number): PlaceActionV2 => ({
+      ...place(client),
+      maxFills: 7,
+      maxPriceLevels: 7,
+    })
+    const ioc = exchangeActionBatchV2AdmissionWork({
+      atomicity: 'continueOnReject',
+      actions: [iocPlace(1), iocPlace(2), iocPlace(3), iocPlace(4)],
+    })
+    const gtc = exchangeActionBatchV2AdmissionWork({
+      atomicity: 'continueOnReject',
+      actions: [gtcPlace(1), gtcPlace(2), gtcPlace(3), gtcPlace(4)],
+    })
+    expect(gtc.totalLogBytes).toBe(32_640)
+    expect(gtc.totalLogBytes).toBeLessThanOrEqual(
+      EXCHANGE_ACTION_V2_LIMITS.maxLogBytes,
+    )
+    expect(ioc.totalLogBytes).toBe(33_792)
+    expect(ioc.totalLogBytes).toBeGreaterThan(
+      EXCHANGE_ACTION_V2_LIMITS.maxLogBytes,
+    )
   })
 
   it('rejects hostile wire shape before bounded decode allocation', () => {

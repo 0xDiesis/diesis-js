@@ -595,11 +595,23 @@ function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
   }
 }
 
-function placeActionWork(fills: number): ActionWorkV2 {
+/**
+ * Structural place work, including the canonical L3 mutation reservation.
+ *
+ * `remainderCancel` is true when the placed order can leave a cancelled
+ * crossing remainder (IOC or market), emitting one extra L3 `Remove` beyond the
+ * `2 * fills + 1` resting/matching mutations. The reservation must dominate
+ * actual emission for every policy so an admissible place can never overshoot
+ * the selected log budget. This mirrors `place_action_work` in Rust exactly.
+ */
+function placeActionWork(
+  fills: number,
+  remainderCancel: boolean,
+): ActionWorkV2 {
   const twiceFills = fills * 2
   const changedLevels = fills + 2
   const searches = fills + 1
-  const l3Logs = twiceFills + 1
+  const l3Logs = twiceFills + 1 + (remainderCancel ? 1 : 0)
   return {
     radixWrites: (twiceFills + 3) * RADIX_WRITES_PER_CHANGED_LEVEL,
     storageOperations:
@@ -611,6 +623,20 @@ function placeActionWork(fills: number): ActionWorkV2 {
     economicLogs: fills * ECONOMIC_LOGS_PER_FILL,
     economicLogBytes: fills * ECONOMIC_LOG_BYTES_PER_FILL,
   }
+}
+
+/**
+ * Whether a placed leg can leave a cancelled crossing remainder that emits an
+ * extra L3 `Remove`. IOC and market orders cancel any unfilled residual; GTC,
+ * GTD, post-only, and FOK never do (FOK reverts on any unfilled remainder).
+ * Market FOK is covered conservatively via the market kind. Mirrors Rust's
+ * `place_leaves_remainder_cancel`.
+ */
+function placeLeavesRemainderCancel(
+  orderKind: OrderKindV2,
+  timeInForce: TimeInForceV2,
+): boolean {
+  return timeInForce.kind === 'ioc' || orderKind === 'market'
 }
 
 function cancelActionWork(cancels: number): ActionWorkV2 {
@@ -631,7 +657,12 @@ function scheduleActionWork(markets: number): ActionWorkV2 {
 }
 
 function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
-  if (action.kind === 'place') return placeActionWork(action.maxFills)
+  if (action.kind === 'place') {
+    return placeActionWork(
+      action.maxFills,
+      placeLeavesRemainderCancel(action.orderKind, action.timeInForce),
+    )
+  }
   if (
     action.kind === 'cancelByOrderId' ||
     action.kind === 'cancelByClientOrderId'
@@ -639,7 +670,16 @@ function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
     return cancelActionWork(1)
   }
   if (action.kind === 'cancelReplace') {
-    return addActionWork(cancelActionWork(1), placeActionWork(action.maxFills))
+    return addActionWork(
+      cancelActionWork(1),
+      placeActionWork(
+        action.maxFills,
+        placeLeavesRemainderCancel(
+          action.replacementOrderKind,
+          action.replacementTimeInForce,
+        ),
+      ),
+    )
   }
   if (action.kind === 'cancelMarketChunk') {
     return cancelActionWork(action.maxOrders)
@@ -716,6 +756,49 @@ function validateAggregateBounds(batch: ExchangeActionBatchV2): void {
   if (fills > EXCHANGE_ACTION_V2_LIMITS.maxFills)
     throw new Error('batch requests more than 64 fills')
   enforceActionWork(work, batch.actions.length)
+}
+
+/** Reserved worst-case admission work for a batch, mirroring Rust's summary. */
+export type ExchangeActionV2AdmissionWork = {
+  /** Worst-case canonical L3 mutation logs, including remainder-cancel Removes. */
+  l3Logs: number
+  /** Frozen topic-plus-data bytes for the reserved L3 mutation logs. */
+  l3LogBytes: number
+  /** Worst-case fill/economic logs. */
+  economicLogs: number
+  /** Frozen bytes for the reserved fill/economic logs. */
+  economicLogBytes: number
+  /** Total reserved logs including per-action outcome logs. */
+  totalLogs: number
+  /** Total reserved log bytes including per-action outcome logs. */
+  totalLogBytes: number
+}
+
+/**
+ * Compute the reserved worst-case admission work for a batch without encoding.
+ *
+ * This is the model-side reservation that gates admission: it must equal Rust's
+ * `HftAdmissionSummaryV2` reserved totals so both targets reject the same batch.
+ * IOC/market places (and IOC/market cancel-replace replacements) reserve one
+ * extra L3 `Remove` for the cancelled crossing remainder.
+ */
+export function exchangeActionBatchV2AdmissionWork(
+  batch: ExchangeActionBatchV2,
+): ExchangeActionV2AdmissionWork {
+  let work = EMPTY_WORK
+  for (const action of batch.actions) {
+    work = addActionWork(work, actionWorkFromModel(action))
+  }
+  const actionCount = batch.actions.length
+  return {
+    l3Logs: work.l3Logs,
+    l3LogBytes: work.l3LogBytes,
+    economicLogs: work.economicLogs,
+    economicLogBytes: work.economicLogBytes,
+    totalLogs: actionCount + work.l3Logs + work.economicLogs,
+    totalLogBytes:
+      actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes,
+  }
 }
 
 /** Encode one canonical DXA2 batch with the same selected Task 5 limits as Rust. */
@@ -1019,6 +1102,15 @@ function boundedHexBytes(encoded: Hex): Uint8Array {
   return hexToBytes(encoded)
 }
 
+/**
+ * Decode the remainder-cancel disposition of a place leg from wire bytes: a
+ * market order kind (`1`) or an IOC time-in-force tag (`2`) leaves a cancelled
+ * remainder. Mirrors Rust's `place_remainder_cancel_from_wire`.
+ */
+function wireRemainderCancel(orderKindByte: number, tifByte: number): boolean {
+  return orderKindByte === 1 || tifByte === 2
+}
+
 function readWireU16(bytes: Uint8Array, offset: number): number {
   if (offset + 2 > bytes.length) throw new Error('truncated action record')
   return bytes[offset]! * 0x100 + bytes[offset + 1]!
@@ -1058,12 +1150,20 @@ function exactWireRecordLength(
       `action tag ${tag} record length ${length} does not match ${expected}`,
     )
   }
-  if (tag === 1) return placeActionWork(readWireU16(bytes, offset + 84))
+  if (tag === 1) {
+    return placeActionWork(
+      readWireU16(bytes, offset + 84),
+      wireRemainderCancel(bytes[offset + 53]!, bytes[offset + 54]!),
+    )
+  }
   if (tag === 2 || tag === 3) return cancelActionWork(1)
   if (tag === 4) {
     return addActionWork(
       cancelActionWork(1),
-      placeActionWork(readWireU16(bytes, offset + 148)),
+      placeActionWork(
+        readWireU16(bytes, offset + 148),
+        wireRemainderCancel(bytes[offset + 54]!, bytes[offset + 55]!),
+      ),
     )
   }
   if (tag === 5) return cancelActionWork(readWireU16(bytes, offset + 52))
