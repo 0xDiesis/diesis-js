@@ -588,6 +588,39 @@ describe('canonical exchange action V2 wire', () => {
     })
   })
 
+  it('marks every schedule trigger for canonical-state work refinement', () => {
+    const trigger = (clientByte: number, scheduleByte: number) =>
+      triggerCancelScheduleV2({
+        clientActionId: repeated(clientByte, 16),
+        scheduleId: repeated(scheduleByte, 32),
+      })
+    const admission = exchangeActionBatchV2AdmissionWork({
+      atomicity: 'continueOnReject',
+      actions: [trigger(1, 0x31), trigger(2, 0x32)],
+    })
+
+    expect(admission).toEqual({
+      l3Logs: 0,
+      l3LogBytes: 0,
+      economicLogs: 0,
+      economicLogBytes: 0,
+      totalLogs: 2,
+      totalLogBytes: 512,
+      statefulScheduleRefinements: 2,
+      requiresStatefulPreflight: true,
+    })
+
+    expect(() =>
+      exchangeActionBatchV2AdmissionWork({
+        atomicity: 'continueOnReject',
+        actions: Array.from(
+          { length: EXCHANGE_ACTION_V2_LIMITS.maxActions + 1 },
+          (_, index) => trigger(index + 1, index + 1),
+        ),
+      }),
+    ).toThrow(/stateful schedule refinements.*unsigned integer range/)
+  })
+
   it('bounds IOC emission within max_log_bytes at the reservation boundary', () => {
     // Four IOC places at seven fills each: the corrected 2*fills + 2
     // reservation totals 33792 log bytes, and its true emission equals the

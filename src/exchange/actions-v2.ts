@@ -574,6 +574,7 @@ type ActionWorkV2 = {
   l3LogBytes: number
   economicLogs: number
   economicLogBytes: number
+  statefulScheduleRefinements: number
 }
 
 const EMPTY_WORK: ActionWorkV2 = {
@@ -583,9 +584,17 @@ const EMPTY_WORK: ActionWorkV2 = {
   l3LogBytes: 0,
   economicLogs: 0,
   economicLogBytes: 0,
+  statefulScheduleRefinements: 0,
 }
 
 function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
+  const statefulScheduleRefinements =
+    left.statefulScheduleRefinements + right.statefulScheduleRefinements
+  integerNumber(
+    statefulScheduleRefinements,
+    EXCHANGE_ACTION_V2_LIMITS.maxActions,
+    'stateful schedule refinements',
+  )
   return {
     radixWrites: left.radixWrites + right.radixWrites,
     storageOperations: left.storageOperations + right.storageOperations,
@@ -593,6 +602,7 @@ function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
     l3LogBytes: left.l3LogBytes + right.l3LogBytes,
     economicLogs: left.economicLogs + right.economicLogs,
     economicLogBytes: left.economicLogBytes + right.economicLogBytes,
+    statefulScheduleRefinements,
   }
 }
 
@@ -623,6 +633,7 @@ function placeActionWork(
     l3LogBytes: l3Logs * L3_LOG_BYTES,
     economicLogs: fills * ECONOMIC_LOGS_PER_FILL,
     economicLogBytes: fills * ECONOMIC_LOG_BYTES_PER_FILL,
+    statefulScheduleRefinements: 0,
   }
 }
 
@@ -698,7 +709,7 @@ function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
   if (action.kind === 'disarmCancelSchedule') {
     return scheduleActionWork(EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
   }
-  return EMPTY_WORK
+  return { ...EMPTY_WORK, statefulScheduleRefinements: 1 }
 }
 
 function enforceActionWork(work: ActionWorkV2, actionCount: number): void {
@@ -763,29 +774,36 @@ function validateAggregateBounds(batch: ExchangeActionBatchV2): void {
   enforceActionWork(work, batch.actions.length)
 }
 
-/** Reserved worst-case admission work for a batch, mirroring Rust's summary. */
+/** State-independent admission work for a batch, mirroring Rust's static summary. */
 export type ExchangeActionV2AdmissionWork = {
-  /** Worst-case canonical L3 mutation logs, including remainder-cancel Removes. */
+  /** State-independent canonical L3 logs, including remainder-cancel Removes. */
   l3Logs: number
-  /** Frozen topic-plus-data bytes for the reserved L3 mutation logs. */
+  /** Frozen topic-plus-data bytes for state-independent L3 mutation logs. */
   l3LogBytes: number
-  /** Worst-case fill/economic logs. */
+  /** State-independent fill, cancel, and other economic logs. */
   economicLogs: number
-  /** Frozen bytes for the reserved fill/economic logs. */
+  /** Frozen bytes for state-independent economic logs. */
   economicLogBytes: number
-  /** Total reserved logs including per-action outcome logs. */
+  /** Stateless total including outcome logs, before schedule-trigger refinement. */
   totalLogs: number
-  /** Total reserved log bytes including per-action outcome logs. */
+  /** Stateless total bytes before schedule-trigger refinement. */
   totalLogBytes: number
+  /** Trigger actions whose work must be refined from canonical schedule state. */
+  statefulScheduleRefinements: number
+  /** Always true: syntax/static work admission never authorizes mutation. */
+  requiresStatefulPreflight: true
 }
 
 /**
- * Compute the reserved worst-case admission work for a batch without encoding.
+ * Compute state-independent admission work for a batch without encoding.
  *
- * This is the model-side reservation that gates admission: it must equal Rust's
- * `HftAdmissionSummaryV2` reserved totals so both targets reject the same batch.
+ * This mirrors the state-independent portion of Rust's `HftAdmissionSummaryV2`.
  * IOC/market places (and IOC/market cancel-replace replacements) reserve one
- * extra L3 `Remove` for the cancelled crossing remainder.
+ * extra L3 `Remove` for the cancelled crossing remainder. Schedule triggers
+ * increment `statefulScheduleRefinements`, but their radix, storage, and log
+ * work is intentionally absent from these totals until runtime reads canonical
+ * schedule state and refines every marker. This static summary never authorizes
+ * execution on its own.
  */
 export function exchangeActionBatchV2AdmissionWork(
   batch: ExchangeActionBatchV2,
@@ -803,6 +821,8 @@ export function exchangeActionBatchV2AdmissionWork(
     totalLogs: actionCount + work.l3Logs + work.economicLogs,
     totalLogBytes:
       actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes,
+    statefulScheduleRefinements: work.statefulScheduleRefinements,
+    requiresStatefulPreflight: true,
   }
 }
 
@@ -1181,7 +1201,7 @@ function exactWireRecordLength(
   if (tag === 8) {
     return scheduleActionWork(EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
   }
-  return EMPTY_WORK
+  return { ...EMPTY_WORK, statefulScheduleRefinements: 1 }
 }
 
 function preflightWireWork(bytes: Uint8Array, actionCount: number): void {
