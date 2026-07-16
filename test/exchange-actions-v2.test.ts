@@ -515,6 +515,79 @@ describe('canonical exchange action V2 wire', () => {
     ).toBe(7)
   })
 
+  it('reserves one OrderCancelled economic log for every bounded cancel', () => {
+    const cancelByOrderId = exchangeActionBatchV2AdmissionWork({
+      atomicity: 'atomicAll',
+      actions: [
+        {
+          kind: 'cancelByOrderId',
+          clientActionId: repeated(1, 16),
+          marketId: repeated(0x11, 32),
+          orderId: repeated(0x21, 32),
+        },
+      ],
+    })
+    expect(cancelByOrderId).toMatchObject({
+      l3Logs: 1,
+      l3LogBytes: 288,
+      economicLogs: 1,
+      economicLogBytes: 256,
+      totalLogs: 3,
+      totalLogBytes: 800,
+    })
+
+    const cancelChunk = exchangeActionBatchV2AdmissionWork({
+      atomicity: 'atomicAll',
+      actions: [
+        {
+          kind: 'cancelMarketChunk',
+          clientActionId: repeated(2, 16),
+          marketId: repeated(0x11, 32),
+          maxOrders: 7,
+        },
+      ],
+    })
+    expect(cancelChunk).toMatchObject({
+      l3Logs: 7,
+      l3LogBytes: 2_016,
+      economicLogs: 7,
+      economicLogBytes: 1_792,
+      totalLogs: 15,
+      totalLogBytes: 4_064,
+    })
+
+    const cancelReplace = exchangeActionBatchV2AdmissionWork({
+      atomicity: 'atomicAll',
+      actions: [
+        {
+          kind: 'cancelReplace',
+          clientActionId: repeated(3, 16),
+          marketId: repeated(0x11, 32),
+          cancelTarget: 'orderId',
+          targetId: repeated(0x21, 32),
+          replacementSide: 'sell',
+          replacementOrderKind: 'limit',
+          replacementTimeInForce: { kind: 'gtc' },
+          replacementPostOnly: false,
+          replacementReduceOnly: false,
+          replacementMarginType: 'cross',
+          replacementPriceTicks: 101n,
+          replacementQuantityLots: 3n,
+          maxFills: 2,
+          maxPriceLevels: 1,
+        },
+      ],
+    })
+    expect(cancelReplace).toMatchObject({
+      l3Logs: 6,
+      l3LogBytes: 1_728,
+      economicLogs: 5,
+      economicLogBytes: 1_280,
+      totalLogs: 12,
+      totalLogBytes: 3_264,
+    })
+  })
+
   it('bounds IOC emission within max_log_bytes at the reservation boundary', () => {
     // Four IOC places at seven fills each: the corrected 2*fills + 2
     // reservation totals 33792 log bytes, and its true emission equals the

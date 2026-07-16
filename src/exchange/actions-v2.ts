@@ -142,6 +142,7 @@ const STORAGE_OPS_PER_FILL = 40
 const STORAGE_OPS_PER_SEARCH = 6
 const ECONOMIC_LOGS_PER_FILL = 2
 const ECONOMIC_LOG_BYTES_PER_FILL = 512
+const ECONOMIC_LOG_BYTES_PER_CANCEL = 256
 const L3_LOG_BYTES = 288
 const OUTCOME_LOG_BYTES = 256
 const CANCEL_STORAGE_OPS =
@@ -640,12 +641,16 @@ function placeLeavesRemainderCancel(
 }
 
 function cancelActionWork(cancels: number): ActionWorkV2 {
+  integerNumber(cancels, EXCHANGE_ACTION_V2_LIMITS.maxCancels, 'cancel work')
   return {
     ...EMPTY_WORK,
     radixWrites: cancels * RADIX_WRITES_PER_CHANGED_LEVEL,
     storageOperations: cancels * CANCEL_STORAGE_OPS,
     l3Logs: cancels,
     l3LogBytes: cancels * L3_LOG_BYTES,
+    // Every successful bounded cancel emits one canonical OrderCancelled log.
+    economicLogs: cancels,
+    economicLogBytes: cancels * ECONOMIC_LOG_BYTES_PER_CANCEL,
   }
 }
 
