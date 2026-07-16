@@ -117,6 +117,10 @@ const hash = await sendExchangeActionsV2Transaction(walletClient, {
 })
 ```
 
+When decoding the 96-byte precompile return tuple, pass the submitted batch's
+action count to `decodeExchangeActionsV2Result`. The decoder rejects zero,
+over-limit, or mismatched accepted/rejected totals instead of trusting RPC data.
+
 The perpetual V2 wire is frozen for tooling parity, but execution remains
 protocol-gated until the Lane B activation revision. The existing sponsored
 `diesis_submitIntent` relay remains the retail/gasless path, not the

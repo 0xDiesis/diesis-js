@@ -1,6 +1,9 @@
 import { bytesToHex, hexToBytes, keccak256, type Hex } from 'viem'
 
-import { decodeExchangeActionBatchV2 } from './actions-v2.js'
+import {
+  decodeExchangeActionBatchV2,
+  EXCHANGE_ACTION_V2_LIMITS,
+} from './actions-v2.js'
 import { fixedBytes, Reader, Writer } from './wire-bytes.js'
 
 export type ActionOutcomeV2 =
@@ -54,7 +57,15 @@ const RESULT_DOMAIN = new TextEncoder().encode(
 /** Decode the fixed 96-byte Solidity return tuple. */
 export function decodeExchangeActionsV2Result(
   data: Hex,
+  expectedActionCount: number,
 ): ExchangeActionsV2Result {
+  if (
+    !Number.isInteger(expectedActionCount) ||
+    expectedActionCount < 1 ||
+    expectedActionCount > EXCHANGE_ACTION_V2_LIMITS.maxActions
+  ) {
+    throw new Error('expected action count must be between 1 and 32')
+  }
   const reader = new Reader(fixedBytes(data, 96, 'exchange V2 result'))
   const resultHash = bytesToHex(reader.take(32, 'result hash'))
   const acceptedWord = reader.take(32, 'accepted count')
@@ -65,11 +76,18 @@ export function decodeExchangeActionsV2Result(
   ) {
     throw new Error('noncanonical exchange V2 result count')
   }
-  return {
-    resultHash,
-    acceptedCount: acceptedWord[30]! * 0x100 + acceptedWord[31]!,
-    rejectedCount: rejectedWord[30]! * 0x100 + rejectedWord[31]!,
+  const acceptedCount = acceptedWord[30]! * 0x100 + acceptedWord[31]!
+  const rejectedCount = rejectedWord[30]! * 0x100 + rejectedWord[31]!
+  const total = acceptedCount + rejectedCount
+  if (total > EXCHANGE_ACTION_V2_LIMITS.maxActions) {
+    throw new Error('exchange V2 result reports more than 32 actions')
   }
+  if (total !== expectedActionCount) {
+    throw new Error(
+      `result count mismatch: expected ${expectedActionCount}, got ${total}`,
+    )
+  }
+  return { resultHash, acceptedCount, rejectedCount }
 }
 
 /** Recompute the domain-separated result commitment from ordered outcomes. */

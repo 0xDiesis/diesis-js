@@ -27,13 +27,23 @@ import {
 } from './wire-bytes.js'
 
 export const EXCHANGE_ACTION_V2_LIMITS = {
+  version: 2,
   maxEncodedBytes: 16_384,
   maxActions: 32,
   maxCancels: 64,
   maxMarkets: 16,
   maxFills: 64,
+  maxRadixWrites: 2_048,
   maxPriceLevelsPerAction: 16,
+  maxStorageOperations: 4_096,
   maxCancelChunk: 32,
+  maxSessionAuthorizationsPerPrincipal: 8,
+  maxSchedulesPerPrincipal: 8,
+  maxLogBytes: 32_768,
+  maxLogs: 256,
+  replayHorizonBlocks: 256,
+  maxActiveOrdersPerMarket: 32_768,
+  maxActiveOrdersPerBook: 262_144,
 } as const
 
 export type BatchAtomicityV2 = 'atomicAll' | 'continueOnReject'
@@ -123,7 +133,21 @@ export type ExchangeBookV2 = 'spot' | 'perpetual'
 const MAGIC = Uint8Array.of(0x44, 0x58, 0x41, 0x32)
 const VERSION = 2
 const HEADER_BYTES = 12
+const ACTION_PREFIX_BYTES = 20
 const ZERO_32 = new Uint8Array(32)
+
+const RADIX_WRITES_PER_CHANGED_LEVEL = 64
+const STORAGE_OPS_PER_CHANGED_LEVEL = 71
+const STORAGE_OPS_PER_FILL = 40
+const STORAGE_OPS_PER_SEARCH = 6
+const ECONOMIC_LOGS_PER_FILL = 2
+const ECONOMIC_LOG_BYTES_PER_FILL = 512
+const L3_LOG_BYTES = 288
+const OUTCOME_LOG_BYTES = 256
+const CANCEL_STORAGE_OPS =
+  STORAGE_OPS_PER_CHANGED_LEVEL + STORAGE_OPS_PER_FILL + STORAGE_OPS_PER_SEARCH
+const ARM_SCHEDULE_FIXED_STORAGE_OPS = 5
+const RENEW_SCHEDULE_STORAGE_OPS = 2
 
 const ACTION_KEYS: Readonly<
   Record<ExchangeActionV2['kind'], readonly string[]>
@@ -198,11 +222,39 @@ const ACTION_KEYS: Readonly<
   triggerCancelSchedule: ['kind', 'clientActionId', 'scheduleId'],
 }
 
+function strictObjectKeys(
+  value: object,
+  allowedKeys: readonly string[],
+  label: string,
+): void {
+  const allowed = new Set(allowedKeys)
+  for (const key of Object.keys(value)) {
+    if (!allowed.has(key)) throw new Error(`unknown ${label} field ${key}`)
+  }
+}
+
 function strictKeys(action: ExchangeActionV2): void {
   const allowed = new Set(ACTION_KEYS[action.kind])
   for (const key of Object.keys(action)) {
     if (!allowed.has(key))
       throw new Error(`unknown ${action.kind} field ${key}`)
+  }
+}
+
+function validateTimeInForceKeys(timeInForce: TimeInForceV2): void {
+  if (typeof timeInForce !== 'object' || timeInForce === null) {
+    throw new Error('timeInForce must be an object')
+  }
+  if (timeInForce.kind === 'gtd') {
+    strictObjectKeys(timeInForce, ['kind', 'expiry'], 'gtd timeInForce')
+  } else if (
+    timeInForce.kind === 'gtc' ||
+    timeInForce.kind === 'ioc' ||
+    timeInForce.kind === 'fok'
+  ) {
+    strictObjectKeys(timeInForce, ['kind'], `${timeInForce.kind} timeInForce`)
+  } else {
+    throw new Error('unknown timeInForce')
   }
 }
 
@@ -254,6 +306,7 @@ function encodedOrderFields(fields: OrderFields): {
   marginContribution: bigint
 } {
   const { orderKind, timeInForce, postOnly, priceTicks, quantityLots } = fields
+  validateTimeInForceKeys(timeInForce)
   booleanValue(postOnly, 'postOnly')
   booleanValue(fields.reduceOnly, 'reduceOnly')
   if (priceTicks < 0n || priceTicks > UINT64_MAX)
@@ -513,11 +566,127 @@ function encodeAction(action: ExchangeActionV2): Uint8Array {
   return writer.output()
 }
 
+type ActionWorkV2 = {
+  radixWrites: number
+  storageOperations: number
+  l3Logs: number
+  l3LogBytes: number
+  economicLogs: number
+  economicLogBytes: number
+}
+
+const EMPTY_WORK: ActionWorkV2 = {
+  radixWrites: 0,
+  storageOperations: 0,
+  l3Logs: 0,
+  l3LogBytes: 0,
+  economicLogs: 0,
+  economicLogBytes: 0,
+}
+
+function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
+  return {
+    radixWrites: left.radixWrites + right.radixWrites,
+    storageOperations: left.storageOperations + right.storageOperations,
+    l3Logs: left.l3Logs + right.l3Logs,
+    l3LogBytes: left.l3LogBytes + right.l3LogBytes,
+    economicLogs: left.economicLogs + right.economicLogs,
+    economicLogBytes: left.economicLogBytes + right.economicLogBytes,
+  }
+}
+
+function placeActionWork(fills: number): ActionWorkV2 {
+  const twiceFills = fills * 2
+  const changedLevels = fills + 2
+  const searches = fills + 1
+  const l3Logs = twiceFills + 1
+  return {
+    radixWrites: (twiceFills + 3) * RADIX_WRITES_PER_CHANGED_LEVEL,
+    storageOperations:
+      changedLevels * STORAGE_OPS_PER_CHANGED_LEVEL +
+      fills * STORAGE_OPS_PER_FILL +
+      searches * STORAGE_OPS_PER_SEARCH,
+    l3Logs,
+    l3LogBytes: l3Logs * L3_LOG_BYTES,
+    economicLogs: fills * ECONOMIC_LOGS_PER_FILL,
+    economicLogBytes: fills * ECONOMIC_LOG_BYTES_PER_FILL,
+  }
+}
+
+function cancelActionWork(cancels: number): ActionWorkV2 {
+  return {
+    ...EMPTY_WORK,
+    radixWrites: cancels * RADIX_WRITES_PER_CHANGED_LEVEL,
+    storageOperations: cancels * CANCEL_STORAGE_OPS,
+    l3Logs: cancels,
+    l3LogBytes: cancels * L3_LOG_BYTES,
+  }
+}
+
+function scheduleActionWork(markets: number): ActionWorkV2 {
+  return {
+    ...EMPTY_WORK,
+    storageOperations: markets + ARM_SCHEDULE_FIXED_STORAGE_OPS,
+  }
+}
+
+function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
+  if (action.kind === 'place') return placeActionWork(action.maxFills)
+  if (
+    action.kind === 'cancelByOrderId' ||
+    action.kind === 'cancelByClientOrderId'
+  ) {
+    return cancelActionWork(1)
+  }
+  if (action.kind === 'cancelReplace') {
+    return addActionWork(cancelActionWork(1), placeActionWork(action.maxFills))
+  }
+  if (action.kind === 'cancelMarketChunk') {
+    return cancelActionWork(action.maxOrders)
+  }
+  if (action.kind === 'armCancelSchedule') {
+    return scheduleActionWork(action.marketIds.length)
+  }
+  if (action.kind === 'renewCancelSchedule') {
+    return { ...EMPTY_WORK, storageOperations: RENEW_SCHEDULE_STORAGE_OPS }
+  }
+  if (action.kind === 'disarmCancelSchedule') {
+    return scheduleActionWork(EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
+  }
+  return EMPTY_WORK
+}
+
+function enforceActionWork(work: ActionWorkV2, actionCount: number): void {
+  const totalLogs = actionCount + work.l3Logs + work.economicLogs
+  const totalLogBytes =
+    actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes
+  const dimensions = [
+    [
+      'radix writes',
+      work.radixWrites,
+      EXCHANGE_ACTION_V2_LIMITS.maxRadixWrites,
+    ],
+    [
+      'storage operations',
+      work.storageOperations,
+      EXCHANGE_ACTION_V2_LIMITS.maxStorageOperations,
+    ],
+    ['logs', totalLogs, EXCHANGE_ACTION_V2_LIMITS.maxLogs],
+    ['log bytes', totalLogBytes, EXCHANGE_ACTION_V2_LIMITS.maxLogBytes],
+  ] as const
+  for (const [name, actual, maximum] of dimensions) {
+    if (actual > maximum) {
+      throw new Error(`batch work ${name} ${actual} exceeds ${maximum}`)
+    }
+  }
+}
+
 function validateAggregateBounds(batch: ExchangeActionBatchV2): void {
   const clientIds = new Set<string>()
   const markets = new Set<string>()
   let cancels = 0
   let fills = 0
+  let work = EMPTY_WORK
   for (const action of batch.actions) {
     const clientId = bytesToHex(
       fixedBytes(action.clientActionId, 16, 'clientActionId'),
@@ -538,6 +707,7 @@ function validateAggregateBounds(batch: ExchangeActionBatchV2): void {
     else if (action.kind === 'cancelMarketChunk') cancels += action.maxOrders
     if (action.kind === 'place' || action.kind === 'cancelReplace')
       fills += action.maxFills
+    work = addActionWork(work, actionWorkFromModel(action))
   }
   if (markets.size > EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
     throw new Error('batch contains more than 16 markets')
@@ -545,22 +715,28 @@ function validateAggregateBounds(batch: ExchangeActionBatchV2): void {
     throw new Error('batch requests more than 64 cancels')
   if (fills > EXCHANGE_ACTION_V2_LIMITS.maxFills)
     throw new Error('batch requests more than 64 fills')
+  enforceActionWork(work, batch.actions.length)
 }
 
 /** Encode one canonical DXA2 batch with the same selected Task 5 limits as Rust. */
 export function encodeExchangeActionBatchV2(batch: ExchangeActionBatchV2): Hex {
+  if (typeof batch !== 'object' || batch === null) {
+    throw new Error('batch must be an object')
+  }
+  strictObjectKeys(batch, ['atomicity', 'actions'], 'batch')
   if (
     batch.atomicity !== 'atomicAll' &&
     batch.atomicity !== 'continueOnReject'
   ) {
     throw new Error('unknown batch atomicity')
   }
+  if (!Array.isArray(batch.actions)) throw new Error('actions must be an array')
   if (batch.actions.length === 0) throw new Error('actions must be nonempty')
   if (batch.actions.length > EXCHANGE_ACTION_V2_LIMITS.maxActions) {
     throw new Error('batch supports at most 32 actions')
   }
-  validateAggregateBounds(batch)
   const records = batch.actions.map(encodeAction)
+  validateAggregateBounds(batch)
   const writer = new Writer()
   writer.push(MAGIC)
   writer.u8(VERSION, 'version')
@@ -827,11 +1003,105 @@ function decodeRecord(record: Uint8Array): ExchangeActionV2 {
   throw new Error(`unknown action tag ${tag}`)
 }
 
+function boundedHexBytes(encoded: Hex): Uint8Array {
+  if (typeof encoded !== 'string' || !encoded.startsWith('0x')) {
+    throw new Error('encoded batch must be 0x-prefixed hex')
+  }
+  const hexLength = encoded.length - 2
+  if (hexLength % 2 !== 0)
+    throw new Error('encoded batch must be even-length hex')
+  if (hexLength / 2 > EXCHANGE_ACTION_V2_LIMITS.maxEncodedBytes) {
+    throw new Error('encoded batch exceeds 16384 bytes')
+  }
+  if (!/^[0-9a-fA-F]*$/.test(encoded.slice(2))) {
+    throw new Error('encoded batch contains invalid hex')
+  }
+  return hexToBytes(encoded)
+}
+
+function readWireU16(bytes: Uint8Array, offset: number): number {
+  if (offset + 2 > bytes.length) throw new Error('truncated action record')
+  return bytes[offset]! * 0x100 + bytes[offset + 1]!
+}
+
+function exactWireRecordLength(
+  bytes: Uint8Array,
+  offset: number,
+  length: number,
+): ActionWorkV2 {
+  const tag = bytes[offset]!
+  const fixedLengths: Readonly<Record<number, number>> = {
+    1: 152,
+    2: 84,
+    3: 84,
+    4: 184,
+    5: 56,
+    7: 68,
+    8: 60,
+    9: 52,
+  }
+  if (tag === 6) {
+    if (length < 80) throw new Error('truncated arm schedule record')
+    const marketCount = readWireU16(bytes, offset + 78)
+    const expected = 80 + marketCount * 32
+    if (length !== expected) {
+      throw new Error(
+        `arm schedule record length ${length} does not match ${expected}`,
+      )
+    }
+    return scheduleActionWork(marketCount)
+  }
+  const expected = fixedLengths[tag]
+  if (expected === undefined) throw new Error(`unknown action tag ${tag}`)
+  if (length !== expected) {
+    throw new Error(
+      `action tag ${tag} record length ${length} does not match ${expected}`,
+    )
+  }
+  if (tag === 1) return placeActionWork(readWireU16(bytes, offset + 84))
+  if (tag === 2 || tag === 3) return cancelActionWork(1)
+  if (tag === 4) {
+    return addActionWork(
+      cancelActionWork(1),
+      placeActionWork(readWireU16(bytes, offset + 148)),
+    )
+  }
+  if (tag === 5) return cancelActionWork(readWireU16(bytes, offset + 52))
+  if (tag === 7) {
+    return { ...EMPTY_WORK, storageOperations: RENEW_SCHEDULE_STORAGE_OPS }
+  }
+  if (tag === 8) {
+    return scheduleActionWork(EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
+  }
+  return EMPTY_WORK
+}
+
+function preflightWireWork(bytes: Uint8Array, actionCount: number): void {
+  let offset = HEADER_BYTES
+  let work = EMPTY_WORK
+  enforceActionWork(work, actionCount)
+  for (let index = 0; index < actionCount; index += 1) {
+    if (offset + ACTION_PREFIX_BYTES > bytes.length) {
+      throw new Error('truncated action prefix')
+    }
+    const length = readWireU16(bytes, offset + 2)
+    if (length < ACTION_PREFIX_BYTES || offset + length > bytes.length) {
+      throw new Error('truncated action record')
+    }
+    work = addActionWork(work, exactWireRecordLength(bytes, offset, length))
+    enforceActionWork(work, actionCount)
+    offset += length
+  }
+  if (offset !== bytes.length) {
+    throw new Error('trailing bytes after action batch')
+  }
+}
+
 /** Strictly decode canonical DXA2 bytes and reject alternate encodings. */
 export function decodeExchangeActionBatchV2(
   encoded: Hex,
 ): ExchangeActionBatchV2 {
-  const bytes = fixedBytes(encoded, hexToBytes(encoded).length, 'encoded batch')
+  const bytes = boundedHexBytes(encoded)
   if (bytes.length < HEADER_BYTES) throw new Error('truncated batch header')
   if (!MAGIC.every((byte, index) => bytes[index] === byte))
     throw new Error('invalid DXA2 magic')
@@ -848,6 +1118,17 @@ export function decodeExchangeActionBatchV2(
   const actionCount = header.u16('action count')
   if (header.u16('reserved') !== 0)
     throw new Error('nonzero reserved header bytes')
+  if (actionCount === 0) throw new Error('actions must be nonempty')
+  if (actionCount > EXCHANGE_ACTION_V2_LIMITS.maxActions) {
+    throw new Error('batch supports at most 32 actions')
+  }
+  const minimumBytes = HEADER_BYTES + actionCount * ACTION_PREFIX_BYTES
+  if (bytes.length < minimumBytes) {
+    throw new Error(
+      `minimum record footprint ${minimumBytes} exceeds ${bytes.length} bytes`,
+    )
+  }
+  preflightWireWork(bytes, actionCount)
   const actions: ExchangeActionV2[] = []
   let offset = HEADER_BYTES
   for (let index = 0; index < actionCount; index += 1) {

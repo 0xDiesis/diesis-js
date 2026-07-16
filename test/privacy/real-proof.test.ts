@@ -9,10 +9,9 @@ import { loadPrivacyArtifactsV1 } from '../../src/privacy/artifacts.js'
 import { proveTransferV1 } from '../../src/privacy/prover.js'
 import { runSnarkjsProofRequest } from '../../src/privacy/worker-runtime.js'
 import { buildTransferWitnessV1 } from '../../src/privacy/witness.js'
+import { resolveContractsCircuitsRoot } from '../helpers/contracts-circuits.js'
 
-const circuitsRoot = process.env.DIESIS_CONTRACTS_DIR
-  ? new URL(`file://${process.env.DIESIS_CONTRACTS_DIR.replace(/\/$/, '')}/circuits/`)
-  : new URL('../../../diesis/contracts/circuits/', import.meta.url)
+const circuitsRoot = await resolveContractsCircuitsRoot(import.meta.url)
 const poseidon = await buildPoseidon()
 const hash = (inputs: readonly bigint[]): bigint =>
   poseidon.F.toObject(poseidon(inputs))

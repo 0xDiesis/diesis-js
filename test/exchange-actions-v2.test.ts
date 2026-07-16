@@ -1,6 +1,12 @@
 import { readFile } from 'node:fs/promises'
 
-import { createWalletClient, custom, keccak256, type Hex } from 'viem'
+import {
+  bytesToHex,
+  createWalletClient,
+  custom,
+  keccak256,
+  type Hex,
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
 
@@ -9,6 +15,7 @@ import {
   decodeExchangeActionBatchV2,
   decodeExchangeActionsV2Result,
   encodeExchangeActionBatchV2,
+  EXCHANGE_ACTION_V2_LIMITS,
   prepareExchangeActionsV2Transaction,
   sendExchangeActionsV2Transaction,
   signExchangeActionsV2Transaction,
@@ -55,6 +62,12 @@ const vector = (name: string): Vector => {
 const hex = (value: string): Hex => `0x${value.replace(/^0x/, '')}`
 const repeated = (byte: number, length: number): Hex =>
   hex(byte.toString(16).padStart(2, '0').repeat(length))
+const resultTuple = (accepted: number, rejected: number): Hex =>
+  hex(
+    `${'00'.repeat(32)}${accepted.toString(16).padStart(64, '0')}${rejected
+      .toString(16)
+      .padStart(64, '0')}`,
+  )
 
 const place = (clientByte = 1): PlaceActionV2 => ({
   kind: 'place',
@@ -309,7 +322,10 @@ describe('canonical exchange action V2 wire', () => {
       hex(expected.result_hash_hex),
     )
     expect(
-      decodeExchangeActionsV2Result(hex(expected.encoded_return_hex)),
+      decodeExchangeActionsV2Result(
+        hex(expected.encoded_return_hex),
+        outcomes.length,
+      ),
     ).toEqual({
       resultHash: hex(expected.result_hash_hex),
       acceptedCount: expected.accepted_count,
@@ -341,10 +357,138 @@ describe('canonical exchange action V2 wire', () => {
         ...outcomes.slice(2),
       ]),
     ).toThrow(/reason code/)
+
+    expect(() => decodeExchangeActionsV2Result(resultTuple(0, 0), 1)).toThrow(
+      /result count mismatch/,
+    )
+    expect(() => decodeExchangeActionsV2Result(resultTuple(33, 0), 32)).toThrow(
+      /more than 32 actions/,
+    )
+    expect(() => decodeExchangeActionsV2Result(resultTuple(1, 1), 1)).toThrow(
+      /result count mismatch/,
+    )
+    expect(() => decodeExchangeActionsV2Result(resultTuple(1, 0), 0)).toThrow(
+      /expected action count.*between 1 and 32/,
+    )
+    expect(() =>
+      decodeExchangeActionsV2Result(
+        hex(`${'00'.repeat(32)}01${'00'.repeat(31)}${'00'.repeat(32)}`),
+        1,
+      ),
+    ).toThrow(/noncanonical exchange V2 result count/)
+  })
+
+  it('matches the frozen Rust work formulas at cross-language boundaries', () => {
+    expect(EXCHANGE_ACTION_V2_LIMITS).toMatchObject({
+      version: 2,
+      maxRadixWrites: 2_048,
+      maxStorageOperations: 4_096,
+      maxLogBytes: 32_768,
+      maxLogs: 256,
+      maxSessionAuthorizationsPerPrincipal: 8,
+      maxSchedulesPerPrincipal: 8,
+      replayHorizonBlocks: 256,
+      maxActiveOrdersPerMarket: 32_768,
+      maxActiveOrdersPerBook: 262_144,
+    })
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [{ ...place(), maxFills: 14, maxPriceLevels: 1 }],
+      }),
+    ).not.toThrow()
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [{ ...place(), maxFills: 15, maxPriceLevels: 1 }],
+      }),
+    ).toThrow(/radix writes.*2112.*2048/)
+
+    const cancelChunk = (
+      clientByte: number,
+    ): ExchangeActionBatchV2['actions'][number] => ({
+      kind: 'cancelMarketChunk',
+      clientActionId: repeated(clientByte, 16),
+      marketId: repeated(0x11, 32),
+      maxOrders: 32,
+    })
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [cancelChunk(1)],
+      }),
+    ).not.toThrow()
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [cancelChunk(1), cancelChunk(2)],
+      }),
+    ).toThrow(/radix writes.*4096.*2048/)
+  })
+
+  it('rejects hostile wire shape before bounded decode allocation', () => {
+    expect(() => decodeExchangeActionBatchV2('0x0' as Hex)).toThrow(
+      /even-length hex/,
+    )
+    expect(() => decodeExchangeActionBatchV2('0xzz' as Hex)).toThrow(
+      /invalid hex/,
+    )
+    expect(() =>
+      decodeExchangeActionBatchV2(
+        hex('00'.repeat(EXCHANGE_ACTION_V2_LIMITS.maxEncodedBytes + 1)),
+      ),
+    ).toThrow(/encoded batch exceeds 16384 bytes/)
+    expect(() =>
+      decodeExchangeActionBatchV2(hex('445841320200000000000000')),
+    ).toThrow(/actions must be nonempty/)
+    expect(() =>
+      decodeExchangeActionBatchV2(hex('445841320200000000210000')),
+    ).toThrow(/at most 32 actions/)
+    expect(() =>
+      decodeExchangeActionBatchV2(hex('445841320200000000010000')),
+    ).toThrow(/minimum record footprint/)
+
+    const impossibleSchedule = new Uint8Array(12 + 80)
+    impossibleSchedule.set([0x44, 0x58, 0x41, 0x32, 2, 0, 0, 0, 0, 1], 0)
+    impossibleSchedule.set([6, 0, 0, 80], 12)
+    impossibleSchedule[12 + 78] = 0xff
+    impossibleSchedule[12 + 79] = 0xff
+    expect(() =>
+      decodeExchangeActionBatchV2(bytesToHex(impossibleSchedule)),
+    ).toThrow(/arm schedule record length/)
   })
 
   it('rejects malformed, ambiguous, and over-bound batches before submission', () => {
     const base = place()
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [base],
+        nonce: 1n,
+      } as never),
+    ).toThrow(/unknown batch field nonce/)
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [
+          {
+            ...base,
+            timeInForce: { kind: 'gtc', nonce: 1n },
+          } as never,
+        ],
+      }),
+    ).toThrow(/unknown gtc timeInForce field nonce/)
+    expect(() =>
+      encodeExchangeActionBatchV2({
+        atomicity: 'atomicAll',
+        actions: [
+          {
+            ...base,
+            timeInForce: { kind: 'ioc', expiry: 99n },
+          } as never,
+        ],
+      }),
+    ).toThrow(/unknown ioc timeInForce field expiry/)
     expect(() =>
       prepareExchangeActionsV2Transaction({
         book: 'options' as never,
