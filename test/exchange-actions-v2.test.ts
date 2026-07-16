@@ -579,6 +579,37 @@ describe('canonical exchange action V2 wire', () => {
     expect(() =>
       decodeExchangeActionBatchV2(bytesToHex(impossibleSchedule)),
     ).toThrow(/arm schedule record length/)
+
+    const overMarketSchedule = new Uint8Array(12 + 80 + 17 * 32)
+    overMarketSchedule.set([0x44, 0x58, 0x41, 0x32, 2, 0, 0, 0, 0, 1], 0)
+    overMarketSchedule.set([6, 0, 0x02, 0x70], 12)
+    overMarketSchedule[12 + 78] = 0
+    overMarketSchedule[12 + 79] = 17
+    expect(() =>
+      decodeExchangeActionBatchV2(bytesToHex(overMarketSchedule)),
+    ).toThrow(/wire schedule market count must be between 1 and 16/)
+  })
+
+  it('checks result input length before hex conversion', () => {
+    const oversizedResultWithInvalidTail = `0x${'00'.repeat(96)}zz` as Hex
+    expect(() =>
+      decodeExchangeActionsV2Result(oversizedResultWithInvalidTail, 1),
+    ).toThrow(/exchange V2 result must be 96 bytes/)
+  })
+
+  it('checks result-hash batch bounds before hex conversion', () => {
+    const oversizedBatchWithInvalidTail =
+      `0x${'00'.repeat(EXCHANGE_ACTION_V2_LIMITS.maxEncodedBytes + 1)}zz` as Hex
+    expect(() =>
+      computeExchangeResultHashV2(oversizedBatchWithInvalidTail, [
+        {
+          accepted: true,
+          actionIndex: 0,
+          actionTag: 1,
+          resultId: repeated(1, 32),
+        },
+      ]),
+    ).toThrow(/encoded batch exceeds 16384 bytes/)
   })
 
   it('rejects malformed, ambiguous, and over-bound batches before submission', () => {

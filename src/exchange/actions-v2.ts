@@ -1141,6 +1141,9 @@ function exactWireRecordLength(
         `arm schedule record length ${length} does not match ${expected}`,
       )
     }
+    if (marketCount < 1 || marketCount > EXCHANGE_ACTION_V2_LIMITS.maxMarkets) {
+      throw new Error('wire schedule market count must be between 1 and 16')
+    }
     return scheduleActionWork(marketCount)
   }
   const expected = fixedLengths[tag]

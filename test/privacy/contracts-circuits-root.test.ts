@@ -77,4 +77,36 @@ describe('contracts circuit artifact discovery', () => {
       resolveContractsCircuitsRoot(pathToFileURL(sdkTest)),
     ).resolves.toEqual(pathToFileURL(`${circuits}/`))
   })
+
+  it('fails closed when multiple linked contracts worktrees contain artifacts', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'diesis-sdk-artifacts-'))
+    temporaryRoots.push(root)
+    const sdkTest = join(
+      root,
+      'diesis-core',
+      '.worktrees',
+      'sdk-hft-v2',
+      'test',
+      'privacy',
+      'anchor.ts',
+    )
+    for (const worktree of ['contracts-a', 'contracts-b']) {
+      const manifest = join(
+        root,
+        'diesis-core',
+        '.worktrees',
+        worktree,
+        'circuits',
+        'manifests',
+        'test',
+        'transfer-v1.json',
+      )
+      await mkdir(dirname(manifest), { recursive: true })
+      await writeFile(manifest, '{}')
+    }
+
+    await expect(
+      resolveContractsCircuitsRoot(pathToFileURL(sdkTest)),
+    ).rejects.toThrow(/multiple linked contracts worktrees contain artifacts/)
+  })
 })

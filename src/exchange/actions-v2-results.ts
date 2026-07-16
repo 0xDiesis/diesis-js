@@ -66,6 +66,9 @@ export function decodeExchangeActionsV2Result(
   ) {
     throw new Error('expected action count must be between 1 and 32')
   }
+  if (typeof data !== 'string' || data.length !== 2 + 96 * 2) {
+    throw new Error('exchange V2 result must be 96 bytes')
+  }
   const reader = new Reader(fixedBytes(data, 96, 'exchange V2 result'))
   const resultHash = bytesToHex(reader.take(32, 'result hash'))
   const acceptedWord = reader.take(32, 'accepted count')
@@ -98,8 +101,8 @@ export function computeExchangeResultHashV2(
   if (outcomes.length === 0 || outcomes.length > 0xffff) {
     throw new Error('outcomes must be a nonempty uint16 count')
   }
-  const batch = hexToBytes(encodedActions)
   const decoded = decodeExchangeActionBatchV2(encodedActions)
+  const batch = hexToBytes(encodedActions)
   if (decoded.actions.length !== outcomes.length) {
     throw new Error(
       `outcome count mismatch: expected ${decoded.actions.length}, got ${outcomes.length}`,

@@ -56,12 +56,22 @@ export async function resolveContractsCircuitsRoot(
 
   let cursor = dirname(fileURLToPath(anchor))
   for (;;) {
-    const candidates = [
-      join(cursor, 'diesis', 'contracts', 'circuits'),
-      ...(await linkedWorktreeCircuits(cursor)),
-    ]
-    for (const circuits of candidates) {
-      if (await isCircuitsRoot(circuits)) return pathToFileURL(`${circuits}/`)
+    const canonical = join(cursor, 'diesis', 'contracts', 'circuits')
+    if (await isCircuitsRoot(canonical)) {
+      return pathToFileURL(`${canonical}/`)
+    }
+    const linkedCandidates = await linkedWorktreeCircuits(cursor)
+    const linkedMatches: string[] = []
+    for (const circuits of linkedCandidates) {
+      if (await isCircuitsRoot(circuits)) linkedMatches.push(circuits)
+    }
+    if (linkedMatches.length > 1) {
+      throw new Error(
+        'multiple linked contracts worktrees contain artifacts; set DIESIS_CONTRACTS_DIR',
+      )
+    }
+    if (linkedMatches[0] !== undefined) {
+      return pathToFileURL(`${linkedMatches[0]}/`)
     }
     const parent = dirname(cursor)
     if (parent === cursor) break
