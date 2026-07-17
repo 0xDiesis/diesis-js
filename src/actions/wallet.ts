@@ -1,4 +1,12 @@
-import type { Client, Transport, Chain, Account, Hex, Address } from 'viem'
+import type {
+  Client,
+  Transport,
+  Chain,
+  Account,
+  Hex,
+  Hash,
+  Address,
+} from 'viem'
 import {
   exchangeWalletActions,
   type ExchangeWalletActions,
@@ -24,6 +32,13 @@ export type DiesisWalletActions = ExchangeWalletActions &
       value?: bigint
       data?: Hex
     }) => Promise<{ hash: Hex; receipt: Record<string, unknown> }>
+    /**
+     * Nonblocking gated raw submission: applies the reserved-cancel admission
+     * gate then submits the serialized transaction to the pool, returning the
+     * hash without waiting for inclusion. Usable on the strict trading endpoint,
+     * which refuses to co-expose `eth_sendRawTransaction`.
+     */
+    sendRawTransaction: (serializedTransactionHex: Hex) => Promise<Hash>
     /**
      * Sign a v2 order intent.
      *
@@ -57,6 +72,11 @@ export function diesisWalletActions<
       client.request({
         method: 'diesis_sendRawTransactionSync' as never,
         params: [params],
+      } as never),
+    sendRawTransaction: (serializedTransactionHex) =>
+      client.request({
+        method: 'diesis_sendRawTransaction' as never,
+        params: [serializedTransactionHex],
       } as never),
     signOrderIntent: (intent, verifyingContract) =>
       signOrderIntent(client as never, intent, verifyingContract),

@@ -274,7 +274,7 @@ describe('canonical exchange action V2 wire', () => {
       transport: custom({
         request: async (request) => {
           requests.push(request)
-          if (request.method === 'eth_sendRawTransaction') {
+          if (request.method === 'diesis_sendRawTransaction') {
             return '0x2f5da44fc420b4960489cb3ea87920bd191f710ecd604e26cdfd823aede2e57a'
           }
           throw new Error(`unexpected RPC ${request.method}`)
@@ -296,7 +296,7 @@ describe('canonical exchange action V2 wire', () => {
       '0x2f5da44fc420b4960489cb3ea87920bd191f710ecd604e26cdfd823aede2e57a',
     )
     expect(requests).toEqual([
-      { method: 'eth_sendRawTransaction', params: [raw] },
+      { method: 'diesis_sendRawTransaction', params: [raw] },
     ])
   })
 
