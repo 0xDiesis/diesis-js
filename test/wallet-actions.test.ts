@@ -23,7 +23,10 @@ function walletWithRequests() {
     transport: custom({
       request: async (request) => {
         requests.push(request)
-        if (request.method === 'diesis_sendRawTransaction') {
+        if (
+          request.method === 'diesis_sendRawTransaction' ||
+          request.method === 'eth_sendRawTransaction'
+        ) {
           return '0x2f5da44fc420b4960489cb3ea87920bd191f710ecd604e26cdfd823aede2e57a'
         }
         throw new Error(`unexpected RPC ${request.method}`)
@@ -34,17 +37,33 @@ function walletWithRequests() {
 }
 
 describe('diesis wallet actions', () => {
-  it('sendRawTransaction emits the gated diesis_sendRawTransaction method with the serialized tx and returns the hash', async () => {
+  it('sendRawTransactionGated emits the gated Diesis method', async () => {
     const { client, requests } = walletWithRequests()
     const serialized =
       '0x02f8b08207bc0701648307a12094d1e5150000000000000000000000000000005901' as Hex
 
-    await expect(client.sendRawTransaction(serialized)).resolves.toBe(
+    await expect(client.sendRawTransactionGated(serialized)).resolves.toBe(
       '0x2f5da44fc420b4960489cb3ea87920bd191f710ecd604e26cdfd823aede2e57a',
     )
 
     expect(requests).toEqual([
       { method: 'diesis_sendRawTransaction', params: [serialized] },
+    ])
+  })
+
+  it('preserves viem sendRawTransaction and its standard parameter shape', async () => {
+    const { client, requests } = walletWithRequests()
+    const serialized =
+      '0x02f8b08207bc0701648307a12094d1e5150000000000000000000000000000005901' as Hex
+
+    await expect(
+      client.sendRawTransaction({ serializedTransaction: serialized }),
+    ).resolves.toBe(
+      '0x2f5da44fc420b4960489cb3ea87920bd191f710ecd604e26cdfd823aede2e57a',
+    )
+
+    expect(requests).toEqual([
+      { method: 'eth_sendRawTransaction', params: [serialized] },
     ])
   })
 })

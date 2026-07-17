@@ -11,6 +11,7 @@ import {
   type Transport,
   type TransactionSerializableEIP1559,
 } from 'viem'
+import { sendRawTransaction } from 'viem/actions'
 
 import { IDiesisSpotBookAbi } from '../abi/index.js'
 import { DIESIS_PERPS_BOOK, DIESIS_SPOT_BOOK } from '../addresses.js'
@@ -1334,26 +1335,43 @@ export type SendExchangeActionsV2Parameters = {
 /**
  * Submit one ordinary transaction through the gated Diesis method
  * `diesis_sendRawTransaction`, which applies the reserved-cancel admission gate
- * and works on the strict trading endpoint (that endpoint refuses to co-expose
- * `eth_sendRawTransaction`). Only the Ethereum nonce provides replay protection.
+ * and works on the strict trading endpoint. Nodes without the gated extension
+ * fall back to `eth_sendRawTransaction` only when the gated method is absent.
+ * Only the Ethereum nonce provides replay protection.
  */
-export function sendExchangeActionsV2Transaction(
+export async function sendExchangeActionsV2Transaction(
   client: Client<Transport, Chain, LocalAccount>,
   parameters: SendExchangeActionsV2Parameters,
 ): Promise<Hash> {
-  return signExchangeActionsV2Transaction(client.account, {
-    ...parameters,
-    transaction: {
-      ...parameters.transaction,
-      type: 'eip1559',
-      chainId: client.chain.id,
+  const serializedTransaction = await signExchangeActionsV2Transaction(
+    client.account,
+    {
+      ...parameters,
+      transaction: {
+        ...parameters.transaction,
+        type: 'eip1559',
+        chainId: client.chain.id,
+      },
     },
-  }).then((serializedTransaction) =>
-    client.request({
+  )
+
+  try {
+    return await client.request({
       method: 'diesis_sendRawTransaction' as never,
       params: [serializedTransaction] as never,
-    } as never),
-  )
+    } as never)
+  } catch (error) {
+    if (
+      typeof error !== 'object' ||
+      error === null ||
+      !('code' in error) ||
+      error.code !== -32601
+    ) {
+      throw error
+    }
+  }
+
+  return sendRawTransaction(client, { serializedTransaction })
 }
 
 export * from './actions-v2-results.js'

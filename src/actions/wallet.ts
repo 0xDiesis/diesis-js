@@ -38,7 +38,7 @@ export type DiesisWalletActions = ExchangeWalletActions &
      * hash without waiting for inclusion. Usable on the strict trading endpoint,
      * which refuses to co-expose `eth_sendRawTransaction`.
      */
-    sendRawTransaction: (serializedTransactionHex: Hex) => Promise<Hash>
+    sendRawTransactionGated: (serializedTransactionHex: Hex) => Promise<Hash>
     /**
      * Sign a v2 order intent.
      *
@@ -73,7 +73,7 @@ export function diesisWalletActions<
         method: 'diesis_sendRawTransactionSync' as never,
         params: [params],
       } as never),
-    sendRawTransaction: (serializedTransactionHex) =>
+    sendRawTransactionGated: (serializedTransactionHex) =>
       client.request({
         method: 'diesis_sendRawTransaction' as never,
         params: [serializedTransactionHex],

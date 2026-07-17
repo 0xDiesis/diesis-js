@@ -300,6 +300,102 @@ describe('canonical exchange action V2 wire', () => {
     ])
   })
 
+  it('falls back to eth_sendRawTransaction when the gated method is unavailable', async () => {
+    const batch = canonicalBatches().atomic_spot_gtc_limit!
+    const account = privateKeyToAccount(
+      '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+    )
+    const raw = await signExchangeActionsV2Transaction(account, {
+      book: 'spot',
+      batch,
+      transaction: {
+        type: 'eip1559',
+        chainId: 1980,
+        nonce: 7,
+        gas: 500_000n,
+        maxFeePerGas: 100n,
+        maxPriorityFeePerGas: 1n,
+      },
+    })
+    const requests: Array<{ method: string; params?: unknown }> = []
+    const hash =
+      '0x2f5da44fc420b4960489cb3ea87920bd191f710ecd604e26cdfd823aede2e57a'
+    const client = createWalletClient({
+      account,
+      chain: {
+        id: 1980,
+        name: 'Diesis',
+        nativeCurrency: { name: 'Diesis', symbol: 'DS', decimals: 18 },
+        rpcUrls: { default: { http: ['http://127.0.0.1:8545'] } },
+      },
+      transport: custom({
+        request: async (request) => {
+          requests.push(request)
+          if (request.method === 'diesis_sendRawTransaction') {
+            throw Object.assign(new Error('Method not found'), { code: -32601 })
+          }
+          if (request.method === 'eth_sendRawTransaction') return hash
+          throw new Error(`unexpected RPC ${request.method}`)
+        },
+      }),
+    })
+
+    await expect(
+      sendExchangeActionsV2Transaction(client, {
+        book: 'spot',
+        batch,
+        transaction: {
+          nonce: 7,
+          gas: 500_000n,
+          maxFeePerGas: 100n,
+          maxPriorityFeePerGas: 1n,
+        },
+      }),
+    ).resolves.toBe(hash)
+    expect(requests).toEqual([
+      { method: 'diesis_sendRawTransaction', params: [raw] },
+      { method: 'eth_sendRawTransaction', params: [raw] },
+    ])
+  })
+
+  it('does not fall back when the gated method fails for another reason', async () => {
+    const batch = canonicalBatches().atomic_spot_gtc_limit!
+    const account = privateKeyToAccount(
+      '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+    )
+    const requests: Array<{ method: string; params?: unknown }> = []
+    const client = createWalletClient({
+      account,
+      chain: {
+        id: 1980,
+        name: 'Diesis',
+        nativeCurrency: { name: 'Diesis', symbol: 'DS', decimals: 18 },
+        rpcUrls: { default: { http: ['http://127.0.0.1:8545'] } },
+      },
+      transport: custom({
+        request: async (request) => {
+          requests.push(request)
+          throw Object.assign(new Error('admission rejected'), { code: -32000 })
+        },
+      }),
+    })
+
+    await expect(
+      sendExchangeActionsV2Transaction(client, {
+        book: 'spot',
+        batch,
+        transaction: {
+          nonce: 7,
+          gas: 500_000n,
+          maxFeePerGas: 100n,
+          maxPriorityFeePerGas: 1n,
+        },
+      }),
+    ).rejects.toThrow('admission rejected')
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.method).toBe('diesis_sendRawTransaction')
+  })
+
   it('matches the frozen ordered outcome commitment and ABI return bytes', () => {
     const frozen = vector('continue_mixed_ordering')
     const expected = frozen.result!
