@@ -51,22 +51,71 @@ export type {
 } from './intents/index.js'
 
 // Bundles
-export { bundleActions } from './bundles/actions.js'
-export { ExecutionFlags, BUNDLE_ONLY_SENTINEL } from './bundles/types.js'
+export {
+  bundleActions,
+  BUNDLE_PLAN_TAG,
+  BUNDLE_MEMBER_CONSENT_TYPES,
+  canonicalBundleV2,
+  consentDigest,
+  consentDomain,
+  encodeReserveBundleV2,
+  ExecutionFlags,
+  flagsFromWire,
+  flagsToWire,
+  planHash,
+  planToWire,
+  reservationValue,
+  signMemberConsent,
+} from './bundles/index.js'
 export type {
+  BundleConsentAccount,
   BundleFailure,
+  BundleLifecycle,
+  BundleManifestEntry,
   BundleMember,
+  BundleMemberConsentV2,
   BundleMemberRole,
   BundleOrdering,
+  BundlePaymentOutcome,
+  BundlePaymentTerms,
+  BundlePlanV2,
   BundleStatus,
   BundleStatusResult,
+  ConsentDigestParams,
   PreparedBundle,
+  StealthBundleInput,
+  SubmitBundleInput,
+  SubmitBundleMember,
   SubmitBundleResult,
-} from './bundles/types.js'
+} from './bundles/index.js'
 
 // Patronage
-export { patronageActions } from './patronage/actions.js'
-export type { GasGrant } from './patronage/actions.js'
+export {
+  patronageActions,
+  campaignIdFor,
+  campaignVoucherDigest,
+  campaignVoucherDomain,
+  CAMPAIGN_VOUCHER_TYPES,
+  encodeClaimCampaignVoucher,
+  encodeRegisterCampaign,
+  encodeRevokeCampaignVoucher,
+  encodeRotateCampaignOwner,
+  encodeSetCampaignRevoked,
+  signCampaignVoucher,
+} from './patronage/index.js'
+export type {
+  CampaignVoucherAccount,
+  CampaignVoucherV1,
+  GasGrant,
+} from './patronage/index.js'
+
+// Settlement router
+export {
+  encodeRouterDeposit,
+  encodeRouterWithdraw,
+  encodeSetTokenAllowed,
+  settlementRouter,
+} from './settlement/index.js'
 
 // Privacy
 export { privacyReadActions, privacyWriteActions } from './privacy/actions.js'
@@ -89,8 +138,11 @@ export type {
 // ABIs
 export {
   BootstrapConfigAbi,
+  DiesisBundleEscrowAbi,
   DiesisConfigAbi,
   DiesisCoreVaultAbi,
+  DiesisSettlementRouterAbi,
+  IDiesisBundleEscrowAbi,
   IDiesisSettlementAbi,
   IDiesisSpotBookAbi,
   IDiesisMarketsAbi,

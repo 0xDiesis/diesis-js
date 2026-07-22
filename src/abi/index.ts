@@ -1,8 +1,10 @@
 export {
   BootstrapConfigAbi,
+  DiesisBundleEscrowAbi,
   DiesisConfigAbi,
   DiesisCoreVaultAbi,
   DiesisPatronAbi,
+  DiesisSettlementRouterAbi,
   DiesisBaseRegistrarAbi,
   DiesisNamePolicyAbi,
   DiesisNameRegistryAbi,
@@ -14,6 +16,7 @@ export {
   DiesisStakingAbi,
   IDiesisBootstrapOracleAbi,
   IDiesisBaseRegistrarAbi,
+  IDiesisBundleEscrowAbi,
   IDiesisBuybackBurnAbi,
   IDiesisConductorsAbi,
   IDiesisCoreVaultAbi,
