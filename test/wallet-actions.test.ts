@@ -37,6 +37,12 @@ function walletWithRequests() {
 }
 
 describe('diesis wallet actions', () => {
+  it('does not expose the legacy generic stealth-bundle shortcut', () => {
+    const { client } = walletWithRequests()
+
+    expect('sendStealthBundle' in client).toBe(false)
+  })
+
   it('sendRawTransactionGated emits the gated Diesis method', async () => {
     const { client, requests } = walletWithRequests()
     const serialized =

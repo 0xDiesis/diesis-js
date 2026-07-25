@@ -52,10 +52,6 @@ export type DiesisWalletActions = ExchangeWalletActions &
     ) => Promise<SignedOrderIntent>
     signTradingKeyAuthorization: (auth: TradingKeyAuthorization) => Promise<Hex>
     submitIntent: (params: { intent: SignedOrderIntent }) => Promise<Hex>
-    sendStealthBundle: (params: {
-      fundingTx: Hex
-      announceTx: Hex
-    }) => Promise<{ planHash: Hex; status: string }>
   }
 
 export function diesisWalletActions<
@@ -86,11 +82,6 @@ export function diesisWalletActions<
       client.request({
         method: 'diesis_submitIntent' as never,
         params: [params.intent],
-      } as never),
-    sendStealthBundle: (params) =>
-      client.request({
-        method: 'diesis_sendStealthBundle' as never,
-        params: [params],
       } as never),
   }
 }
