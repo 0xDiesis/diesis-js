@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+
 import { recoverTypedDataAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
@@ -16,6 +18,20 @@ import {
   type BundlePlanV2,
 } from '../src/bundles/index.js'
 import { encodeReserveBundleV2, reservationValue } from '../src/bundles/index.js'
+
+describe('bundle documentation', () => {
+  it('uses the canonical Bundle V2 prepare and submit shapes', () => {
+    const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
+    const section = readme.match(/## Bundles\n([\s\S]*?)\n## Network Status/)?.[1]
+
+    expect(section).toContain('prepareBundle({ plan })')
+    expect(section).toContain('submitBundle({\n  plan,')
+    expect(section).toContain('planHash: prepared.planHash')
+    expect(section).toContain('payment,')
+    expect(section).toContain('members,')
+    expect(section).not.toContain('bundle:')
+  })
+})
 
 // The frozen cross-language fixed vector from docs/spec/bundles.md. The Rust,
 // TypeScript, and Python encoders must all reproduce this exact plan hash.

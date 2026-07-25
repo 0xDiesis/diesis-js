@@ -166,27 +166,68 @@ const intentHash = await walletClient.submitIntent({ intent: signedIntent })
 
 ## Bundles
 
-Prepare and submit transaction bundles with execution flags:
+Prepare the canonical plan, collect each member's detached consent, then submit
+the signed reservation and member transactions:
 
 ```typescript
-import { ExecutionFlags } from '@diesis/sdk'
+import { keccak256, type Hex } from 'viem'
+import {
+  ExecutionFlags,
+  signMemberConsent,
+  type BundlePlanV2,
+  type SubmitBundleMember,
+} from '@diesis/sdk'
 
-// Prepare a bundle
-const prepared = await publicClient.prepareBundle({
-  payment: '0x...',
-  bundle: ['0x...signedTx1', '0x...signedTx2'],
+const rawMemberTransaction = '0x...signedMemberTransaction' as Hex
+const plan = {
+  chainId: publicClient.chain.id,
+  expiry: BigInt(Math.floor(Date.now() / 1000) + 60),
   flags: ExecutionFlags.STOP_ON_SUCCESS,
-})
+  payment: {
+    payer: walletClient.account.address,
+    maximumBuilderPayment: 1_000_000_000_000n,
+    refundGasPrice: 1_000_000_000n,
+    maximumRefund: 500_000_000_000n,
+    escrowNonce: 1n,
+  },
+  orderedMembers: [
+    {
+      transactionHash: keccak256(rawMemberTransaction),
+      gasAllowance: 250_000,
+    },
+  ],
+} satisfies BundlePlanV2
 
-// Submit it
-const result = await publicClient.submitBundle({
+const prepared = await publicClient.prepareBundle({ plan })
+const signature = await signMemberConsent(walletClient.account, {
   planHash: prepared.planHash,
-  payment: '0x...',
-  bundle: ['0x...signedTx1', '0x...signedTx2'],
-  flags: ExecutionFlags.STOP_ON_SUCCESS,
+  memberIndex: 0,
+  transactionHash: plan.orderedMembers[0].transactionHash,
+  chainId: plan.chainId,
 })
 
-// Check status
+// Signed transaction that calls reserveBundleV2 for this plan and payment.
+const payment = '0x...signedReservationTransaction' as Hex
+const members: SubmitBundleMember[] = [
+  {
+    rawTransaction: rawMemberTransaction,
+    consent: {
+      planHash: prepared.planHash,
+      memberIndex: 0,
+      transactionHash: plan.orderedMembers[0].transactionHash,
+      signer: walletClient.account.address,
+      signature,
+    },
+  },
+]
+
+const result = await publicClient.submitBundle({
+  plan,
+  planHash: prepared.planHash,
+  payment,
+  members,
+})
+
 const status = await publicClient.getBundleStatus({ planHash: result.planHash })
 console.log(status.members, status.includedBlockNumber, status.failure)
 ```
