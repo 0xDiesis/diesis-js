@@ -136,36 +136,11 @@ export type {
 } from './staking/actions.js'
 
 // ABIs
-export {
-  BootstrapConfigAbi,
-  DiesisBundleEscrowAbi,
-  DiesisConfigAbi,
-  DiesisCoreVaultAbi,
-  DiesisSettlementRouterAbi,
-  IDiesisBundleEscrowAbi,
-  IDiesisSettlementAbi,
-  IDiesisSpotBookAbi,
-  IDiesisMarketsAbi,
-  DiesisStakingAbi,
-  DiesisPatronAbi,
-  IDiesisBootstrapOracleAbi,
-  IDiesisCoreVaultAbi,
-  IDiesisPositionAbi,
-  ILiquidStakedDSAbi,
-  IValidatorShareAbi,
-  IWrappedDSAbi,
-  DiesisShieldedPoolAbi,
-  DiesisPrivacyPoolsAbi,
-  DiesisBaseRegistrarAbi,
-  DiesisNamePolicyAbi,
-  DiesisNameRegistryAbi,
-  DiesisNameVerifierAbi,
-  DiesisPublicResolverAbi,
-  DiesisReverseRegistrarAbi,
-  IDiesisBaseRegistrarAbi,
-  IDiesisNamePolicyAbi,
-  IDiesisNameRegistryAbi,
-  IDiesisNameVerifierAbi,
-  IDiesisPublicResolverAbi,
-  IDiesisReverseRegistrarAbi,
-} from './abi/index.js'
+//
+// Re-exported as a whole rather than as a hand-listed subset. The ABI barrel is
+// generated from the contract artifacts, so any list restated here silently
+// falls behind the moment a contract is added — the two drift apart with no
+// error at either end. Forwarding the barrel makes the top level track
+// generation by construction. `export *` is static, so tree-shaking and the
+// emitted declarations are unaffected.
+export * from './abi/index.js'
