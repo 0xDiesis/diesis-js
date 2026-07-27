@@ -40,13 +40,22 @@ export {
   signOrderIntentWithAccount,
   signTradingKeyAuthorization,
 } from './intents/signing.js'
+export {
+  CANCEL_INTENT_TYPES,
+  getCancelIntentDomain,
+  getCancelIntentTypedData,
+  signCancelIntent,
+} from './intents/cancel.js'
 export { OrderFlags } from './intents/types.js'
 export type {
   OrderIntentAccount,
   OrderIntent,
+  CancelIntent,
+  CancelIntentAccount,
   RegisterTradingKeyParameters,
   RevokeTradingKeyParameters,
   SignedOrderIntent,
+  SignedCancelIntent,
   TradingKeyAuthorization,
 } from './intents/index.js'
 

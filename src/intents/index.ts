@@ -9,6 +9,12 @@ export {
   signTradingKeyAuthorization,
 } from './signing.js'
 export { OrderFlags } from './types.js'
+export {
+  CANCEL_INTENT_TYPES,
+  getCancelIntentDomain,
+  getCancelIntentTypedData,
+  signCancelIntent,
+} from './cancel.js'
 export type {
   OrderIntentAccount,
   RegisterTradingKeyParameters,
@@ -19,3 +25,8 @@ export type {
   SignedOrderIntent,
   TradingKeyAuthorization,
 } from './types.js'
+export type {
+  CancelIntent,
+  CancelIntentAccount,
+  SignedCancelIntent,
+} from './cancel.js'

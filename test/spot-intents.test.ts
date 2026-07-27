@@ -11,6 +11,12 @@ import {
 import { assertStopOrderPrices, encodeTriggerSpotStops } from '../src/exchange/stops.js'
 import { OrderType } from '../src/exchange/types.js'
 import { ORDER_INTENT_TYPES, getOrderIntentDomain } from '../src/intents/signing.js'
+import {
+  CANCEL_INTENT_TYPES,
+  getCancelIntentTypedData,
+  signCancelIntent,
+  type CancelIntent,
+} from '../src/intents/cancel.js'
 import { DIESIS_SPOT_BOOK } from '../src/addresses.js'
 
 const TRADER = '0x00000000000000000000000000000000000000AA' as const
@@ -44,6 +50,30 @@ describe('cancel-all spot intent', () => {
     })
     expect(recovered).toBe(account.address)
     expect(signed.intent).toBe(intent)
+  })
+})
+
+describe('single-order cancel intent', () => {
+  it('preserves the canonical EIP-712 field order and recovers its signer', async () => {
+    const account = privateKeyToAccount(`0x${'ab'.repeat(32)}`)
+    const intent: CancelIntent = {
+      trader: account.address,
+      nonce: 3n,
+    }
+
+    expect(CANCEL_INTENT_TYPES.CancelIntent).toEqual([
+      { name: 'trader', type: 'address' },
+      { name: 'nonce', type: 'uint256' },
+    ])
+
+    const signed = await signCancelIntent(account, intent)
+    const recovered = await recoverTypedDataAddress({
+      ...getCancelIntentTypedData(intent),
+      signature: signed.signature,
+    })
+
+    expect(recovered).toBe(account.address)
+    expect(signed).toEqual({ intent, signature: signed.signature, signer: account.address })
   })
 })
 
