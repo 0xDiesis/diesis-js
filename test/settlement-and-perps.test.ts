@@ -2,6 +2,7 @@ import { recoverTypedDataAddress, toFunctionSelector } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
 
+import { IDiesisPerpsBookAbi } from '../src/abi/generated/viem/IDiesisPerpsBook.abi.js'
 import {
   computeActionsHash,
   getPerpActionsTypedData,
@@ -32,6 +33,45 @@ describe('signed perp actions envelope', () => {
     })
     expect(recovered).toBe(trader.address)
     expect(perpActionsDigest(message, 1980)).toMatch(/^0x[0-9a-f]{64}$/)
+  })
+})
+
+describe('perps position read ABI', () => {
+  it('preserves canonical position and isolated-margin view signatures', () => {
+    const functions = IDiesisPerpsBookAbi.filter(
+      (entry) => entry.type === 'function',
+    )
+    const getPosition = functions.find((entry) => entry.name === 'getPosition')
+    const getIsolatedMargin = functions.find(
+      (entry) => entry.name === 'getIsolatedMargin',
+    )
+
+    expect(getPosition).toMatchObject({
+      stateMutability: 'view',
+      inputs: [
+        { name: 'trader', type: 'address' },
+        { name: 'marketId', type: 'bytes32' },
+      ],
+      outputs: [
+        {
+          name: 'position',
+          type: 'tuple',
+          components: [
+            { name: 'header', type: 'bytes32' },
+            { name: 'size', type: 'uint256' },
+            { name: 'entryPrice', type: 'uint256' },
+          ],
+        },
+      ],
+    })
+    expect(getIsolatedMargin).toMatchObject({
+      stateMutability: 'view',
+      inputs: [
+        { name: 'trader', type: 'address' },
+        { name: 'marketId', type: 'bytes32' },
+      ],
+      outputs: [{ name: 'isolatedMargin', type: 'uint256' }],
+    })
   })
 })
 
