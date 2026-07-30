@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import * as abiBarrel from '../src/abi/index.js'
+import * as ethersBindings from '../src/abi/generated/ethers/index.js'
+import * as viemBindings from '../src/abi/generated/viem/index.js'
+import * as wagmiBindings from '../src/abi/generated/wagmi/index.js'
+import * as web3Bindings from '../src/abi/generated/web3js/index.js'
 import * as packageRoot from '../src/index.js'
 
 /**
@@ -36,4 +40,41 @@ describe('ABI barrel re-export', () => {
   it('has a non-trivial barrel, so an empty import cannot vacuously pass', () => {
     expect(barrelExports.length).toBeGreaterThan(0)
   })
+
+  it('does not broaden the package root with uncurated generated ABIs', () => {
+    const generatedExports = new Set(Object.keys(viemBindings))
+    const rootAbiExports = Object.keys(packageRoot)
+      .filter((name) => generatedExports.has(name))
+      .sort()
+
+    expect(rootAbiExports).toEqual(barrelExports)
+  })
+})
+
+describe('ABI provider entry-point parity', () => {
+  const providers = {
+    ethers: ethersBindings,
+    wagmi: wagmiBindings,
+    web3js: web3Bindings,
+  }
+  const viemExports = Object.keys(viemBindings).sort()
+
+  it.each(Object.entries(providers))(
+    '%s exposes exactly the canonical viem export set',
+    (_provider, bindings) => {
+      expect(Object.keys(bindings).sort()).toEqual(viemExports)
+    },
+  )
+
+  it.each(Object.entries(providers))(
+    '%s re-exports the identical canonical ABI objects',
+    (_provider, bindings) => {
+      const divergent = viemExports.filter(
+        (name) =>
+          (bindings as Record<string, unknown>)[name] !==
+          (viemBindings as Record<string, unknown>)[name],
+      )
+      expect(divergent).toEqual([])
+    },
+  )
 })

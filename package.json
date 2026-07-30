@@ -54,6 +54,10 @@
       "import": "./dist/abi/index.js",
       "types": "./dist/abi/index.d.ts"
     },
+    "./abi/viem": {
+      "import": "./dist/abi/generated/viem/index.js",
+      "types": "./dist/abi/generated/viem/index.d.ts"
+    },
     "./abi/wagmi": {
       "import": "./dist/abi/generated/wagmi/index.js",
       "types": "./dist/abi/generated/wagmi/index.d.ts"
@@ -68,7 +72,8 @@
     }
   },
   "scripts": {
-    "codegen": "pnpm --dir ../diesis/contracts abi:generate",
+    "codegen": "node scripts/sync-contract-abis.mjs --generate",
+    "codegen:check": "node scripts/sync-contract-abis.mjs --check",
     "build": "tsc",
     "clean": "rm -rf dist",
     "lint": "eslint src",
@@ -79,7 +84,7 @@
     "test": "vitest run --exclude 'test/browser/**'",
     "test:unit": "vitest run --exclude 'test/browser/**'",
     "test:browser": "playwright test",
-    "quality": "pnpm run lint && pnpm run typecheck && pnpm run format:check",
+    "quality": "pnpm run codegen:check && pnpm run lint && pnpm run typecheck && pnpm run format:check",
     "quality:fix": "pnpm run lint:fix && pnpm run format && pnpm run typecheck",
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm run clean && pnpm run build"
@@ -105,7 +110,6 @@
     "viem": ">=2.0.0"
   },
   "dependencies": {
-    "@diesis/contracts": "file:../diesis/contracts",
     "@noble/ciphers": "1.3.0",
     "@noble/curves": "2.2.0",
     "@noble/hashes": "2.2.0",
