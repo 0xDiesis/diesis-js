@@ -11,6 +11,7 @@ export {
 export { OrderFlags } from './types.js'
 export {
   CANCEL_INTENT_TYPES,
+  buildSignedCancelIntent,
   getCancelIntentDomain,
   getCancelIntentTypedData,
   signCancelIntent,
@@ -26,6 +27,7 @@ export type {
   TradingKeyAuthorization,
 } from './types.js'
 export type {
+  BuildSignedCancelIntentArgs,
   CancelIntent,
   CancelIntentAccount,
   SignedCancelIntent,

@@ -65,6 +65,18 @@ export function getCancelAllTypedData(
   }
 }
 
+/**
+ * Compatibility wrapper for callers that supply the verifying contract before
+ * the optional chain ID.
+ */
+export function getCancelAllSpotIntentTypedData(
+  intent: CancelAllSpotIntent,
+  verifyingContract: Address,
+  chainId = 1980,
+) {
+  return getCancelAllTypedData(intent, chainId, verifyingContract)
+}
+
 /** The EIP-712 signing digest for a cancel-all intent. */
 export function cancelAllDigest(
   intent: CancelAllSpotIntent,
@@ -83,6 +95,65 @@ export interface CancelAllAccount {
   ) => Promise<Hex>
 }
 
+export interface CancelAllSpotIntentAccount {
+  address: Address
+  signTypedData: (
+    typedData: ReturnType<typeof getCancelAllSpotIntentTypedData>,
+  ) => Promise<Hex>
+}
+
+export interface BuildSignedCancelAllSpotIntentArgs {
+  account: CancelAllSpotIntentAccount
+  intent: CancelAllSpotIntent
+  verifyingContract: Address
+  chainId?: number
+}
+
+function assertCancelAllSpotIntent(
+  intent: unknown,
+): asserts intent is CancelAllSpotIntent {
+  if (!intent || typeof intent !== 'object') {
+    throw new Error('cancel-all intent must be an object')
+  }
+  const candidate = intent as Partial<CancelAllSpotIntent>
+  if (
+    typeof candidate.trader !== 'string' ||
+    !/^0x[0-9a-fA-F]{40}$/.test(candidate.trader)
+  ) {
+    throw new Error(
+      'cancel-all intent: trader must be a 0x-prefixed 20-byte address',
+    )
+  }
+  if (
+    typeof candidate.marketId !== 'string' ||
+    !/^0x[0-9a-fA-F]{64}$/.test(candidate.marketId)
+  ) {
+    throw new Error('cancel-all intent: marketId must be a 0x-prefixed bytes32')
+  }
+  if (
+    typeof candidate.expiry !== 'bigint' &&
+    typeof candidate.expiry !== 'number'
+  ) {
+    throw new Error('cancel-all intent: expiry is required')
+  }
+  if (
+    typeof candidate.nonce !== 'bigint' &&
+    typeof candidate.nonce !== 'number' &&
+    typeof candidate.nonce !== 'string'
+  ) {
+    throw new Error('cancel-all intent: nonce is required')
+  }
+}
+
+function assertNotExpired(expiry: bigint): void {
+  const nowSeconds = BigInt(Math.floor(Date.now() / 1000))
+  if (expiry <= nowSeconds) {
+    throw new Error(
+      `cancel-all intent: expiry ${expiry} is already in the past (now ${nowSeconds})`,
+    )
+  }
+}
+
 /**
  * Sign a cancel-all intent. The wire envelope submitted to the node is the
  * `{ intent, signature }` pair returned here.
@@ -97,4 +168,22 @@ export async function signCancelAllSpotIntent(
     getCancelAllTypedData(intent, chainId, verifyingContract),
   )
   return { intent, signature, signer: account.address }
+}
+
+/** Validate and sign a market-scoped cancel-all intent. */
+export async function buildSignedCancelAllSpotIntent(
+  args: BuildSignedCancelAllSpotIntentArgs,
+): Promise<SignedCancelAllSpotIntent> {
+  assertCancelAllSpotIntent(args.intent)
+  const normalized = {
+    ...args.intent,
+    expiry: BigInt(args.intent.expiry),
+  }
+  assertNotExpired(normalized.expiry)
+  return signCancelAllSpotIntent(
+    args.account,
+    normalized,
+    args.chainId ?? 1980,
+    args.verifyingContract,
+  )
 }

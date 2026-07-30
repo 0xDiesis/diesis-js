@@ -56,6 +56,35 @@ export interface CancelIntentAccount {
   ) => Promise<Hex>
 }
 
+export interface BuildSignedCancelIntentArgs {
+  account: CancelIntentAccount
+  intent: CancelIntent
+  verifyingContract: Address
+  chainId?: number
+}
+
+function assertCancelIntent(intent: unknown): asserts intent is CancelIntent {
+  if (!intent || typeof intent !== 'object') {
+    throw new Error('cancel intent must be an object')
+  }
+  const candidate = intent as Partial<CancelIntent>
+  if (
+    typeof candidate.trader !== 'string' ||
+    !/^0x[0-9a-fA-F]{40}$/.test(candidate.trader)
+  ) {
+    throw new Error(
+      'cancel intent: trader must be a 0x-prefixed 20-byte address',
+    )
+  }
+  if (
+    typeof candidate.nonce !== 'bigint' &&
+    typeof candidate.nonce !== 'number' &&
+    typeof candidate.nonce !== 'string'
+  ) {
+    throw new Error('cancel intent: nonce is required')
+  }
+}
+
 /** Sign a single-order cancel intent for submission to the spot book. */
 export async function signCancelIntent(
   account: CancelIntentAccount,
@@ -67,4 +96,17 @@ export async function signCancelIntent(
     getCancelIntentTypedData(intent, chainId, verifyingContract),
   )
   return { intent, signature, signer: account.address }
+}
+
+/** Validate and sign a single-order cancel with a local or wallet-backed account. */
+export async function buildSignedCancelIntent(
+  args: BuildSignedCancelIntentArgs,
+): Promise<SignedCancelIntent> {
+  assertCancelIntent(args.intent)
+  return signCancelIntent(
+    args.account,
+    args.intent,
+    args.chainId ?? 1980,
+    args.verifyingContract,
+  )
 }
