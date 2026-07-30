@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@diesis/contracts':
-        specifier: file:../diesis/contracts
-        version: file:../diesis/contracts
       '@noble/ciphers':
         specifier: 1.3.0
         version: 1.3.0
@@ -80,9 +77,6 @@ packages:
 
   '@adraffy/ens-normalize@1.11.1':
     resolution: {integrity: sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ==}
-
-  '@diesis/contracts@file:../diesis/contracts':
-    resolution: {directory: ../diesis/contracts, type: directory}
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -1708,8 +1702,6 @@ packages:
 snapshots:
 
   '@adraffy/ens-normalize@1.11.1': {}
-
-  '@diesis/contracts@file:../diesis/contracts': {}
 
   '@emnapi/core@1.11.1':
     dependencies:
