@@ -42,12 +42,14 @@ export {
 } from './intents/signing.js'
 export {
   CANCEL_INTENT_TYPES,
+  buildSignedCancelIntent,
   getCancelIntentDomain,
   getCancelIntentTypedData,
   signCancelIntent,
 } from './intents/cancel.js'
 export { OrderFlags } from './intents/types.js'
 export type {
+  BuildSignedCancelIntentArgs,
   OrderIntentAccount,
   OrderIntent,
   CancelIntent,
