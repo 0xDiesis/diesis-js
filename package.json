@@ -72,7 +72,7 @@
     }
   },
   "scripts": {
-    "codegen": "node scripts/sync-contract-abis.mjs",
+    "codegen": "node scripts/sync-contract-abis.mjs --generate",
     "codegen:check": "node scripts/sync-contract-abis.mjs --check",
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -84,7 +84,7 @@
     "test": "vitest run --exclude 'test/browser/**'",
     "test:unit": "vitest run --exclude 'test/browser/**'",
     "test:browser": "playwright test",
-    "quality": "pnpm run lint && pnpm run typecheck && pnpm run format:check",
+    "quality": "pnpm run codegen:check && pnpm run lint && pnpm run typecheck && pnpm run format:check",
     "quality:fix": "pnpm run lint:fix && pnpm run format && pnpm run typecheck",
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm run clean && pnpm run build"

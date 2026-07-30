@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { spawn } from 'node:child_process'
 import { copyFile, mkdir, readFile, readdir, unlink } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -15,11 +16,33 @@ const providers = ['viem', 'wagmi', 'ethers', 'web3js']
 const arguments_ = process.argv.slice(2)
 if (
   arguments_.length > 1 ||
-  (arguments_.length === 1 && arguments_[0] !== '--check')
+  (arguments_.length === 1 &&
+    !['--check', '--generate'].includes(arguments_[0]))
 ) {
-  throw new Error('usage: sync-contract-abis.mjs [--check]')
+  throw new Error('usage: sync-contract-abis.mjs [--check|--generate]')
 }
 const checkOnly = arguments_[0] === '--check'
+const generateFirst = arguments_[0] === '--generate'
+
+async function generateContractAbis() {
+  await new Promise((resolve, reject) => {
+    const child = spawn('pnpm', ['--dir', contractsRoot, 'abi:generate'], {
+      stdio: 'inherit',
+    })
+    child.once('error', reject)
+    child.once('exit', (code, signal) => {
+      if (code === 0) {
+        resolve()
+      } else {
+        reject(
+          new Error(
+            `contract ABI generation failed (${signal ?? `exit ${code}`})`,
+          ),
+        )
+      }
+    })
+  })
+}
 
 async function listFiles(root) {
   const files = []
@@ -170,6 +193,9 @@ async function syncVendor(canonicalFiles) {
   }
 }
 
+if (generateFirst) {
+  await generateContractAbis()
+}
 const canonicalFiles = await assertProviderParity()
 if (checkOnly) {
   await checkVendor(canonicalFiles)

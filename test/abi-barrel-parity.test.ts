@@ -40,6 +40,15 @@ describe('ABI barrel re-export', () => {
   it('has a non-trivial barrel, so an empty import cannot vacuously pass', () => {
     expect(barrelExports.length).toBeGreaterThan(0)
   })
+
+  it('does not broaden the package root with uncurated generated ABIs', () => {
+    const generatedExports = new Set(Object.keys(viemBindings))
+    const rootAbiExports = Object.keys(packageRoot)
+      .filter((name) => generatedExports.has(name))
+      .sort()
+
+    expect(rootAbiExports).toEqual(barrelExports)
+  })
 })
 
 describe('ABI provider entry-point parity', () => {
