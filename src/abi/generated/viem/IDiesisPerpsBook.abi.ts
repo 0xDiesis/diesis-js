@@ -156,6 +156,71 @@ export const IDiesisPerpsBookAbi = [
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getIsolatedMargin",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "isolatedMargin",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getPosition",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "header",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "size",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "entryPrice",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IDiesisPerpsBook.PackedPosition",
+          "name": "position",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes",
           "name": "encodedActions",
           "type": "bytes"
