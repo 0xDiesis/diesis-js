@@ -18,6 +18,7 @@
       "import": "./dist/addresses.js",
       "types": "./dist/addresses.d.ts"
     },
+    "./canonical.json": "./canonical.json",
     "./names": {
       "import": "./dist/names.js",
       "types": "./dist/names.d.ts"
@@ -106,6 +107,9 @@
     "type": "git",
     "url": "https://github.com/0xDiesis/diesis-sdk.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "viem": ">=2.0.0"
   },
@@ -128,7 +132,7 @@
     "prettier": "^3.8.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.0",
-    "viem": "^2.53.1",
+    "viem": "^2.55.10",
     "vite": "8.1.4",
     "vitest": "4.1.9",
     "wagmi": "^3.6.18",
@@ -136,6 +140,7 @@
   },
   "files": [
     "dist",
+    "canonical.json",
     "README.md",
     "LICENSE"
   ]

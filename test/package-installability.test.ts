@@ -8,6 +8,8 @@ type PackageManifest = {
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
   exports?: Record<string, unknown>
+  files?: string[]
+  publishConfig?: { access?: string }
   scripts?: Record<string, string>
 }
 
@@ -99,6 +101,24 @@ describe('third-party package installability', () => {
       './abi/wagmi',
       './abi/web3js',
     ])
+  })
+
+  it('publishes the canonical chain data contract', () => {
+    expect(manifest.exports?.['./canonical.json']).toBe('./canonical.json')
+    expect(manifest.files).toContain('canonical.json')
+    expect(manifest.publishConfig?.access).toBe('public')
+  })
+
+  it('documents the currently supported authenticated Git install', () => {
+    const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
+
+    expect(readme).not.toContain('npm install @diesis/sdk')
+    expect(readme).toContain(
+      'b5f75e129d18c7e51fec8bb788d38f9d0f5d1b23',
+    )
+    expect(readme).toContain(
+      'does not contain the current `@diesis/sdk/canonical.json` export',
+    )
   })
 
   it('generates contracts before syncing and checks vendoring in quality', () => {

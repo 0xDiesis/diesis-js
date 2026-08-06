@@ -4,9 +4,15 @@ TypeScript SDK for the Diesis EVM L1 chain. Extends [viem](https://viem.sh) with
 
 ## Installation
 
+The SDK is not currently published to the npm registry. Install it from the
+private repository using authenticated Git access and the revision consumed by
+the exchange workspace:
+
 ```bash
-npm install @diesis/sdk viem
+pnpm add 'git+https://github.com/0xDiesis/diesis-sdk.git#b5f75e129d18c7e51fec8bb788d38f9d0f5d1b23' 'viem@^2.55.10'
 ```
+
+That reachable revision is the immutable version used by exchange and does not contain the current `@diesis/sdk/canonical.json` export. Until a new immutable SDK revision is pushed, use or package this source checkout when that data-only subpath is required.
 
 ## Quick Start
 
@@ -275,6 +281,7 @@ The SDK supports granular imports:
 
 - `@diesis/sdk` -- everything
 - `@diesis/sdk/chains` -- chain definitions only
+- `@diesis/sdk/canonical.json` -- machine-readable chain and address contract
 - `@diesis/sdk/exchange` -- exchange types, actions, and utils
 - `@diesis/sdk/intents` -- intent signing helpers
 - `@diesis/sdk/bundles` -- bundle utilities
