@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -107,6 +107,15 @@ describe('third-party package installability', () => {
     expect(manifest.exports?.['./canonical.json']).toBe('./canonical.json')
     expect(manifest.files).toContain('canonical.json')
     expect(manifest.publishConfig?.access).toBe('public')
+  })
+
+  it('denies the one transitive native build needed for pnpm 11 Git installs', () => {
+    const workspaceConfig = new URL('../pnpm-workspace.yaml', import.meta.url)
+
+    expect(existsSync(workspaceConfig)).toBe(true)
+    const config = readFileSync(workspaceConfig, 'utf8')
+    expect(config).toContain('allowBuilds:\n  blake-hash: false\n')
+    expect(config.match(/^  [^\n]+:/gmu)).toEqual(['  blake-hash:'])
   })
 
   it('documents the currently supported authenticated Git install', () => {
