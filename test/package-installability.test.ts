@@ -109,7 +109,7 @@ describe('third-party package installability', () => {
     expect(manifest.publishConfig?.access).toBe('public')
   })
 
-  it('denies the one transitive native build needed for pnpm 11 Git installs', () => {
+  it('denies the one transitive native build needed for Git installs', () => {
     const workspaceConfig = new URL('../pnpm-workspace.yaml', import.meta.url)
 
     expect(existsSync(workspaceConfig)).toBe(true)
