@@ -1137,6 +1137,11 @@ export const IDiesisBootstrapOracleAbi = [
     },
     {
       "inputs": [],
+      "name": "NotDepositOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "OraclePaused",
       "type": "error"
     },

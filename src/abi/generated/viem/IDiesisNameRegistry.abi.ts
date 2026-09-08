@@ -145,6 +145,25 @@ export const IDiesisNameRegistryAbi = [
           "type": "bytes32"
         }
       ],
+      "name": "ownershipEpoch",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "node",
+          "type": "bytes32"
+        }
+      ],
       "name": "resolver",
       "outputs": [
         {

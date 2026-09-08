@@ -1233,5 +1233,10 @@ export const DiesisBaseRegistrarAbi = [
       "inputs": [],
       "name": "ResolverCallFailed",
       "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReverseRecordUnauthorized",
+      "type": "error"
     }
   ] as const;

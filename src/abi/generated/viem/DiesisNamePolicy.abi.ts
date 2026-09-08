@@ -106,7 +106,7 @@ export const DiesisNamePolicyAbi = [
       "outputs": [
         {
           "internalType": "bool",
-          "name": "approved",
+          "name": "",
           "type": "bool"
         }
       ],
@@ -168,7 +168,7 @@ export const DiesisNamePolicyAbi = [
       "outputs": [
         {
           "internalType": "uint64",
-          "name": "delay",
+          "name": "",
           "type": "uint64"
         }
       ],
@@ -187,7 +187,7 @@ export const DiesisNamePolicyAbi = [
       "outputs": [
         {
           "internalType": "bool",
-          "name": "enabled",
+          "name": "",
           "type": "bool"
         }
       ],
@@ -206,7 +206,7 @@ export const DiesisNamePolicyAbi = [
       "outputs": [
         {
           "internalType": "address",
-          "name": "fallbackOwner",
+          "name": "",
           "type": "address"
         }
       ],
@@ -264,7 +264,7 @@ export const DiesisNamePolicyAbi = [
       "outputs": [
         {
           "internalType": "uint8",
-          "name": "threshold",
+          "name": "",
           "type": "uint8"
         }
       ],
@@ -370,7 +370,7 @@ export const DiesisNamePolicyAbi = [
       "outputs": [
         {
           "internalType": "uint64",
-          "name": "lockedUntil",
+          "name": "",
           "type": "uint64"
         }
       ],

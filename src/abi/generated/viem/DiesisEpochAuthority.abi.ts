@@ -60,6 +60,34 @@ export const DiesisEpochAuthorityAbi = [
     },
     {
       "inputs": [],
+      "name": "activeValidatorSet",
+      "outputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "validatorIds",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "bondedStakeWei",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "consensusAddresses",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "weights",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "cancelPendingValidatorEpoch",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -433,7 +461,13 @@ export const DiesisEpochAuthorityAbi = [
         }
       ],
       "name": "initializeEpochZero",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "complete",
+          "type": "bool"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -755,6 +789,129 @@ export const DiesisEpochAuthorityAbi = [
     {
       "inputs": [
         {
+          "components": [
+            {
+              "internalType": "uint16",
+              "name": "version",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint64",
+              "name": "chainId",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "genesisHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint64",
+              "name": "epoch",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "activationBlockNumber",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "previousIdentityDigest",
+              "type": "bytes32"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "validatorId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "consensusAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "bondedStakeWei",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "votingPower",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "blsPublicKey",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "blsProofOfPossession",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "vrfPublicKey",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "address",
+                  "name": "quicTransportAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "relayerAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "status",
+                  "type": "uint8"
+                }
+              ],
+              "internalType": "struct IDiesisEpochIdentity.ValidatorIdentityV1[]",
+              "name": "validators",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct IDiesisEpochIdentity.EpochIdentityV1",
+          "name": "identity",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxEntries",
+          "type": "uint256"
+        }
+      ],
+      "name": "stageEpochIdentity",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "digest",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "storedValidators",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "ready",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "validatorId",
           "type": "uint256"
@@ -780,6 +937,25 @@ export const DiesisEpochAuthorityAbi = [
       ],
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "identityDigest",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "canonicalEncoding",
+          "type": "bytes"
+        }
+      ],
+      "name": "EpochIdentityPinned",
+      "type": "event"
     },
     {
       "anonymous": false,
@@ -908,6 +1084,17 @@ export const DiesisEpochAuthorityAbi = [
       "type": "error"
     },
     {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "digest",
+          "type": "bytes32"
+        }
+      ],
+      "name": "EpochIdentityNotPrepared",
+      "type": "error"
+    },
+    {
       "inputs": [],
       "name": "EpochZeroAlreadyInitialized",
       "type": "error"
@@ -999,6 +1186,11 @@ export const DiesisEpochAuthorityAbi = [
     {
       "inputs": [],
       "name": "InvalidRoleProof",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidStagePageSize",
       "type": "error"
     },
     {

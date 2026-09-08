@@ -766,5 +766,10 @@ export const IDiesisBaseRegistrarAbi = [
       "inputs": [],
       "name": "ResolverCallFailed",
       "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReverseRecordUnauthorized",
+      "type": "error"
     }
   ] as const;
