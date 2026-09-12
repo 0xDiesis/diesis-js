@@ -7,7 +7,7 @@ export const BootstrapConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_BASE_REWARD_RATE_PER_SECOND_E18",
+      "name": "CONTRIBUTOR_CAP_WEI",
       "outputs": [
         {
           "internalType": "uint256",
@@ -20,7 +20,7 @@ export const BootstrapConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_LOCK_MULTIPLIER_LONG",
+      "name": "REFERRAL_CAP_WEI",
       "outputs": [
         {
           "internalType": "uint256",
@@ -33,7 +33,7 @@ export const BootstrapConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_LOCK_MULTIPLIER_MEDIUM",
+      "name": "UNALLOCATED_CAP_WEI",
       "outputs": [
         {
           "internalType": "uint256",
@@ -46,7 +46,7 @@ export const BootstrapConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_LOCK_MULTIPLIER_NONE",
+      "name": "contributorAllocated",
       "outputs": [
         {
           "internalType": "uint256",
@@ -59,208 +59,7 @@ export const BootstrapConfigAbi = [
     },
     {
       "inputs": [],
-      "name": "DEFAULT_LOCK_MULTIPLIER_SHORT",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_REFERRAL_BONUS_BPS",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_0_CAP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_0_CONVERSION_RATE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_1_CAP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_1_CONVERSION_RATE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_2_CAP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_2_CONVERSION_RATE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_3_CAP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_3_CONVERSION_RATE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_SALE_TIER_ACTIVE",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_STREAK_BONUS_BPS_PER_MONTH",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_STREAK_MULTIPLIER_CAP",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "DEFAULT_TOTAL_BOOTSTRAP_MINT_CAP_WEI",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "baseRewardRatePerSecondE18",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "name": "lockMultiplier",
+      "name": "contributorMinted",
       "outputs": [
         {
           "internalType": "uint256",
@@ -301,18 +100,36 @@ export const BootstrapConfigAbi = [
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "contributor",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "referral",
           "type": "uint256"
         }
       ],
-      "name": "recordMint",
+      "name": "recordYieldMint",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "referralBonusBps",
+      "name": "referralAllocated",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "referralMinted",
       "outputs": [
         {
           "internalType": "uint256",
@@ -331,83 +148,19 @@ export const BootstrapConfigAbi = [
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "saleTierActive",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "name": "saleTierCap",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "name": "saleTierConversionRate",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "val",
+          "name": "contributor",
           "type": "uint256"
-        }
-      ],
-      "name": "setBaseRewardRatePerSecondE18",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
         },
         {
           "internalType": "uint256",
-          "name": "bps",
+          "name": "referral",
           "type": "uint256"
         }
       ],
-      "name": "setLockMultiplier",
+      "name": "reserveYieldRewards",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -416,112 +169,11 @@ export const BootstrapConfigAbi = [
       "inputs": [
         {
           "internalType": "address",
-          "name": "_oracle",
+          "name": "oracle_",
           "type": "address"
         }
       ],
       "name": "setOracle",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "setReferralBonusBps",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        }
-      ],
-      "name": "setSaleTierActive",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "cap",
-          "type": "uint256"
-        }
-      ],
-      "name": "setSaleTierCap",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "rate",
-          "type": "uint256"
-        }
-      ],
-      "name": "setSaleTierConversionRate",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "setStreakBonusBpsPerMonth",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "setStreakMultiplierCap",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "cap",
-          "type": "uint256"
-        }
-      ],
-      "name": "setTotalBootstrapMintCapWei",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -537,32 +189,6 @@ export const BootstrapConfigAbi = [
       "name": "setTreasuryAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "streakBonusBpsPerMonth",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "streakMultiplierCap",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -623,38 +249,6 @@ export const BootstrapConfigAbi = [
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "newRate",
-          "type": "uint256"
-        }
-      ],
-      "name": "BaseRewardRateUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "LockMultiplierUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
         },
@@ -704,109 +298,6 @@ export const BootstrapConfigAbi = [
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "ReferralBonusBpsUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        }
-      ],
-      "name": "SaleTierActiveUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "cap",
-          "type": "uint256"
-        }
-      ],
-      "name": "SaleTierCapUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "tier",
-          "type": "uint8"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "rate",
-          "type": "uint256"
-        }
-      ],
-      "name": "SaleTierConversionRateUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "StreakBonusBpsPerMonthUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "bps",
-          "type": "uint256"
-        }
-      ],
-      "name": "StreakMultiplierCapUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "cap",
-          "type": "uint256"
-        }
-      ],
-      "name": "TotalBootstrapMintCapUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "address",
           "name": "treasury",
@@ -817,6 +308,25 @@ export const BootstrapConfigAbi = [
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "contributor",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "referral",
+          "type": "uint256"
+        }
+      ],
+      "name": "YieldAllocationReserved",
+      "type": "event"
+    },
+    {
       "inputs": [],
       "name": "MintCapExceeded",
       "type": "error"
@@ -824,6 +334,11 @@ export const BootstrapConfigAbi = [
     {
       "inputs": [],
       "name": "NotOracle",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OracleAlreadySet",
       "type": "error"
     },
     {

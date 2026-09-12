@@ -181,29 +181,6 @@ export const IDiesisBootstrapOracleAbi = [
           "type": "uint256"
         },
         {
-          "internalType": "uint40",
-          "name": "rewardCutoffTimestamp",
-          "type": "uint40"
-        }
-      ],
-      "name": "attestForfeit",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "ethTxHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint256",
-          "name": "depositId",
-          "type": "uint256"
-        },
-        {
           "internalType": "address",
           "name": "newOwner",
           "type": "address"
@@ -250,12 +227,47 @@ export const IDiesisBootstrapOracleAbi = [
     {
       "inputs": [
         {
+          "internalType": "bytes32",
+          "name": "ethTxHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "cumulativeContributorDsWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "cumulativeReferralDsWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "attestYieldReward",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256[]",
           "name": "depositIds",
           "type": "uint256[]"
         }
       ],
       "name": "claimBootstrapRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimYieldRewards",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -828,62 +840,6 @@ export const IDiesisBootstrapOracleAbi = [
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "ethTxHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "depositId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "attestationEpochDigest",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "attester",
-          "type": "address"
-        }
-      ],
-      "name": "ForfeitAttested",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "depositId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "attestationEpochDigest",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "lumpSumDs",
-          "type": "uint256"
-        }
-      ],
-      "name": "ForfeitConfirmed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": false,
           "internalType": "uint256",
           "name": "quorumThresholdBps",
@@ -903,43 +859,6 @@ export const IDiesisBootstrapOracleAbi = [
         }
       ],
       "name": "QuorumThresholdUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "depositId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "referrer",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "referralAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "RewardsClaimed",
       "type": "event"
     },
     {
@@ -1086,6 +1005,87 @@ export const IDiesisBootstrapOracleAbi = [
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "ethTxHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "attestationEpochDigest",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "attester",
+          "type": "address"
+        }
+      ],
+      "name": "YieldRewardAttested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "cumulativeContributorDsWei",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "cumulativeReferralDsWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "YieldRewardConfirmed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "contributorDsWei",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "referralDsWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "YieldRewardsClaimed",
+      "type": "event"
+    },
+    {
       "inputs": [],
       "name": "AlreadyAttested",
       "type": "error"
@@ -1097,12 +1097,12 @@ export const IDiesisBootstrapOracleAbi = [
     },
     {
       "inputs": [],
-      "name": "BatchTooLarge",
+      "name": "DepositAlreadyConfirmed",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "DepositAlreadyConfirmed",
+      "name": "DepositAlreadySettled",
       "type": "error"
     },
     {
@@ -1137,17 +1137,17 @@ export const IDiesisBootstrapOracleAbi = [
     },
     {
       "inputs": [],
-      "name": "NotDepositOwner",
-      "type": "error"
-    },
-    {
-      "inputs": [],
       "name": "OraclePaused",
       "type": "error"
     },
     {
       "inputs": [],
       "name": "StaleTransferOrder",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TimeRewardsRetired",
       "type": "error"
     },
     {
