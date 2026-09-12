@@ -52,6 +52,45 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
+      "name": "MAX_REWARD_STREAM_PER_SECOND",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_EXIT_DELAY_CHECKPOINTS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_EXIT_DELAY_SECONDS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "_MARK_EQUIVOCATION",
       "outputs": [
         {
@@ -3194,12 +3233,22 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
+      "name": "ConfigurationBindingFixed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "CooldownNotElapsed",
       "type": "error"
     },
     {
       "inputs": [],
       "name": "DelegationCapExceeded",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DiscretionaryMintDisabled",
       "type": "error"
     },
     {
@@ -3318,6 +3367,11 @@ export const DiesisStakingAbi = [
     {
       "inputs": [],
       "name": "EpochAuthorityUnavailable",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InstantExitDisabled",
       "type": "error"
     },
     {

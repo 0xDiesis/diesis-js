@@ -1474,6 +1474,11 @@ export const IDiesisPositionAbi = [
     },
     {
       "inputs": [],
+      "name": "InstantExitDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "InsufficientCollateral",
       "type": "error"
     },
