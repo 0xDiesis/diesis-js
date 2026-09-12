@@ -7,6 +7,7 @@ export * from './DiesisBundleEscrow.abi.js';
 export * from './DiesisConfig.abi.js';
 export * from './DiesisCoreVault.abi.js';
 export * from './DiesisEpochAuthority.abi.js';
+export * from './DiesisGovernanceTimelock.abi.js';
 export * from './DiesisNamePolicy.abi.js';
 export * from './DiesisNameRegistry.abi.js';
 export * from './DiesisNameVerifier.abi.js';

@@ -3,6 +3,7 @@ export {
   DiesisBaseRegistrarAbi,
   DiesisBundleEscrowAbi,
   DiesisConfigAbi,
+  DiesisGovernanceTimelockAbi,
   DiesisCoreVaultAbi,
   DiesisNamePolicyAbi,
   DiesisNameRegistryAbi,
