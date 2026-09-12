@@ -233,6 +233,19 @@ export const DiesisStakingAbi = [
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "accountedNativeFees",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
@@ -581,6 +594,25 @@ export const DiesisStakingAbi = [
     {
       "inputs": [],
       "name": "circulatingSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "checkpoint",
+          "type": "uint256"
+        }
+      ],
+      "name": "collectedCheckpointFees",
       "outputs": [
         {
           "internalType": "uint256",
@@ -1336,6 +1368,19 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
+      "name": "lastFeeAccrualBlock",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "latestFinalizedCheckpoint",
       "outputs": [
         {
@@ -1724,6 +1769,11 @@ export const DiesisStakingAbi = [
         {
           "internalType": "uint256",
           "name": "checkpoint",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "blockNumber",
           "type": "uint256"
         },
         {
@@ -2667,6 +2717,31 @@ export const DiesisStakingAbi = [
         {
           "indexed": true,
           "internalType": "uint256",
+          "name": "checkpoint",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "blockNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fee",
+          "type": "uint256"
+        }
+      ],
+      "name": "CheckpointFeesRecorded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
           "name": "checkpointId",
           "type": "uint256"
         },
@@ -3371,6 +3446,11 @@ export const DiesisStakingAbi = [
     },
     {
       "inputs": [],
+      "name": "FeeCustodyInsufficient",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "InstantExitDisabled",
       "type": "error"
     },
@@ -3387,6 +3467,11 @@ export const DiesisStakingAbi = [
     {
       "inputs": [],
       "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidFeeAccrualBlock",
       "type": "error"
     },
     {
