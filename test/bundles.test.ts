@@ -22,7 +22,7 @@ import { encodeReserveBundleV2, reservationValue } from '../src/bundles/index.js
 describe('bundle documentation', () => {
   it('uses the canonical Bundle V2 prepare and submit shapes', () => {
     const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
-    const section = readme.match(/## Bundles\n([\s\S]*?)\n## Network Status/)?.[1]
+    const section = readme.match(/## Bundle transactions\n([\s\S]*?)\n## Sponsor gas/)?.[1]
 
     expect(section).toContain('prepareBundle({ plan })')
     expect(section).toContain('submitBundle({\n  plan,')

@@ -118,15 +118,12 @@ describe('third-party package installability', () => {
     expect(config.match(/^  [^\n]+:/gmu)).toEqual(['  blake-hash:'])
   })
 
-  it('documents the currently supported authenticated Git install', () => {
+  it('documents the pinned authenticated Git install', () => {
     const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
 
     expect(readme).not.toContain('npm install @diesis/sdk')
     expect(readme).toContain(
-      'b5f75e129d18c7e51fec8bb788d38f9d0f5d1b23',
-    )
-    expect(readme).toContain(
-      'does not contain the current `@diesis/sdk/canonical.json` export',
+      "pnpm add 'git+https://github.com/0xDiesis/diesis-sdk.git#<commit>'",
     )
   })
 
