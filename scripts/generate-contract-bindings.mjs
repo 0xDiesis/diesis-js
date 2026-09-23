@@ -7,7 +7,7 @@
 // copies are dropped and the wrappers are pointed at the vendored ABIs in
 // src/abi/generated/viem, so every entry point shares one ABI object.
 
-import { spawn } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
 import {
   mkdtemp,
   mkdir,
@@ -24,7 +24,11 @@ const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
   ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
   : path.resolve(sdkRoot, '../diesis/contracts')
-const typegen = path.join(contractsRoot, 'node_modules/.bin/abi-typegen')
+// ABI_TYPEGEN points at a specific abi-typegen binary; by default the one
+// installed in the contracts checkout is used.
+const typegen = process.env.ABI_TYPEGEN
+  ? path.resolve(process.env.ABI_TYPEGEN)
+  : path.join(contractsRoot, 'node_modules/.bin/abi-typegen')
 const vendoredAbiRoot = path.join(sdkRoot, 'src/abi/generated/viem')
 const bindingsRoot = path.join(sdkRoot, 'src/abi/bindings')
 
@@ -146,23 +150,14 @@ const publicContracts = [
 ]
 
 // Entry points under @diesis/sdk/abi/<name>. Each one exports every vendored
-// ABI and `diesisContracts`; `suffix` names the abi-typegen wrapper file for
-// targets that also ship wrappers.
-//
-// Held back until abi-typegen fixes them (0.4.1):
-// - viem: `get*Contract` has no return type annotation, and for large ABIs the
-//   inferred type exceeds what tsc can write to a declaration file (TS7056).
-// - wagmi: write hooks return an inferred type that references `@wagmi/core`
-//   (TS2883), ignore `value` on payable functions, and PascalCasing collides
-//   `PREMIUM_PERIOD` with `premiumPeriod` in DiesisBaseRegistrar.
-// - web3js: numbers are typed as `string`, but web3.js v4 returns `bigint` and
-//   already infers types from `as const` ABIs.
+// ABI, `diesisContracts`, and the abi-typegen wrappers whose files end in
+// `.<suffix>.ts`.
 const targets = [
-  { name: 'viem', suffix: null },
+  { name: 'viem', suffix: 'viem' },
   { name: 'ethers', suffix: 'ethers' },
   { name: 'ethers5', suffix: 'ethers5' },
-  { name: 'wagmi', suffix: null },
-  { name: 'web3js', suffix: null },
+  { name: 'wagmi', suffix: 'wagmi' },
+  { name: 'web3js', suffix: 'web3' },
 ]
 const wrapperTargets = targets.filter((target) => target.suffix !== null)
 
@@ -189,6 +184,27 @@ function run(command, args) {
       else reject(new Error(`${command} failed (${signal ?? `exit ${code}`})`))
     })
   })
+}
+
+// 0.4.2 is the first release whose wrappers pass declaration emit.
+const minimumTypegen = [0, 4, 2]
+
+async function assertTypegenVersion() {
+  const output = await new Promise((resolve, reject) => {
+    execFile(typegen, ['--version'], (error, stdout) =>
+      error ? reject(error) : resolve(stdout),
+    )
+  })
+  const version = /(\d+)\.(\d+)\.(\d+)/u.exec(output)?.slice(1).map(Number)
+  const index = version?.findIndex((part, i) => part !== minimumTypegen[i])
+  const supported =
+    version !== undefined &&
+    (index === -1 || version[index] > minimumTypegen[index])
+  if (!supported) {
+    throw new Error(
+      `abi-typegen ${minimumTypegen.join('.')} or newer is required, found: ${output.trim()}`,
+    )
+  }
 }
 
 async function generateWrappers(outDirectory) {
@@ -318,6 +334,7 @@ async function listFiles(root, prefix = '') {
 
 const outDirectory = await mkdtemp(path.join(tmpdir(), 'diesis-sdk-bindings-'))
 try {
+  await assertTypegenVersion()
   await generateWrappers(outDirectory)
   await assertAbiParity(outDirectory)
   const expected = await expectedFiles(outDirectory)

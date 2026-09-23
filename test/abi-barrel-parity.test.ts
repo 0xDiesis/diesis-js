@@ -82,15 +82,17 @@ describe('ABI provider entry-point parity', () => {
     },
   )
 
-  it('adds wrappers only to entry points with a wrapper target', () => {
-    const extras = (bindings: object) =>
-      Object.keys(bindings).filter(
-        (name) => !viemExports.includes(name) && name !== 'diesisContracts',
+  it.each([
+    ['viem', viemEntry, 'getDiesisStakingContract'],
+    ['ethers', ethersBindings, 'connectDiesisStaking'],
+    ['wagmi', wagmiBindings, 'useDiesisStakingStake'],
+    ['web3js', web3Bindings, 'createDiesisStaking'],
+  ] as const)(
+    '%s exports its generated wrappers',
+    (_provider, bindings, name) => {
+      expect(typeof (bindings as Record<string, unknown>)[name]).toBe(
+        'function',
       )
-
-    expect(extras(viemEntry)).toEqual([])
-    expect(extras(wagmiBindings)).toEqual([])
-    expect(extras(web3Bindings)).toEqual([])
-    expect(extras(ethersBindings)).toContain('connectDiesisStaking')
-  })
+    },
+  )
 })

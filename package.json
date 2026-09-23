@@ -117,13 +117,17 @@
   "peerDependencies": {
     "ethers": "^5.7.0 || ^6.0.0",
     "viem": ">=2.0.0",
-    "wagmi": "^2.0.0 || ^3.0.0"
+    "wagmi": "^2.0.0 || ^3.0.0",
+    "web3": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "ethers": {
       "optional": true
     },
     "wagmi": {
+      "optional": true
+    },
+    "web3": {
       "optional": true
     }
   },
