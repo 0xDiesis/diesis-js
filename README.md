@@ -438,43 +438,80 @@ const tx = await publicClient.getTransactionStatus({ hash: '0x...' })
 ## Addresses and ABIs
 
 **In short.** Diesis system contracts live at fixed addresses that start with
-`0xD1E515`. The SDK has all of them, plus the interface for each one.
+`0xD1E515`. The SDK has all of them, plus the interface for each one, in a
+form that works with viem, wagmi, ethers, or web3.js.
 
 **Details.** `addresses` exports every system contract and precompile
-address. `@diesis/sdk/abi` exports typed `as const` ABIs for viem. Generated
-bindings for other libraries live under `abi/viem`, `abi/wagmi`, `abi/ethers`,
-and `abi/web3js`. `@diesis/sdk/canonical.json` is the same data in
-machine-readable form, for tools that don't run TypeScript.
+address. `@diesis/sdk/abi` exports typed `as const` ABIs.
+`@diesis/sdk/canonical.json` is the same address and chain data as JSON, for
+tools that don't run TypeScript.
+
+`diesisContracts` pairs each public system contract with its address and ABI,
+so you never copy an address by hand. Spread an entry into viem or wagmi and
+the function names, arguments, and return types are all inferred.
 
 ```typescript
-import { addresses } from '@diesis/sdk'
-import { DiesisStakingAbi, IDiesisSpotBookAbi } from '@diesis/sdk/abi'
+import { createPublicClient, getContract, http } from 'viem'
+import { diesis } from '@diesis/sdk/chains'
+import { diesisContracts } from '@diesis/sdk/abi/viem'
 
-addresses.DIESIS_SPOT_BOOK // 0xD1E515000000000000000000000000000000590D
-addresses.DIESIS_STAKING // 0xD1E5150000000000000000000000000000000001
-addresses.WRAPPED_DS // 0xD1E51500000000000000000000000000000000D5
+const client = createPublicClient({ chain: diesis, transport: http() })
+const staking = getContract({ ...diesisContracts.staking, client })
+const rewards = await staking.read.unclaimedRewards([42n])
 ```
+
+```typescript
+import { labelhash } from 'viem'
+import { useReadContract } from 'wagmi'
+import { diesisContracts } from '@diesis/sdk/abi/wagmi'
+
+const { data: expires } = useReadContract({
+  ...diesisContracts.baseRegistrar,
+  functionName: 'nameExpires',
+  args: [labelhash('alice')],
+})
+```
+
+For ethers, each public contract has a typed `connect*` wrapper. Use
+`@diesis/sdk/abi/ethers` with ethers v6 and `@diesis/sdk/abi/ethers5` with
+ethers v5. Both return `Contract` instances with typed methods.
+
+```typescript
+import { JsonRpcProvider } from 'ethers'
+import { connectDiesisStaking, diesisContracts } from '@diesis/sdk/abi/ethers'
+
+const provider = new JsonRpcProvider('https://rpc.diesis.xyz')
+const staking = connectDiesisStaking(diesisContracts.staking.address, provider)
+const { bonded } = await staking.nodeLedger(1n)
+```
+
+web3.js v4 infers types from the ABIs in `@diesis/sdk/abi/web3js`, so
+`new web3.eth.Contract(diesisContracts.staking.abi, diesisContracts.staking.address)`
+is typed with no wrapper.
+
+ethers and wagmi are optional peer dependencies. Install the one you use.
 
 ## Subpath exports
 
 Import only what you need.
 
-| Path                                         | Contents                                        |
-| -------------------------------------------- | ----------------------------------------------- |
-| `@diesis/sdk`                                | The client extensions and the most-used helpers |
-| `@diesis/sdk/chains`                         | `diesis`, `diesisTestnet`                       |
-| `@diesis/sdk/addresses`                      | System contract and precompile addresses        |
-| `@diesis/sdk/canonical.json`                 | Chain and address data as JSON                  |
-| `@diesis/sdk/names`                          | `.ds` normalization, namehash, genesis names    |
-| `@diesis/sdk/exchange`                       | Exchange reads, V2 actions, session keys        |
-| `@diesis/sdk/intents`                        | Order, cancel, and trading key signing          |
-| `@diesis/sdk/bundles`                        | Bundle plans, consent, escrow encoding          |
-| `@diesis/sdk/patronage`                      | Gas grants and campaign vouchers                |
-| `@diesis/sdk/staking`                        | Staking reads and writes                        |
-| `@diesis/sdk/privacy`                        | Shielded notes, trees, witnesses, provers       |
-| `@diesis/sdk/privacy/worker-runtime`         | Web Worker entry for proving                    |
-| `@diesis/sdk/abi`                            | Typed ABI constants                             |
-| `@diesis/sdk/abi/{viem,wagmi,ethers,web3js}` | Generated bindings per library                  |
+| Path                                  | Contents                                        |
+| ------------------------------------- | ----------------------------------------------- |
+| `@diesis/sdk`                         | The client extensions and the most-used helpers |
+| `@diesis/sdk/chains`                  | `diesis`, `diesisTestnet`                       |
+| `@diesis/sdk/addresses`               | System contract and precompile addresses        |
+| `@diesis/sdk/canonical.json`          | Chain and address data as JSON                  |
+| `@diesis/sdk/names`                   | `.ds` normalization, namehash, genesis names    |
+| `@diesis/sdk/exchange`                | Exchange reads, V2 actions, session keys        |
+| `@diesis/sdk/intents`                 | Order, cancel, and trading key signing          |
+| `@diesis/sdk/bundles`                 | Bundle plans, consent, escrow encoding          |
+| `@diesis/sdk/patronage`               | Gas grants and campaign vouchers                |
+| `@diesis/sdk/staking`                 | Staking reads and writes                        |
+| `@diesis/sdk/privacy`                 | Shielded notes, trees, witnesses, provers       |
+| `@diesis/sdk/privacy/worker-runtime`  | Web Worker entry for proving                    |
+| `@diesis/sdk/abi`                     | Typed ABI constants                             |
+| `@diesis/sdk/abi/{viem,wagmi,web3js}` | ABIs and `diesisContracts`                      |
+| `@diesis/sdk/abi/{ethers,ethers5}`    | ABIs, `diesisContracts`, `connect*` wrappers    |
 
 ## Develop
 
