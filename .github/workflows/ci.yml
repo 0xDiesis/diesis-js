@@ -16,9 +16,68 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
+
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.GH_APP_CLIENT_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: 0xDiesis
+          repositories: diesis-contracts
+
+      # The ABI drift checks and fixtures read ../diesis/contracts, as in a
+      # local workspace checkout. The checkout moves out of the workspace so
+      # this repository's tools never scan it.
+      - name: Checkout contracts
+        uses: actions/checkout@v6
+        with:
+          repository: 0xDiesis/diesis-contracts
+          path: contracts-checkout
+          submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Place contracts at ../diesis/contracts
+        id: contracts
+        run: |
+          mkdir -p ../diesis
+          mv contracts-checkout ../diesis/contracts
+          echo "dir=$(cd ../diesis/contracts && pwd)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git -C ../diesis/contracts rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "deps=$(sha256sum ../diesis/contracts/soldeer.lock | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      # Only the ABIs are consumed, so standard Foundry builds them. The build
+      # is cached per contracts commit and falls back to the newest earlier
+      # build so a contracts change compiles incrementally.
+      - name: Restore contracts build
+        id: contracts-build
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ steps.contracts.outputs.dir }}/out
+            ${{ steps.contracts.outputs.dir }}/cache
+          key: contracts-build-${{ steps.contracts.outputs.sha }}
+          restore-keys: contracts-build-
+
+      - name: Restore Solidity dependencies
+        if: steps.contracts-build.outputs.cache-hit != 'true'
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.contracts.outputs.dir }}/dependencies
+          key: solidity-deps-${{ steps.contracts.outputs.deps }}
+
+      - name: Setup Foundry
+        if: steps.contracts-build.outputs.cache-hit != 'true'
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Build contracts
+        if: steps.contracts-build.outputs.cache-hit != 'true'
+        working-directory: ${{ steps.contracts.outputs.dir }}
+        run: |
+          ./scripts/forge.sh soldeer install
+          ./scripts/forge.sh build
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -35,14 +94,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Format check
-        run: pnpm run format:check
+      # The contracts package provides the abi-typegen binary for the bindings check.
+      - name: Install contracts dependencies
+        run: pnpm --dir ../diesis/contracts install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Type check
-        run: pnpm run typecheck
+      - name: ABI drift, lint, typecheck, and format
+        run: pnpm run quality
 
       - name: Test
         run: pnpm run test
