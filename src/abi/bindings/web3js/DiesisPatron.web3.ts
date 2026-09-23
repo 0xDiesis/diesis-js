@@ -2,85 +2,82 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisPatronAbi } from '../../generated/viem/DiesisPatron.abi.js';
 
-export interface DiesisPatronContract {
-  methods: {
-    accrueSettledBurnV2(blockNumber: Numbers, totalActualFee: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    accruedBurn(): { call(): Promise<bigint>; };
-    assignAccountGrant(account: string, grantId: string): { send(options: { from: string }): Promise<unknown>; };
-    campaignIdFor(owner: string, salt: string): { call(): Promise<string>; };
-    campaignOwner(campaignId: string): { call(): Promise<string>; };
-    campaignRevoked(campaignId: string): { call(): Promise<boolean>; };
-    campaignVoucherDigest(voucher: { campaignId: string; beneficiary: string; target: string; selector: string; maxTransactions: Numbers; maxLifetimeSpend: Numbers; expiry: Numbers; nonce: Numbers }): { call(): Promise<string>; };
-    campaignVoucherUsed(campaignId: string, beneficiary: string, nonce: Numbers): { call(): Promise<boolean>; };
-    cancelGrantV2(reservationId: string): { send(options: { from: string }): Promise<unknown>; };
-    claimCampaignVoucherV1(voucher: { campaignId: string; beneficiary: string; target: string; selector: string; maxTransactions: Numbers; maxLifetimeSpend: Numbers; expiry: Numbers; nonce: Numbers }, signature: string): { send(options: { from: string }): Promise<unknown>; };
-    contribute(grantId: string): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    flushBurn(): { send(options: { from: string }): Promise<unknown>; };
-    grantAuthorizations(arg0: string, arg1: string): { call(): Promise<[string, string, bigint, bigint, bigint, bigint, bigint]>; };
-    grantGasOverhead(): { call(): Promise<[bigint, bigint, bigint]>; };
-    grantIdForAccount(account: string): { call(): Promise<string>; };
-    grantIdForCampaign(campaignId: string): { call(): Promise<string>; };
-    grantIdForReferral(referrer: string, referred: string): { call(): Promise<string>; };
-    grantIdForWelcome(): { call(): Promise<string>; };
-    grantInfo(grantId: string): { call(): Promise<{ balance: bigint; totalContributed: bigint; totalSpent: bigint }>; };
-    grants(arg0: string): { call(): Promise<[bigint, bigint, bigint]>; };
-    lastAccruedBlock(): { call(): Promise<bigint>; };
-    maxActiveReservationsPerGrant(): { call(): Promise<bigint>; };
-    outstandingReservationExitClaims(): { call(): Promise<bigint>; };
-    owner(): { call(): Promise<string>; };
-    paused(): { call(): Promise<boolean>; };
-    pendingReservations(reservationId: string): { call(): Promise<{ grantId: string; beneficiary: string; maximumFee: bigint }>; };
-    registerCampaignV1(salt: string): { send(options: { from: string }): Promise<unknown>; };
-    renounceOwnership(): { send(options: { from: string }): Promise<unknown>; };
-    reservationExitSettlement(reservationId: string): { call(): Promise<{ grantId: string; totalRefund: bigint; totalDetachedShares: bigint; remainingDetachedShares: bigint; remainingEscrow: bigint }>; };
-    reservationExitSnapshot(reservationId: string, contributor: string): { call(): Promise<{ detachedShares: bigint; claimed: boolean; snapshotted: boolean }>; };
-    reserveGrantGasLimit(): { call(): Promise<bigint>; };
-    reserveGrantV2(reservationId: string, sender: string, target: string, input: string, maximumFee: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    resolveGrant(sender: string, target: string, input: string, fee: Numbers): { call(): Promise<string>; };
-    resolveGrantContext(sender: string, target: string, input: string, fee: Numbers): { call(): Promise<[string, bigint, bigint, bigint, bigint, bigint]>; };
-    revokeCampaignVoucherV1(campaignId: string, beneficiary: string, nonce: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    revokeGrantAuthorization(beneficiary: string, grantId: string): { send(options: { from: string }): Promise<unknown>; };
-    rotateCampaignOwnerV1(campaignId: string, newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    setCampaignRevokedV1(campaignId: string, revoked: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setGrantAuthorization(beneficiary: string, grantId: string, target: string, selector: string, maxTransactions: Numbers, maxLifetimeSpend: Numbers, expiry: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setPaused(paused_: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setReferral(referred: string, referrer: string): { send(options: { from: string }): Promise<unknown>; };
-    settleGrantGasLimit(): { call(): Promise<bigint>; };
-    settleGrantV2(reservationId: string, actualFee: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    stakingAddress(): { call(): Promise<string>; };
-    transferOwnership(newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    updateGasLimits(reserveGas: Numbers, settleGas: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    updateStakingAddress(staking_: string): { send(options: { from: string }): Promise<unknown>; };
-    withdrawContribution(grantId: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    withdrawReservationExit(reservationId: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    AccountGrantAssigned: { (options?: { filter?: { account?: string; grantId?: string } }): unknown; };
-    BurnFlushFailed: { (options?: { filter?: { staking?: string } }): unknown; };
-    BurnFlushed: { (options?: { filter?: { staking?: string } }): unknown; };
-    CampaignOwnerRotated: { (options?: { filter?: { campaignId?: string; previousOwner?: string; newOwner?: string } }): unknown; };
-    CampaignRegistered: { (options?: { filter?: { campaignId?: string; owner?: string } }): unknown; };
-    CampaignRevocationSet: { (options?: { filter?: { campaignId?: string } }): unknown; };
-    CampaignVoucherClaimed: { (options?: { filter?: { campaignId?: string; beneficiary?: string } }): unknown; };
-    CampaignVoucherRevoked: { (options?: { filter?: { campaignId?: string; beneficiary?: string } }): unknown; };
-    GrantAuthorizationRevoked: { (options?: { filter?: { beneficiary?: string; grantId?: string } }): unknown; };
-    GrantAuthorizationSet: { (options?: { filter?: { beneficiary?: string; grantId?: string; target?: string } }): unknown; };
-    GrantContributed: { (options?: { filter?: { grantId?: string; contributor?: string } }): unknown; };
-    GrantGasLimitsUpdated: { (options?: {}): unknown; };
-    GrantReservationCancelled: { (options?: { filter?: { reservationId?: string; grantId?: string } }): unknown; };
-    GrantReserved: { (options?: { filter?: { reservationId?: string; grantId?: string; beneficiary?: string } }): unknown; };
-    GrantSettled: { (options?: { filter?: { reservationId?: string; grantId?: string } }): unknown; };
-    GrantWithdrawn: { (options?: { filter?: { grantId?: string; contributor?: string } }): unknown; };
-    OwnershipTransferred: { (options?: { filter?: { previousOwner?: string; newOwner?: string } }): unknown; };
-    Paused: { (options?: {}): unknown; };
-    ReferralGrantSet: { (options?: { filter?: { referrer?: string; referred?: string } }): unknown; };
-    ReservationExitSnapshotted: { (options?: { filter?: { reservationId?: string; grantId?: string; contributor?: string } }): unknown; };
-    ReservationExitWithdrawn: { (options?: { filter?: { reservationId?: string; grantId?: string; contributor?: string } }): unknown; };
-    SettledBurnAccrued: { (options?: { filter?: { blockNumber?: Numbers } }): unknown; };
-    StakingAddressUpdated: { (options?: { filter?: { newAddress?: string } }): unknown; };
-  };
+type DiesisPatronMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisPatronMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisPatronMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisPatronMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisPatronMethods {
+  accrueSettledBurnV2(blockNumber: Numbers, totalActualFee: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  accruedBurn(): DiesisPatronMethod<'nonpayable', bigint>;
+  assignAccountGrant(account: string, grantId: string): DiesisPatronMethod<'nonpayable', void>;
+  campaignIdFor(owner: string, salt: string): DiesisPatronMethod<'nonpayable', string>;
+  campaignOwner(campaignId: string): DiesisPatronMethod<'nonpayable', string>;
+  campaignRevoked(campaignId: string): DiesisPatronMethod<'nonpayable', boolean>;
+  campaignVoucherDigest(voucher: { campaignId: string; beneficiary: string; target: string; selector: string; maxTransactions: Numbers; maxLifetimeSpend: Numbers; expiry: Numbers; nonce: Numbers }): DiesisPatronMethod<'nonpayable', string>;
+  campaignVoucherUsed(campaignId: string, beneficiary: string, nonce: Numbers): DiesisPatronMethod<'nonpayable', boolean>;
+  cancelGrantV2(reservationId: string): DiesisPatronMethod<'nonpayable', void>;
+  claimCampaignVoucherV1(voucher: { campaignId: string; beneficiary: string; target: string; selector: string; maxTransactions: Numbers; maxLifetimeSpend: Numbers; expiry: Numbers; nonce: Numbers }, signature: string): DiesisPatronMethod<'nonpayable', void>;
+  contribute(grantId: string): DiesisPatronMethod<'payable', void>;
+  flushBurn(): DiesisPatronMethod<'nonpayable', boolean>;
+  grantAuthorizations(arg0: string, arg1: string): DiesisPatronMethod<'nonpayable', { 0: string; 1: string; 2: bigint; 3: bigint; 4: bigint; 5: bigint; 6: bigint; target: string; selector: string; expiry: bigint; maxTransactions: bigint; transactionsUsed: bigint; maxLifetimeSpend: bigint; lifetimeSpent: bigint; __length__: number }>;
+  grantGasOverhead(): DiesisPatronMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; reserveGas: bigint; settleGas: bigint; totalOverhead: bigint; __length__: number }>;
+  grantIdForAccount(account: string): DiesisPatronMethod<'nonpayable', string>;
+  grantIdForCampaign(campaignId: string): DiesisPatronMethod<'nonpayable', string>;
+  grantIdForReferral(referrer: string, referred: string): DiesisPatronMethod<'nonpayable', string>;
+  grantIdForWelcome(): DiesisPatronMethod<'nonpayable', string>;
+  grantInfo(grantId: string): DiesisPatronMethod<'nonpayable', { balance: bigint; totalContributed: bigint; totalSpent: bigint }>;
+  grants(arg0: string): DiesisPatronMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; balance: bigint; totalContributed: bigint; totalSpent: bigint; __length__: number }>;
+  lastAccruedBlock(): DiesisPatronMethod<'nonpayable', bigint>;
+  maxActiveReservationsPerGrant(): DiesisPatronMethod<'nonpayable', bigint>;
+  outstandingReservationExitClaims(): DiesisPatronMethod<'nonpayable', bigint>;
+  owner(): DiesisPatronMethod<'nonpayable', string>;
+  paused(): DiesisPatronMethod<'nonpayable', boolean>;
+  pendingReservations(reservationId: string): DiesisPatronMethod<'nonpayable', { grantId: string; beneficiary: string; maximumFee: bigint }>;
+  registerCampaignV1(salt: string): DiesisPatronMethod<'nonpayable', string>;
+  renounceOwnership(): DiesisPatronMethod<'nonpayable', void>;
+  reservationExitSettlement(reservationId: string): DiesisPatronMethod<'nonpayable', { grantId: string; totalRefund: bigint; totalDetachedShares: bigint; remainingDetachedShares: bigint; remainingEscrow: bigint }>;
+  reservationExitSnapshot(reservationId: string, contributor: string): DiesisPatronMethod<'nonpayable', { detachedShares: bigint; claimed: boolean; snapshotted: boolean }>;
+  reserveGrantGasLimit(): DiesisPatronMethod<'nonpayable', bigint>;
+  reserveGrantV2(reservationId: string, sender: string, target: string, input: string, maximumFee: Numbers): DiesisPatronMethod<'nonpayable', string>;
+  resolveGrant(sender: string, target: string, input: string, fee: Numbers): DiesisPatronMethod<'nonpayable', string>;
+  resolveGrantContext(sender: string, target: string, input: string, fee: Numbers): DiesisPatronMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; 3: bigint; 4: bigint; 5: bigint; grantId: string; jarBalance: bigint; maxTransactions: bigint; transactionsUsed: bigint; maxLifetimeSpend: bigint; lifetimeSpent: bigint; __length__: number }>;
+  revokeCampaignVoucherV1(campaignId: string, beneficiary: string, nonce: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  revokeGrantAuthorization(beneficiary: string, grantId: string): DiesisPatronMethod<'nonpayable', void>;
+  rotateCampaignOwnerV1(campaignId: string, newOwner: string): DiesisPatronMethod<'nonpayable', void>;
+  setCampaignRevokedV1(campaignId: string, revoked: boolean): DiesisPatronMethod<'nonpayable', void>;
+  setGrantAuthorization(beneficiary: string, grantId: string, target: string, selector: string, maxTransactions: Numbers, maxLifetimeSpend: Numbers, expiry: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  setPaused(paused_: boolean): DiesisPatronMethod<'nonpayable', void>;
+  setReferral(referred: string, referrer: string): DiesisPatronMethod<'nonpayable', void>;
+  settleGrantGasLimit(): DiesisPatronMethod<'nonpayable', bigint>;
+  settleGrantV2(reservationId: string, actualFee: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  stakingAddress(): DiesisPatronMethod<'nonpayable', string>;
+  transferOwnership(newOwner: string): DiesisPatronMethod<'nonpayable', void>;
+  updateGasLimits(reserveGas: Numbers, settleGas: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  updateStakingAddress(staking_: string): DiesisPatronMethod<'nonpayable', void>;
+  withdrawContribution(grantId: string, amount: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  withdrawReservationExit(reservationId: string): DiesisPatronMethod<'nonpayable', void>;
 }
 
+export type DiesisPatronContract = Omit<Contract<typeof DiesisPatronAbi>, 'methods'> & {
+  readonly methods: DiesisPatronMethods;
+};
+
 export function createDiesisPatron(web3: Web3, address: string): DiesisPatronContract {
-  return new Contract(DiesisPatronAbi as any, address, web3) as unknown as DiesisPatronContract;
+  return new Contract(DiesisPatronAbi, address, web3) as unknown as DiesisPatronContract;
 }

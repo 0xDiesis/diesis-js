@@ -2,33 +2,47 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisNamePolicyAbi } from '../../generated/viem/IDiesisNamePolicy.abi.js';
 
-export interface IDiesisNamePolicyContract {
-  methods: {
-    approveRecovery(node: string, newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    cancelRecovery(node: string, newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    finalizeRecovery(node: string, newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    guardedTransfer(node: string, newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    guardians(node: string, guardian: string): { call(): Promise<boolean>; };
-    isTransferLocked(node: string): { call(): Promise<boolean>; };
-    recoveryDelay(node: string): { call(): Promise<bigint>; };
-    recoveryEnabled(node: string): { call(): Promise<boolean>; };
-    recoveryFallbackOwner(node: string): { call(): Promise<string>; };
-    recoveryThreshold(node: string): { call(): Promise<bigint>; };
-    setGuardian(node: string, guardian: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setRecoveryConfig(node: string, threshold: Numbers, delay: Numbers, fallbackOwner: string, enabled: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setTransferLock(node: string, lockedUntil: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    transferLockUntil(node: string): { call(): Promise<bigint>; };
-  };
-  events: {
-    GuardianChanged: { (options?: { filter?: { node?: string; guardian?: string } }): unknown; };
-    NameRecovered: { (options?: { filter?: { node?: string; requestId?: string; newOwner?: string } }): unknown; };
-    RecoveryApproved: { (options?: { filter?: { node?: string; requestId?: string; guardian?: string } }): unknown; };
-    RecoveryCancelled: { (options?: { filter?: { node?: string; requestId?: string } }): unknown; };
-    RecoveryConfigChanged: { (options?: { filter?: { node?: string } }): unknown; };
-    TransferLockChanged: { (options?: { filter?: { node?: string } }): unknown; };
-  };
+type IDiesisNamePolicyMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisNamePolicyMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisNamePolicyMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisNamePolicyMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisNamePolicyMethods {
+  approveRecovery(node: string, newOwner: string): IDiesisNamePolicyMethod<'nonpayable', string>;
+  cancelRecovery(node: string, newOwner: string): IDiesisNamePolicyMethod<'nonpayable', void>;
+  finalizeRecovery(node: string, newOwner: string): IDiesisNamePolicyMethod<'nonpayable', void>;
+  guardedTransfer(node: string, newOwner: string): IDiesisNamePolicyMethod<'nonpayable', void>;
+  guardians(node: string, guardian: string): IDiesisNamePolicyMethod<'nonpayable', boolean>;
+  isTransferLocked(node: string): IDiesisNamePolicyMethod<'nonpayable', boolean>;
+  recoveryDelay(node: string): IDiesisNamePolicyMethod<'nonpayable', bigint>;
+  recoveryEnabled(node: string): IDiesisNamePolicyMethod<'nonpayable', boolean>;
+  recoveryFallbackOwner(node: string): IDiesisNamePolicyMethod<'nonpayable', string>;
+  recoveryThreshold(node: string): IDiesisNamePolicyMethod<'nonpayable', bigint>;
+  setGuardian(node: string, guardian: string, approved: boolean): IDiesisNamePolicyMethod<'nonpayable', void>;
+  setRecoveryConfig(node: string, threshold: Numbers, delay: Numbers, fallbackOwner: string, enabled: boolean): IDiesisNamePolicyMethod<'nonpayable', void>;
+  setTransferLock(node: string, lockedUntil: Numbers): IDiesisNamePolicyMethod<'nonpayable', void>;
+  transferLockUntil(node: string): IDiesisNamePolicyMethod<'nonpayable', bigint>;
 }
 
+export type IDiesisNamePolicyContract = Omit<Contract<typeof IDiesisNamePolicyAbi>, 'methods'> & {
+  readonly methods: IDiesisNamePolicyMethods;
+};
+
 export function createIDiesisNamePolicy(web3: Web3, address: string): IDiesisNamePolicyContract {
-  return new Contract(IDiesisNamePolicyAbi as any, address, web3) as unknown as IDiesisNamePolicyContract;
+  return new Contract(IDiesisNamePolicyAbi, address, web3) as unknown as IDiesisNamePolicyContract;
 }

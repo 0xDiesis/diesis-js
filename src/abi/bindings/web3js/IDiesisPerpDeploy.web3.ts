@@ -2,40 +2,51 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisPerpDeployAbi } from '../../generated/viem/IDiesisPerpDeploy.abi.js';
 
-export interface IDiesisPerpDeployContract {
-  methods: {
-    applyPerpAbandonmentV1(marketId: string, parentHash: string, blockNumber: Numbers, policyEpoch: Numbers, policyHash: string, windowStart: Numbers, windowEnd: Numbers, filledVolume: Numbers, operatorFees: Numbers, lastMetadataUpdate: Numbers, inputHash: string, committeeEpoch: Numbers, committeeIdentity: string, quorumPower: Numbers, attestingPower: Numbers, voterCount: Numbers, evidenceHash: string): { send(options: { from: string }): Promise<unknown>; };
-    applySlash(marketId: string, reason: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    deployPerp(slotId: string, marketId: string, sourceList: string, metadata: string, signatures: string): { send(options: { from: string }): Promise<unknown>; };
-    expireNextUnactivatedPerpV1(): { send(options: { from: string }): Promise<unknown>; };
-    expireUnactivatedPerpV1(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-    finalizeClose(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-    finalizePerpPolicyV1(marketId: string, revision: Numbers, proposalId: string): { send(options: { from: string }): Promise<unknown>; };
-    getDeploymentState(marketId: string): { call(): Promise<{ stateTag: bigint; deadlineOrLiveBlock: bigint; windowCloseBlock: bigint; slashReason: bigint }>; };
-    getMarketDeploymentState(marketId: string): { call(): Promise<{ stateTag: bigint; deadlineOrLiveBlock: bigint; windowCloseBlock: bigint; slashReason: bigint }>; };
-    getOperatorBalance(operator: string): { call(): Promise<bigint>; };
-    getPerpPolicyV1(marketId: string): { call(): Promise<[{ revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }, { epoch: bigint; threshold: bigint; signers: string[] }]>; };
-    initializePerpMarketV1(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, maxLeverage: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    initializePerpMarketV2(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, policy: { revision: Numbers; backstopTopupBps: Numbers; tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[] }, keyset: { epoch: Numbers; threshold: Numbers; signers: string[] }): { send(options: { from: string }): Promise<unknown>; };
-    initiateDelist(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-    preparePerpMarketCloseV1(marketId: string, maxOrders: Numbers, maxPositions: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    promoteToLive(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-    proposePerpPolicyV1(marketId: string, expectedRevision: Numbers, expectedKeysetEpoch: Numbers, backstopTopupBps: Numbers, tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[], nextSigners: string[], nextThreshold: Numbers, signatures: { signer: string; r: string; s: string; v: Numbers }[]): { send(options: { from: string }): Promise<unknown>; };
-    recordAuctionWin(marketId: string, operator: string, registrationDigest: string, evidenceHash: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    Activated: { (options?: { filter?: { marketId?: string } }): unknown; };
-    AuctionWinRecorded: { (options?: { filter?: { marketId?: string; operator?: string } }): unknown; };
-    Closed: { (options?: { filter?: { marketId?: string } }): unknown; };
-    Delisting: { (options?: { filter?: { marketId?: string } }): unknown; };
-    LiveStarted: { (options?: { filter?: { marketId?: string } }): unknown; };
-    PerpMarketClosePreparedV1: { (options?: { filter?: { marketId?: string } }): unknown; };
-    PerpMarketInitializedV1: { (options?: { filter?: { marketId?: string } }): unknown; };
-    PerpMarketInitializedV2: { (options?: { filter?: { marketId?: string } }): unknown; };
-    Slashed: { (options?: { filter?: { marketId?: string } }): unknown; };
-  };
+type IDiesisPerpDeployMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisPerpDeployMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisPerpDeployMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisPerpDeployMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisPerpDeployMethods {
+  applyPerpAbandonmentV1(marketId: string, parentHash: string, blockNumber: Numbers, policyEpoch: Numbers, policyHash: string, windowStart: Numbers, windowEnd: Numbers, filledVolume: Numbers, operatorFees: Numbers, lastMetadataUpdate: Numbers, inputHash: string, committeeEpoch: Numbers, committeeIdentity: string, quorumPower: Numbers, attestingPower: Numbers, voterCount: Numbers, evidenceHash: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  applySlash(marketId: string, reason: Numbers): IDiesisPerpDeployMethod<'nonpayable', void>;
+  deployPerp(slotId: string, marketId: string, sourceList: string, metadata: string, signatures: string): IDiesisPerpDeployMethod<'nonpayable', string>;
+  expireNextUnactivatedPerpV1(): IDiesisPerpDeployMethod<'nonpayable', void>;
+  expireUnactivatedPerpV1(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  finalizeClose(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  finalizePerpPolicyV1(marketId: string, revision: Numbers, proposalId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  getDeploymentState(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { stateTag: bigint; deadlineOrLiveBlock: bigint; windowCloseBlock: bigint; slashReason: bigint }>;
+  getMarketDeploymentState(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { stateTag: bigint; deadlineOrLiveBlock: bigint; windowCloseBlock: bigint; slashReason: bigint }>;
+  getOperatorBalance(operator: string): IDiesisPerpDeployMethod<'nonpayable', bigint>;
+  getPerpPolicyV1(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { 0: { revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }; 1: { epoch: bigint; threshold: bigint; signers: string[] }; policy: { revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }; keyset: { epoch: bigint; threshold: bigint; signers: string[] }; __length__: number }>;
+  initializePerpMarketV1(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, maxLeverage: Numbers): IDiesisPerpDeployMethod<'nonpayable', string>;
+  initializePerpMarketV2(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, policy: { revision: Numbers; backstopTopupBps: Numbers; tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[] }, keyset: { epoch: Numbers; threshold: Numbers; signers: string[] }): IDiesisPerpDeployMethod<'nonpayable', string>;
+  initiateDelist(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  preparePerpMarketCloseV1(marketId: string, maxOrders: Numbers, maxPositions: Numbers): IDiesisPerpDeployMethod<'nonpayable', boolean>;
+  promoteToLive(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  proposePerpPolicyV1(marketId: string, expectedRevision: Numbers, expectedKeysetEpoch: Numbers, backstopTopupBps: Numbers, tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[], nextSigners: string[], nextThreshold: Numbers, signatures: { signer: string; r: string; s: string; v: Numbers }[]): IDiesisPerpDeployMethod<'nonpayable', { 0: string; 1: bigint; proposalId: string; executeAfter: bigint; __length__: number }>;
+  recordAuctionWin(marketId: string, operator: string, registrationDigest: string, evidenceHash: string): IDiesisPerpDeployMethod<'nonpayable', void>;
 }
 
+export type IDiesisPerpDeployContract = Omit<Contract<typeof IDiesisPerpDeployAbi>, 'methods'> & {
+  readonly methods: IDiesisPerpDeployMethods;
+};
+
 export function createIDiesisPerpDeploy(web3: Web3, address: string): IDiesisPerpDeployContract {
-  return new Contract(IDiesisPerpDeployAbi as any, address, web3) as unknown as IDiesisPerpDeployContract;
+  return new Contract(IDiesisPerpDeployAbi, address, web3) as unknown as IDiesisPerpDeployContract;
 }

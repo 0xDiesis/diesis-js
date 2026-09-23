@@ -2,24 +2,40 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisBundleEscrowAbi } from '../../generated/viem/IDiesisBundleEscrow.abi.js';
 
-export interface IDiesisBundleEscrowContract {
-  methods: {
-    cancelBundleV2(payer: string, planHash: string, escrowNonce: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    claimable(account: string): { call(): Promise<bigint>; };
-    finalizeBundleV2(payer: string, planHash: string, escrowNonce: Numbers, skippedGas: Numbers, beneficiary: string): { send(options: { from: string }): Promise<unknown>; };
-    reclaimExpiredBundleV2(planHash: string, escrowNonce: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    reservationOf(payer: string, planHash: string, escrowNonce: Numbers): { call(): Promise<{ payer: string; builderPayment: bigint; refundGasPrice: bigint; maxRefund: bigint; expiry: bigint; settled: boolean }>; };
-    reserveBundleV2(planHash: string, maximumBuilderPayment: Numbers, refundGasPrice: Numbers, maximumRefund: Numbers, escrowNonce: Numbers, expiry: Numbers): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    withdraw(): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    BundleCancelled: { (options?: { filter?: { planHash?: string; escrowNonce?: Numbers; payer?: string } }): unknown; };
-    BundleFinalized: { (options?: { filter?: { planHash?: string; escrowNonce?: Numbers } }): unknown; };
-    BundleReserved: { (options?: { filter?: { planHash?: string; escrowNonce?: Numbers; payer?: string } }): unknown; };
-    Withdrawn: { (options?: { filter?: { account?: string } }): unknown; };
-  };
+type IDiesisBundleEscrowMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisBundleEscrowMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisBundleEscrowMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisBundleEscrowMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisBundleEscrowMethods {
+  cancelBundleV2(payer: string, planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
+  claimable(account: string): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
+  finalizeBundleV2(payer: string, planHash: string, escrowNonce: Numbers, skippedGas: Numbers, beneficiary: string): IDiesisBundleEscrowMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; builderPaid: bigint; refunded: bigint; unearnedReserve: bigint; __length__: number }>;
+  reclaimExpiredBundleV2(planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
+  reservationOf(payer: string, planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', { payer: string; builderPayment: bigint; refundGasPrice: bigint; maxRefund: bigint; expiry: bigint; settled: boolean }>;
+  reserveBundleV2(planHash: string, maximumBuilderPayment: Numbers, refundGasPrice: Numbers, maximumRefund: Numbers, escrowNonce: Numbers, expiry: Numbers): IDiesisBundleEscrowMethod<'payable', bigint>;
+  withdraw(): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
 }
 
+export type IDiesisBundleEscrowContract = Omit<Contract<typeof IDiesisBundleEscrowAbi>, 'methods'> & {
+  readonly methods: IDiesisBundleEscrowMethods;
+};
+
 export function createIDiesisBundleEscrow(web3: Web3, address: string): IDiesisBundleEscrowContract {
-  return new Contract(IDiesisBundleEscrowAbi as any, address, web3) as unknown as IDiesisBundleEscrowContract;
+  return new Contract(IDiesisBundleEscrowAbi, address, web3) as unknown as IDiesisBundleEscrowContract;
 }

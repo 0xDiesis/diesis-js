@@ -2,21 +2,37 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisOperatorBondAbi } from '../../generated/viem/IDiesisOperatorBond.abi.js';
 
-export interface IDiesisOperatorBondContract {
-  methods: {
-    finalizeRelease(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-    getBond(marketId: string): { call(): Promise<{ operator: string; marketId: string; bondDs: bigint; releaseUnlockBlock: bigint }>; };
-    postBond(marketId: string): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    requestRelease(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    BondPosted: { (options?: { filter?: { operator?: string; marketId?: string } }): unknown; };
-    BondSlashed: { (options?: { filter?: { marketId?: string } }): unknown; };
-    ReleaseFinalized: { (options?: { filter?: { marketId?: string } }): unknown; };
-    ReleaseRequested: { (options?: { filter?: { marketId?: string } }): unknown; };
-  };
+type IDiesisOperatorBondMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisOperatorBondMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisOperatorBondMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisOperatorBondMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisOperatorBondMethods {
+  finalizeRelease(marketId: string): IDiesisOperatorBondMethod<'nonpayable', void>;
+  getBond(marketId: string): IDiesisOperatorBondMethod<'nonpayable', { operator: string; marketId: string; bondDs: bigint; releaseUnlockBlock: bigint }>;
+  postBond(marketId: string): IDiesisOperatorBondMethod<'payable', void>;
+  requestRelease(marketId: string): IDiesisOperatorBondMethod<'nonpayable', void>;
 }
 
+export type IDiesisOperatorBondContract = Omit<Contract<typeof IDiesisOperatorBondAbi>, 'methods'> & {
+  readonly methods: IDiesisOperatorBondMethods;
+};
+
 export function createIDiesisOperatorBond(web3: Web3, address: string): IDiesisOperatorBondContract {
-  return new Contract(IDiesisOperatorBondAbi as any, address, web3) as unknown as IDiesisOperatorBondContract;
+  return new Contract(IDiesisOperatorBondAbi, address, web3) as unknown as IDiesisOperatorBondContract;
 }

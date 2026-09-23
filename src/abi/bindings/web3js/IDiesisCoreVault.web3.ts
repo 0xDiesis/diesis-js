@@ -2,33 +2,46 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisCoreVaultAbi } from '../../generated/viem/IDiesisCoreVault.abi.js';
 
-export interface IDiesisCoreVaultContract {
-  methods: {
-    cancelExit(id: Numbers, queueIndex: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    deposit(id: Numbers, amount: Numbers): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    executeRiskParamChange(id: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    exitQueue(id: Numbers): { call(): Promise<{ depositor: string; sharesBurned: bigint; requestedBlock: bigint; pricedNavBlock: bigint; pricedSharePriceQ96: bigint }[]>; };
-    getCheckpoint(id: Numbers, blockNumber: Numbers): { call(): Promise<{ blockNumber: bigint; totalAssets: bigint; totalShares: bigint; sharePriceQ96: bigint }>; };
-    getRiskParams(id: Numbers): { call(): Promise<{ maxNotionalPerMarket: bigint; maxLeverage: bigint; maxSingleFillSlippageBps: bigint; adlCallRatioBps: bigint; insuranceCallCapBpsOfTvl: bigint; maxPositionConcentrationBps: bigint; liquidationEngineMode: bigint }>; };
-    pauseState(id: Numbers): { call(): Promise<{ paused: boolean; lastPauseBlock: bigint; expiresAtBlock: bigint }>; };
-    pauseStrategy(id: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    proposeRiskParamChange(id: Numbers, newParams: { maxNotionalPerMarket: Numbers; maxLeverage: Numbers; maxSingleFillSlippageBps: Numbers; adlCallRatioBps: Numbers; insuranceCallCapBpsOfTvl: Numbers; maxPositionConcentrationBps: Numbers; liquidationEngineMode: Numbers }): { send(options: { from: string }): Promise<unknown>; };
-    requestExit(id: Numbers, shares: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    shareBalance(id: Numbers, depositor: string): { call(): Promise<bigint>; };
-    totalAssets(id: Numbers): { call(): Promise<bigint>; };
-    totalShares(id: Numbers): { call(): Promise<bigint>; };
-  };
-  events: {
-    Deposited: { (options?: { filter?: { id?: Numbers; depositor?: string } }): unknown; };
-    ExitCancelled: { (options?: { filter?: { id?: Numbers; depositor?: string } }): unknown; };
-    ExitProcessed: { (options?: { filter?: { id?: Numbers; depositor?: string } }): unknown; };
-    ExitRequested: { (options?: { filter?: { id?: Numbers; depositor?: string } }): unknown; };
-    RiskParamChangeExecuted: { (options?: { filter?: { id?: Numbers } }): unknown; };
-    RiskParamChangeProposed: { (options?: { filter?: { id?: Numbers } }): unknown; };
-    StrategyPaused: { (options?: { filter?: { id?: Numbers } }): unknown; };
-  };
+type IDiesisCoreVaultMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisCoreVaultMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisCoreVaultMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisCoreVaultMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisCoreVaultMethods {
+  cancelExit(id: Numbers, queueIndex: Numbers): IDiesisCoreVaultMethod<'nonpayable', void>;
+  deposit(id: Numbers, amount: Numbers): IDiesisCoreVaultMethod<'payable', void>;
+  executeRiskParamChange(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', void>;
+  exitQueue(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', { depositor: string; sharesBurned: bigint; requestedBlock: bigint; pricedNavBlock: bigint; pricedSharePriceQ96: bigint }[]>;
+  getCheckpoint(id: Numbers, blockNumber: Numbers): IDiesisCoreVaultMethod<'nonpayable', { blockNumber: bigint; totalAssets: bigint; totalShares: bigint; sharePriceQ96: bigint }>;
+  getRiskParams(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', { maxNotionalPerMarket: bigint; maxLeverage: bigint; maxSingleFillSlippageBps: bigint; adlCallRatioBps: bigint; insuranceCallCapBpsOfTvl: bigint; maxPositionConcentrationBps: bigint; liquidationEngineMode: bigint }>;
+  pauseState(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', { paused: boolean; lastPauseBlock: bigint; expiresAtBlock: bigint }>;
+  pauseStrategy(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', void>;
+  proposeRiskParamChange(id: Numbers, newParams: { maxNotionalPerMarket: Numbers; maxLeverage: Numbers; maxSingleFillSlippageBps: Numbers; adlCallRatioBps: Numbers; insuranceCallCapBpsOfTvl: Numbers; maxPositionConcentrationBps: Numbers; liquidationEngineMode: Numbers }): IDiesisCoreVaultMethod<'nonpayable', void>;
+  requestExit(id: Numbers, shares: Numbers): IDiesisCoreVaultMethod<'nonpayable', void>;
+  shareBalance(id: Numbers, depositor: string): IDiesisCoreVaultMethod<'nonpayable', bigint>;
+  totalAssets(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', bigint>;
+  totalShares(id: Numbers): IDiesisCoreVaultMethod<'nonpayable', bigint>;
 }
 
+export type IDiesisCoreVaultContract = Omit<Contract<typeof IDiesisCoreVaultAbi>, 'methods'> & {
+  readonly methods: IDiesisCoreVaultMethods;
+};
+
 export function createIDiesisCoreVault(web3: Web3, address: string): IDiesisCoreVaultContract {
-  return new Contract(IDiesisCoreVaultAbi as any, address, web3) as unknown as IDiesisCoreVaultContract;
+  return new Contract(IDiesisCoreVaultAbi, address, web3) as unknown as IDiesisCoreVaultContract;
 }

@@ -2,59 +2,71 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisPublicResolverAbi } from '../../generated/viem/DiesisPublicResolver.abi.js';
 
-export interface DiesisPublicResolverContract {
-  methods: {
-    DIESIS_EVM_COIN_TYPE(): { call(): Promise<bigint>; };
-    MAX_AGENT_RECORD_BYTES(): { call(): Promise<bigint>; };
-    MAX_CONTENTHASH_BYTES(): { call(): Promise<bigint>; };
-    MAX_MULTICOIN_ADDR_BYTES(): { call(): Promise<bigint>; };
-    MAX_RESOLVER_CALLS(): { call(): Promise<bigint>; };
-    MAX_ROUTE_TARGET_BYTES(): { call(): Promise<bigint>; };
-    MAX_TEXT_KEY_BYTES(): { call(): Promise<bigint>; };
-    MAX_TEXT_VALUE_BYTES(): { call(): Promise<bigint>; };
-    ROUTE_KIND_PAYMENT(): { call(): Promise<bigint>; };
-    addrBytes32(node: string): { call(): Promise<string>; };
-    addrBytes32Uint256(node: string, coinType: Numbers): { call(): Promise<string>; };
-    agentRecord(node: string, agentId: string): { call(): Promise<{ agentId: string; endpoint: string; publicKey: string; capabilitiesHash: string; policyHash: string; validFrom: bigint; validUntil: bigint; enabled: boolean }>; };
-    contenthash(node: string): { call(): Promise<string>; };
-    contractRecord(node: string, role: string): { call(): Promise<string>; };
-    owner(): { call(): Promise<string>; };
-    paymentRoute(node: string, routeId: string): { call(): Promise<{ chainId: bigint; token: string; recipient: string; priority: bigint; feeBpsLimit: bigint; memoPolicy: string; enabled: boolean }>; };
-    registry(): { call(): Promise<string>; };
-    renounceOwnership(): { send(options: { from: string }): Promise<unknown>; };
-    routeRecord(node: string, routeId: string): { call(): Promise<{ routeId: string; routeKind: bigint; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }>; };
-    setAddrBytes32Uint256Bytes(node: string, coinType: Numbers, value: string): { send(options: { from: string }): Promise<unknown>; };
-    setAddrBytes32Address(node: string, value: string): { send(options: { from: string }): Promise<unknown>; };
-    setAgentRecord(node: string, agentId: string, record: { agentId: string; endpoint: string; publicKey: string; capabilitiesHash: string; policyHash: string; validFrom: Numbers; validUntil: Numbers; enabled: boolean }): { send(options: { from: string }): Promise<unknown>; };
-    setContenthash(node: string, value: string): { send(options: { from: string }): Promise<unknown>; };
-    setContractRecord(node: string, role: string, target: string): { send(options: { from: string }): Promise<unknown>; };
-    setPaymentRoute(node: string, routeId: string, route: { chainId: Numbers; token: string; recipient: string; priority: Numbers; feeBpsLimit: Numbers; memoPolicy: string; enabled: boolean }): { send(options: { from: string }): Promise<unknown>; };
-    setRecords(node: string, calls: string[]): { send(options: { from: string }): Promise<unknown>; };
-    setRouteRecord(node: string, record: { routeId: string; routeKind: Numbers; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }): { send(options: { from: string }): Promise<unknown>; };
-    setText(node: string, key: string, value: string): { send(options: { from: string }): Promise<unknown>; };
-    setTrustedWriter(writer: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setWildcardPaymentRoutingAllowed(node: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    text(node: string, key: string): { call(): Promise<string>; };
-    transferOwnership(newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    trustedWriters(writer: string): { call(): Promise<boolean>; };
-    wildcardPaymentRoutingAllowed(node: string): { call(): Promise<boolean>; };
-  };
-  events: {
-    AddrChanged: { (options?: { filter?: { node?: string; addrValue?: string } }): unknown; };
-    AddressChanged: { (options?: { filter?: { node?: string; coinType?: Numbers } }): unknown; };
-    AgentRecordChanged: { (options?: { filter?: { node?: string; agentId?: string } }): unknown; };
-    ContenthashChanged: { (options?: { filter?: { node?: string } }): unknown; };
-    ContractRecordChanged: { (options?: { filter?: { node?: string; role?: string; target?: string } }): unknown; };
-    MulticoinAddrChanged: { (options?: { filter?: { node?: string; coinType?: Numbers } }): unknown; };
-    OwnershipTransferred: { (options?: { filter?: { previousOwner?: string; newOwner?: string } }): unknown; };
-    PaymentRouteChanged: { (options?: { filter?: { node?: string; routeId?: string; recipient?: string } }): unknown; };
-    RouteRecordChanged: { (options?: { filter?: { node?: string; routeId?: string } }): unknown; };
-    TextChanged: { (options?: { filter?: { node?: string; key?: string } }): unknown; };
-    TrustedWriterChanged: { (options?: { filter?: { writer?: string } }): unknown; };
-    WildcardPaymentRoutingChanged: { (options?: { filter?: { node?: string } }): unknown; };
-  };
+type DiesisPublicResolverMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisPublicResolverMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisPublicResolverMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisPublicResolverMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisPublicResolverMethods {
+  DIESIS_EVM_COIN_TYPE(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_AGENT_RECORD_BYTES(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_CONTENTHASH_BYTES(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_MULTICOIN_ADDR_BYTES(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_RESOLVER_CALLS(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_ROUTE_TARGET_BYTES(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_TEXT_KEY_BYTES(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  MAX_TEXT_VALUE_BYTES(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  ROUTE_KIND_PAYMENT(): DiesisPublicResolverMethod<'nonpayable', bigint>;
+  addr(node: string): DiesisPublicResolverMethod<'nonpayable', string>;
+  "addr(bytes32)"(node: string): DiesisPublicResolverMethod<'nonpayable', string>;
+  addr(node: string, coinType: Numbers): DiesisPublicResolverMethod<'nonpayable', string>;
+  "addr(bytes32,uint256)"(node: string, coinType: Numbers): DiesisPublicResolverMethod<'nonpayable', string>;
+  agentRecord(node: string, agentId: string): DiesisPublicResolverMethod<'nonpayable', { agentId: string; endpoint: string; publicKey: string; capabilitiesHash: string; policyHash: string; validFrom: bigint; validUntil: bigint; enabled: boolean }>;
+  contenthash(node: string): DiesisPublicResolverMethod<'nonpayable', string>;
+  contractRecord(node: string, role: string): DiesisPublicResolverMethod<'nonpayable', string>;
+  owner(): DiesisPublicResolverMethod<'nonpayable', string>;
+  paymentRoute(node: string, routeId: string): DiesisPublicResolverMethod<'nonpayable', { chainId: bigint; token: string; recipient: string; priority: bigint; feeBpsLimit: bigint; memoPolicy: string; enabled: boolean }>;
+  registry(): DiesisPublicResolverMethod<'nonpayable', string>;
+  renounceOwnership(): DiesisPublicResolverMethod<'nonpayable', void>;
+  routeRecord(node: string, routeId: string): DiesisPublicResolverMethod<'nonpayable', { routeId: string; routeKind: bigint; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }>;
+  setAddr(node: string, coinType: Numbers, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  "setAddr(bytes32,uint256,bytes)"(node: string, coinType: Numbers, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  setAddr(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  "setAddr(bytes32,address)"(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  setAgentRecord(node: string, agentId: string, record: { agentId: string; endpoint: string; publicKey: string; capabilitiesHash: string; policyHash: string; validFrom: Numbers; validUntil: Numbers; enabled: boolean }): DiesisPublicResolverMethod<'nonpayable', void>;
+  setContenthash(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  setContractRecord(node: string, role: string, target: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  setPaymentRoute(node: string, routeId: string, route: { chainId: Numbers; token: string; recipient: string; priority: Numbers; feeBpsLimit: Numbers; memoPolicy: string; enabled: boolean }): DiesisPublicResolverMethod<'nonpayable', void>;
+  setRecords(node: string, calls: string[]): DiesisPublicResolverMethod<'nonpayable', void>;
+  setRouteRecord(node: string, record: { routeId: string; routeKind: Numbers; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }): DiesisPublicResolverMethod<'nonpayable', void>;
+  setText(node: string, key: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  setTrustedWriter(writer: string, approved: boolean): DiesisPublicResolverMethod<'nonpayable', void>;
+  setWildcardPaymentRoutingAllowed(node: string, approved: boolean): DiesisPublicResolverMethod<'nonpayable', void>;
+  text(node: string, key: string): DiesisPublicResolverMethod<'nonpayable', string>;
+  transferOwnership(newOwner: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  trustedWriters(writer: string): DiesisPublicResolverMethod<'nonpayable', boolean>;
+  wildcardPaymentRoutingAllowed(node: string): DiesisPublicResolverMethod<'nonpayable', boolean>;
 }
 
+export type DiesisPublicResolverContract = Omit<Contract<typeof DiesisPublicResolverAbi>, 'methods'> & {
+  readonly methods: DiesisPublicResolverMethods;
+};
+
 export function createDiesisPublicResolver(web3: Web3, address: string): DiesisPublicResolverContract {
-  return new Contract(DiesisPublicResolverAbi as any, address, web3) as unknown as DiesisPublicResolverContract;
+  return new Contract(DiesisPublicResolverAbi, address, web3) as unknown as DiesisPublicResolverContract;
 }

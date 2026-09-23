@@ -2,19 +2,37 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisIssuanceAuctionAbi } from '../../generated/viem/IDiesisIssuanceAuction.abi.js';
 
-export interface IDiesisIssuanceAuctionContract {
-  methods: {
-    bidPerpListingV1(registration: { marketId: string; baseAsset: string; quoteAsset: string; evidenceHash: string }): { send(options: { from: string }): Promise<unknown>; };
-    currentPerpListingPriceV1(): { call(): Promise<bigint>; };
-    getPerpListingSlotV1(): { call(): Promise<{ slotStartBlock: bigint; slotLengthBlocks: bigint; initialPriceUsdc: bigint; winningPriceUsdc: bigint; currentWinner: string; registrationDigest: string }>; };
-    settlePerpListingV1(): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    BidAccepted: { (options?: { filter?: { bidder?: string; marketId?: string } }): unknown; };
-    SlotSettled: { (options?: { filter?: { marketId?: string; winner?: string } }): unknown; };
-  };
+type IDiesisIssuanceAuctionMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisIssuanceAuctionMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisIssuanceAuctionMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisIssuanceAuctionMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisIssuanceAuctionMethods {
+  bidPerpListingV1(registration: { marketId: string; baseAsset: string; quoteAsset: string; evidenceHash: string }): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
+  currentPerpListingPriceV1(): IDiesisIssuanceAuctionMethod<'nonpayable', bigint>;
+  getPerpListingSlotV1(): IDiesisIssuanceAuctionMethod<'nonpayable', { slotStartBlock: bigint; slotLengthBlocks: bigint; initialPriceUsdc: bigint; winningPriceUsdc: bigint; currentWinner: string; registrationDigest: string }>;
+  settlePerpListingV1(): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
 }
 
+export type IDiesisIssuanceAuctionContract = Omit<Contract<typeof IDiesisIssuanceAuctionAbi>, 'methods'> & {
+  readonly methods: IDiesisIssuanceAuctionMethods;
+};
+
 export function createIDiesisIssuanceAuction(web3: Web3, address: string): IDiesisIssuanceAuctionContract {
-  return new Contract(IDiesisIssuanceAuctionAbi as any, address, web3) as unknown as IDiesisIssuanceAuctionContract;
+  return new Contract(IDiesisIssuanceAuctionAbi, address, web3) as unknown as IDiesisIssuanceAuctionContract;
 }

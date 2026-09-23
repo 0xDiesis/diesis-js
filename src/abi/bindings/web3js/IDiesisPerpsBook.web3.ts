@@ -2,37 +2,47 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisPerpsBookAbi } from '../../generated/viem/IDiesisPerpsBook.abi.js';
 
-export interface IDiesisPerpsBookContract {
-  methods: {
-    adjustIsolatedMargin(marketId: string, marginDelta: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    amendPerpOrderV1(orderId: string, price: Numbers, amount: Numbers, expiry: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    applyPerpFundingV1(marketId: string, fundingRateBps: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    cancelPerpOrderV1(orderId: string): { send(options: { from: string }): Promise<unknown>; };
-    executePerpTradeV1(makerOrderId: string, takerOrderId: string, fillPrice: Numbers, fillQty: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    expirePerpOrderV1(orderId: string): { send(options: { from: string }): Promise<unknown>; };
-    finalizePerpFeeEpochV2(marketId: string, epoch: Numbers, snapshotHash: string): { send(options: { from: string }): Promise<unknown>; };
-    getIsolatedMargin(trader: string, marketId: string): { call(): Promise<bigint>; };
-    getPosition(trader: string, marketId: string): { call(): Promise<{ header: string; size: bigint; entryPrice: bigint }>; };
-    submitExchangeActionsV2(encodedActions: string): { send(options: { from: string }): Promise<unknown>; };
-    submitPerpOrderV1(marketId: string, side: Numbers, orderType: Numbers, price: Numbers, amount: Numbers, flags: Numbers, marginType: Numbers, expiry: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    submitSignedPerpActionsV2(signedEnvelope: string): { send(options: { from: string }): Promise<unknown>; };
-    updatePerpMarkV1(marketId: string, markPrice: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    updatePerpOracleV1(marketId: string, indexPrice: Numbers, markPrice: Numbers, observedAt: Numbers, oracleRound: Numbers, sourceSetHash: string, evidenceHash: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    ExchangeActionAcceptedV2: { (options?: { filter?: { clientActionId?: string; actionIndex?: Numbers; marketId?: string } }): unknown; };
-    ExchangeActionRejectedV2: { (options?: { filter?: { clientActionId?: string; actionIndex?: Numbers; marketId?: string } }): unknown; };
-    ExchangeL3MutationV2: { (options?: { filter?: { marketId?: string; orderId?: string; trader?: string } }): unknown; };
-    FundingApplied: { (options?: { filter?: { marketId?: string } }): unknown; };
-    IsolatedMarginAdjusted: { (options?: { filter?: { marketId?: string; trader?: string } }): unknown; };
-    MarkPriceUpdated: { (options?: { filter?: { marketId?: string } }): unknown; };
-    OrderCancelled: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-    OrderFilled: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-    OrderPlaced: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-    PositionClosed: { (options?: { filter?: { marketId?: string; trader?: string } }): unknown; };
-  };
+type IDiesisPerpsBookMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisPerpsBookMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisPerpsBookMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisPerpsBookMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisPerpsBookMethods {
+  adjustIsolatedMargin(marketId: string, marginDelta: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
+  amendPerpOrderV1(orderId: string, price: Numbers, amount: Numbers, expiry: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
+  applyPerpFundingV1(marketId: string, fundingRateBps: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
+  cancelPerpOrderV1(orderId: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  executePerpTradeV1(makerOrderId: string, takerOrderId: string, fillPrice: Numbers, fillQty: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
+  expirePerpOrderV1(orderId: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  finalizePerpFeeEpochV2(marketId: string, epoch: Numbers, snapshotHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  getIsolatedMargin(trader: string, marketId: string): IDiesisPerpsBookMethod<'nonpayable', bigint>;
+  getPosition(trader: string, marketId: string): IDiesisPerpsBookMethod<'nonpayable', { header: string; size: bigint; entryPrice: bigint }>;
+  submitExchangeActionsV2(encodedActions: string): IDiesisPerpsBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
+  submitPerpOrderV1(marketId: string, side: Numbers, orderType: Numbers, price: Numbers, amount: Numbers, flags: Numbers, marginType: Numbers, expiry: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
+  submitSignedPerpActionsV2(signedEnvelope: string): IDiesisPerpsBookMethod<'nonpayable', string>;
+  updatePerpMarkV1(marketId: string, markPrice: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
+  updatePerpOracleV1(marketId: string, indexPrice: Numbers, markPrice: Numbers, observedAt: Numbers, oracleRound: Numbers, sourceSetHash: string, evidenceHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
 }
 
+export type IDiesisPerpsBookContract = Omit<Contract<typeof IDiesisPerpsBookAbi>, 'methods'> & {
+  readonly methods: IDiesisPerpsBookMethods;
+};
+
 export function createIDiesisPerpsBook(web3: Web3, address: string): IDiesisPerpsBookContract {
-  return new Contract(IDiesisPerpsBookAbi as any, address, web3) as unknown as IDiesisPerpsBookContract;
+  return new Contract(IDiesisPerpsBookAbi, address, web3) as unknown as IDiesisPerpsBookContract;
 }

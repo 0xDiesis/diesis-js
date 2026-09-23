@@ -2,91 +2,96 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisConfigAbi } from '../../generated/viem/DiesisConfig.abi.js';
 
-export interface DiesisConfigContract {
-  methods: {
-    CUT_RATE_UPPER(): { call(): Promise<bigint>; };
-    DEFAULT_DELEGATION_FANOUT_LIMIT(): { call(): Promise<bigint>; };
-    DEFAULT_EXIT_DELAY_CHECKPOINTS(): { call(): Promise<bigint>; };
-    DEFAULT_EXIT_DELAY_SECONDS(): { call(): Promise<bigint>; };
-    DEFAULT_LIVENESS_DOWNTIME_LIMIT(): { call(): Promise<bigint>; };
-    DEFAULT_LIVENESS_MISSED_BLOCK_LIMIT(): { call(): Promise<bigint>; };
-    DEFAULT_NETWORK_BURN_CUT(): { call(): Promise<bigint>; };
-    DEFAULT_OPERATOR_TAKE_RATE(): { call(): Promise<bigint>; };
-    DEFAULT_RELIABILITY_FLOOR(): { call(): Promise<bigint>; };
-    DEFAULT_RELIABILITY_SAMPLE_CHECKPOINTS(): { call(): Promise<bigint>; };
-    DEFAULT_REWARD_STREAM_PER_SECOND(): { call(): Promise<bigint>; };
-    DEFAULT_SURPLUS_REWARD_BURN_CUT(): { call(): Promise<bigint>; };
-    DEFAULT_TREASURY_CUT(): { call(): Promise<bigint>; };
-    DEFAULT_VALIDATOR_BOND_FLOOR(): { call(): Promise<bigint>; };
-    DELEGATION_FANOUT_LIMIT_LOWER(): { call(): Promise<bigint>; };
-    DELEGATION_FANOUT_LIMIT_UPPER(): { call(): Promise<bigint>; };
-    EXIT_DELAY_CHECKPOINTS_LOWER(): { call(): Promise<bigint>; };
-    EXIT_DELAY_CHECKPOINTS_UPPER(): { call(): Promise<bigint>; };
-    EXIT_DELAY_SECONDS_LOWER(): { call(): Promise<bigint>; };
-    EXIT_DELAY_SECONDS_UPPER(): { call(): Promise<bigint>; };
-    LIVENESS_DOWNTIME_LIMIT_LOWER(): { call(): Promise<bigint>; };
-    LIVENESS_DOWNTIME_LIMIT_UPPER(): { call(): Promise<bigint>; };
-    LIVENESS_MISSED_BLOCK_LIMIT_LOWER(): { call(): Promise<bigint>; };
-    LIVENESS_MISSED_BLOCK_LIMIT_UPPER(): { call(): Promise<bigint>; };
-    OPERATOR_TAKE_RATE_UPPER(): { call(): Promise<bigint>; };
-    RELIABILITY_FLOOR_UPPER(): { call(): Promise<bigint>; };
-    RELIABILITY_SAMPLE_LOWER(): { call(): Promise<bigint>; };
-    RELIABILITY_SAMPLE_UPPER(): { call(): Promise<bigint>; };
-    REWARD_STREAM_PER_SECOND_UPPER(): { call(): Promise<bigint>; };
-    SURPLUS_REWARD_BURN_CUT_UPPER(): { call(): Promise<bigint>; };
-    VALIDATOR_BOND_FLOOR_LOWER(): { call(): Promise<bigint>; };
-    VALIDATOR_BOND_FLOOR_UPPER(): { call(): Promise<bigint>; };
-    delegationFanoutLimit(): { call(): Promise<bigint>; };
-    exitDelayCheckpoints(): { call(): Promise<bigint>; };
-    exitDelaySeconds(): { call(): Promise<bigint>; };
-    livenessDowntimeLimit(): { call(): Promise<bigint>; };
-    livenessMissedBlockLimit(): { call(): Promise<bigint>; };
-    mintReceiver(): { call(): Promise<string>; };
-    networkBurnCut(): { call(): Promise<bigint>; };
-    operatorTakeRate(): { call(): Promise<bigint>; };
-    owner(): { call(): Promise<string>; };
-    reliabilityFloor(): { call(): Promise<bigint>; };
-    reliabilitySampleCheckpoints(): { call(): Promise<bigint>; };
-    renounceOwnership(): { send(options: { from: string }): Promise<unknown>; };
-    rewardStreamPerSecond(): { call(): Promise<bigint>; };
-    setDelegationFanoutLimit(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setExitDelayCheckpoints(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setExitDelaySeconds(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setLivenessDowntimeLimit(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setLivenessMissedBlockLimit(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setMintReceiver(v: string): { send(options: { from: string }): Promise<unknown>; };
-    setNetworkBurnCut(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setOperatorTakeRate(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setReliabilityFloor(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setReliabilitySampleCheckpoints(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setRewardStreamPerSecond(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setSurplusRewardBurnCut(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setTreasuryCut(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setValidatorBondFloor(v: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    surplusRewardBurnCut(): { call(): Promise<bigint>; };
-    transferOwnership(newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    treasuryCut(): { call(): Promise<bigint>; };
-    validatorBondFloor(): { call(): Promise<bigint>; };
-  };
-  events: {
-    DelegationFanoutLimitUpdated: { (options?: {}): unknown; };
-    ExitDelayCheckpointsUpdated: { (options?: {}): unknown; };
-    ExitDelaySecondsUpdated: { (options?: {}): unknown; };
-    LivenessDowntimeLimitUpdated: { (options?: {}): unknown; };
-    LivenessMissedBlockLimitUpdated: { (options?: {}): unknown; };
-    MintReceiverUpdated: { (options?: { filter?: { value?: string } }): unknown; };
-    NetworkBurnCutUpdated: { (options?: {}): unknown; };
-    OperatorTakeRateUpdated: { (options?: {}): unknown; };
-    OwnershipTransferred: { (options?: { filter?: { previousOwner?: string; newOwner?: string } }): unknown; };
-    ReliabilityFloorUpdated: { (options?: {}): unknown; };
-    ReliabilitySampleCheckpointsUpdated: { (options?: {}): unknown; };
-    RewardStreamPerSecondUpdated: { (options?: {}): unknown; };
-    SurplusRewardBurnCutUpdated: { (options?: {}): unknown; };
-    TreasuryCutUpdated: { (options?: {}): unknown; };
-    ValidatorBondFloorUpdated: { (options?: {}): unknown; };
-  };
+type DiesisConfigMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisConfigMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisConfigMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisConfigMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisConfigMethods {
+  CUT_RATE_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_DELEGATION_FANOUT_LIMIT(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_EXIT_DELAY_CHECKPOINTS(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_EXIT_DELAY_SECONDS(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_LIVENESS_DOWNTIME_LIMIT(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_LIVENESS_MISSED_BLOCK_LIMIT(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_NETWORK_BURN_CUT(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_OPERATOR_TAKE_RATE(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_RELIABILITY_FLOOR(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_RELIABILITY_SAMPLE_CHECKPOINTS(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_REWARD_STREAM_PER_SECOND(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_SURPLUS_REWARD_BURN_CUT(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_TREASURY_CUT(): DiesisConfigMethod<'nonpayable', bigint>;
+  DEFAULT_VALIDATOR_BOND_FLOOR(): DiesisConfigMethod<'nonpayable', bigint>;
+  DELEGATION_FANOUT_LIMIT_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  DELEGATION_FANOUT_LIMIT_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  EXIT_DELAY_CHECKPOINTS_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  EXIT_DELAY_CHECKPOINTS_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  EXIT_DELAY_SECONDS_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  EXIT_DELAY_SECONDS_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  LIVENESS_DOWNTIME_LIMIT_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  LIVENESS_DOWNTIME_LIMIT_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  LIVENESS_MISSED_BLOCK_LIMIT_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  LIVENESS_MISSED_BLOCK_LIMIT_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  OPERATOR_TAKE_RATE_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  RELIABILITY_FLOOR_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  RELIABILITY_SAMPLE_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  RELIABILITY_SAMPLE_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  REWARD_STREAM_PER_SECOND_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  SURPLUS_REWARD_BURN_CUT_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  VALIDATOR_BOND_FLOOR_LOWER(): DiesisConfigMethod<'nonpayable', bigint>;
+  VALIDATOR_BOND_FLOOR_UPPER(): DiesisConfigMethod<'nonpayable', bigint>;
+  delegationFanoutLimit(): DiesisConfigMethod<'nonpayable', bigint>;
+  exitDelayCheckpoints(): DiesisConfigMethod<'nonpayable', bigint>;
+  exitDelaySeconds(): DiesisConfigMethod<'nonpayable', bigint>;
+  livenessDowntimeLimit(): DiesisConfigMethod<'nonpayable', bigint>;
+  livenessMissedBlockLimit(): DiesisConfigMethod<'nonpayable', bigint>;
+  mintReceiver(): DiesisConfigMethod<'nonpayable', string>;
+  networkBurnCut(): DiesisConfigMethod<'nonpayable', bigint>;
+  operatorTakeRate(): DiesisConfigMethod<'nonpayable', bigint>;
+  owner(): DiesisConfigMethod<'nonpayable', string>;
+  reliabilityFloor(): DiesisConfigMethod<'nonpayable', bigint>;
+  reliabilitySampleCheckpoints(): DiesisConfigMethod<'nonpayable', bigint>;
+  renounceOwnership(): DiesisConfigMethod<'nonpayable', void>;
+  rewardStreamPerSecond(): DiesisConfigMethod<'nonpayable', bigint>;
+  setDelegationFanoutLimit(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setExitDelayCheckpoints(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setExitDelaySeconds(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setLivenessDowntimeLimit(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setLivenessMissedBlockLimit(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setMintReceiver(v: string): DiesisConfigMethod<'nonpayable', void>;
+  setNetworkBurnCut(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setOperatorTakeRate(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setReliabilityFloor(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setReliabilitySampleCheckpoints(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setRewardStreamPerSecond(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setSurplusRewardBurnCut(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setTreasuryCut(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  setValidatorBondFloor(v: Numbers): DiesisConfigMethod<'nonpayable', void>;
+  surplusRewardBurnCut(): DiesisConfigMethod<'nonpayable', bigint>;
+  transferOwnership(newOwner: string): DiesisConfigMethod<'nonpayable', void>;
+  treasuryCut(): DiesisConfigMethod<'nonpayable', bigint>;
+  validatorBondFloor(): DiesisConfigMethod<'nonpayable', bigint>;
 }
 
+export type DiesisConfigContract = Omit<Contract<typeof DiesisConfigAbi>, 'methods'> & {
+  readonly methods: DiesisConfigMethods;
+};
+
 export function createDiesisConfig(web3: Web3, address: string): DiesisConfigContract {
-  return new Contract(DiesisConfigAbi as any, address, web3) as unknown as DiesisConfigContract;
+  return new Contract(DiesisConfigAbi, address, web3) as unknown as DiesisConfigContract;
 }

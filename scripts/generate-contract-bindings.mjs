@@ -186,8 +186,8 @@ function run(command, args) {
   })
 }
 
-// 0.4.2 is the first release whose wrappers pass declaration emit.
-const minimumTypegen = [0, 4, 2]
+// 0.4.3 is the first release whose wrappers keep each library's own contract types.
+const minimumTypegen = [0, 4, 3]
 
 async function assertTypegenVersion() {
   const output = await new Promise((resolve, reject) => {

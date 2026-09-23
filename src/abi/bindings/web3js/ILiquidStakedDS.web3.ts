@@ -2,27 +2,45 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { ILiquidStakedDSAbi } from '../../generated/viem/ILiquidStakedDS.abi.js';
 
-export interface ILiquidStakedDSContract {
-  methods: {
-    allowance(owner: string, spender: string): { call(): Promise<bigint>; };
-    approve(spender: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    balanceOf(account: string): { call(): Promise<bigint>; };
-    burn(amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    burnFrom(from: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    decimals(): { call(): Promise<bigint>; };
-    mint(to: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    name(): { call(): Promise<string>; };
-    symbol(): { call(): Promise<string>; };
-    totalSupply(): { call(): Promise<bigint>; };
-    transfer(to: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    transferFrom(from: string, to: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    Approval: { (options?: { filter?: { owner?: string; spender?: string } }): unknown; };
-    Transfer: { (options?: { filter?: { from?: string; to?: string } }): unknown; };
-  };
+type ILiquidStakedDSMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type ILiquidStakedDSMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  ILiquidStakedDSMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<ILiquidStakedDSMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface ILiquidStakedDSMethods {
+  allowance(owner: string, spender: string): ILiquidStakedDSMethod<'nonpayable', bigint>;
+  approve(spender: string, amount: Numbers): ILiquidStakedDSMethod<'nonpayable', boolean>;
+  balanceOf(account: string): ILiquidStakedDSMethod<'nonpayable', bigint>;
+  burn(amount: Numbers): ILiquidStakedDSMethod<'nonpayable', void>;
+  burnFrom(from: string, amount: Numbers): ILiquidStakedDSMethod<'nonpayable', void>;
+  decimals(): ILiquidStakedDSMethod<'nonpayable', bigint>;
+  mint(to: string, amount: Numbers): ILiquidStakedDSMethod<'nonpayable', void>;
+  name(): ILiquidStakedDSMethod<'nonpayable', string>;
+  symbol(): ILiquidStakedDSMethod<'nonpayable', string>;
+  totalSupply(): ILiquidStakedDSMethod<'nonpayable', bigint>;
+  transfer(to: string, amount: Numbers): ILiquidStakedDSMethod<'nonpayable', boolean>;
+  transferFrom(from: string, to: string, amount: Numbers): ILiquidStakedDSMethod<'nonpayable', boolean>;
 }
 
+export type ILiquidStakedDSContract = Omit<Contract<typeof ILiquidStakedDSAbi>, 'methods'> & {
+  readonly methods: ILiquidStakedDSMethods;
+};
+
 export function createILiquidStakedDs(web3: Web3, address: string): ILiquidStakedDSContract {
-  return new Contract(ILiquidStakedDSAbi as any, address, web3) as unknown as ILiquidStakedDSContract;
+  return new Contract(ILiquidStakedDSAbi, address, web3) as unknown as ILiquidStakedDSContract;
 }

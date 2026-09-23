@@ -2,28 +2,44 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IWrappedDSAbi } from '../../generated/viem/IWrappedDS.abi.js';
 
-export interface IWrappedDSContract {
-  methods: {
-    allowance(owner: string, spender: string): { call(): Promise<bigint>; };
-    approve(spender: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    balanceOf(account: string): { call(): Promise<bigint>; };
-    decimals(): { call(): Promise<bigint>; };
-    deposit(): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    name(): { call(): Promise<string>; };
-    symbol(): { call(): Promise<string>; };
-    totalSupply(): { call(): Promise<bigint>; };
-    transfer(to: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    transferFrom(from: string, to: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    withdraw(amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    Approval: { (options?: { filter?: { owner?: string; spender?: string } }): unknown; };
-    Deposit: { (options?: { filter?: { dst?: string } }): unknown; };
-    Transfer: { (options?: { filter?: { from?: string; to?: string } }): unknown; };
-    Withdrawal: { (options?: { filter?: { src?: string } }): unknown; };
-  };
+type IWrappedDSMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IWrappedDSMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IWrappedDSMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IWrappedDSMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IWrappedDSMethods {
+  allowance(owner: string, spender: string): IWrappedDSMethod<'nonpayable', bigint>;
+  approve(spender: string, amount: Numbers): IWrappedDSMethod<'nonpayable', boolean>;
+  balanceOf(account: string): IWrappedDSMethod<'nonpayable', bigint>;
+  decimals(): IWrappedDSMethod<'nonpayable', bigint>;
+  deposit(): IWrappedDSMethod<'payable', void>;
+  name(): IWrappedDSMethod<'nonpayable', string>;
+  symbol(): IWrappedDSMethod<'nonpayable', string>;
+  totalSupply(): IWrappedDSMethod<'nonpayable', bigint>;
+  transfer(to: string, amount: Numbers): IWrappedDSMethod<'nonpayable', boolean>;
+  transferFrom(from: string, to: string, amount: Numbers): IWrappedDSMethod<'nonpayable', boolean>;
+  withdraw(amount: Numbers): IWrappedDSMethod<'nonpayable', void>;
 }
 
+export type IWrappedDSContract = Omit<Contract<typeof IWrappedDSAbi>, 'methods'> & {
+  readonly methods: IWrappedDSMethods;
+};
+
 export function createIWrappedDs(web3: Web3, address: string): IWrappedDSContract {
-  return new Contract(IWrappedDSAbi as any, address, web3) as unknown as IWrappedDSContract;
+  return new Contract(IWrappedDSAbi, address, web3) as unknown as IWrappedDSContract;
 }

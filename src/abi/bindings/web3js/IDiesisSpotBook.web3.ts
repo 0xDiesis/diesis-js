@@ -2,39 +2,50 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisSpotBookAbi } from '../../generated/viem/IDiesisSpotBook.abi.js';
 
-export interface IDiesisSpotBookContract {
-  methods: {
-    amendOrder(orderId: string, newPrice: Numbers, newAmount: Numbers, newFlags: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    cancelOrder(orderId: string): { send(options: { from: string }): Promise<unknown>; };
-    executeSpotFill(orderId: string, fillPrice: Numbers, fillQty: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    executeSpotTrade(makerOrderId: string, takerOrderId: string, fillPrice: Numbers, fillQty: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    finalizeOpeningAuction(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-    getBestAsk(marketId: string): { call(): Promise<[bigint, bigint]>; };
-    getBestBid(marketId: string): { call(): Promise<[bigint, bigint]>; };
-    getOpeningAuction(marketId: string): { call(): Promise<[bigint, bigint, bigint, boolean, bigint, bigint]>; };
-    getOrderBookDepth(marketId: string, levels: Numbers): { call(): Promise<[bigint[], bigint[], bigint[], bigint[]]>; };
-    getUserOrders(user: string, marketId: string): { call(): Promise<string[]>; };
-    startOpeningAuction(marketId: string, startBlock: Numbers, endBlock: Numbers, referencePrice: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    submitExchangeActionsV2(encodedActions: string): { send(options: { from: string }): Promise<unknown>; };
-    submitLimitOrder(marketId: string, side: Numbers, priceTicks: Numbers, amountLots: Numbers, flags: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    submitMarketOrder(marketId: string, side: Numbers, amountLots: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    submitSignedCancelAllSpotIntent(signedCancelAllJson: string): { send(options: { from: string }): Promise<unknown>; };
-    submitSignedSpotIntent(signedIntentJson: string): { send(options: { from: string }): Promise<unknown>; };
-    triggerSpotStops(marketId: string, maxOrders: Numbers): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    BatchAuctionCleared: { (options?: { filter?: { marketId?: string } }): unknown; };
-    ExchangeActionAcceptedV2: { (options?: { filter?: { clientActionId?: string; actionIndex?: Numbers; marketId?: string } }): unknown; };
-    ExchangeActionRejectedV2: { (options?: { filter?: { clientActionId?: string; actionIndex?: Numbers; marketId?: string } }): unknown; };
-    ExchangeL3MutationV2: { (options?: { filter?: { marketId?: string; orderId?: string; trader?: string } }): unknown; };
-    ExchangeTradeFillV2: { (options?: { filter?: { marketId?: string; makerOrderId?: string; takerOrderId?: string } }): unknown; };
-    OrderCancelled: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-    OrderFilled: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-    OrderPlaced: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-    StopOrderTriggered: { (options?: { filter?: { orderId?: string; marketId?: string; trader?: string } }): unknown; };
-  };
+type IDiesisSpotBookMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisSpotBookMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisSpotBookMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisSpotBookMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisSpotBookMethods {
+  amendOrder(orderId: string, newPrice: Numbers, newAmount: Numbers, newFlags: Numbers): IDiesisSpotBookMethod<'nonpayable', string>;
+  cancelOrder(orderId: string): IDiesisSpotBookMethod<'nonpayable', void>;
+  executeSpotFill(orderId: string, fillPrice: Numbers, fillQty: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: bigint; filledQty: bigint; executionPrice: bigint; __length__: number }>;
+  executeSpotTrade(makerOrderId: string, takerOrderId: string, fillPrice: Numbers, fillQty: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: bigint; filledQty: bigint; executionPrice: bigint; __length__: number }>;
+  finalizeOpeningAuction(marketId: string): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: bigint; clearingPrice: bigint; totalVolume: bigint; __length__: number }>;
+  getBestAsk(marketId: string): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: bigint; priceTicks: bigint; amountLots: bigint; __length__: number }>;
+  getBestBid(marketId: string): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: bigint; priceTicks: bigint; amountLots: bigint; __length__: number }>;
+  getOpeningAuction(marketId: string): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; 3: boolean; 4: bigint; 5: bigint; startBlock: bigint; endBlock: bigint; referencePrice: bigint; finalized: boolean; clearingPrice: bigint; totalVolume: bigint; __length__: number }>;
+  getOrderBookDepth(marketId: string, levels: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint[]; 1: bigint[]; 2: bigint[]; 3: bigint[]; bidPrices: bigint[]; bidAmounts: bigint[]; askPrices: bigint[]; askAmounts: bigint[]; __length__: number }>;
+  getUserOrders(user: string, marketId: string): IDiesisSpotBookMethod<'nonpayable', string[]>;
+  startOpeningAuction(marketId: string, startBlock: Numbers, endBlock: Numbers, referencePrice: Numbers): IDiesisSpotBookMethod<'nonpayable', void>;
+  submitExchangeActionsV2(encodedActions: string): IDiesisSpotBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
+  submitLimitOrder(marketId: string, side: Numbers, priceTicks: Numbers, amountLots: Numbers, flags: Numbers): IDiesisSpotBookMethod<'nonpayable', string>;
+  submitMarketOrder(marketId: string, side: Numbers, amountLots: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: string; filledAmount: bigint; orderId: string; __length__: number }>;
+  submitSignedCancelAllSpotIntent(signedCancelAllJson: string): IDiesisSpotBookMethod<'nonpayable', bigint>;
+  submitSignedSpotIntent(signedIntentJson: string): IDiesisSpotBookMethod<'nonpayable', void>;
+  triggerSpotStops(marketId: string, maxOrders: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: boolean; activated: bigint; hasMore: boolean; __length__: number }>;
 }
 
+export type IDiesisSpotBookContract = Omit<Contract<typeof IDiesisSpotBookAbi>, 'methods'> & {
+  readonly methods: IDiesisSpotBookMethods;
+};
+
 export function createIDiesisSpotBook(web3: Web3, address: string): IDiesisSpotBookContract {
-  return new Contract(IDiesisSpotBookAbi as any, address, web3) as unknown as IDiesisSpotBookContract;
+  return new Contract(IDiesisSpotBookAbi, address, web3) as unknown as IDiesisSpotBookContract;
 }

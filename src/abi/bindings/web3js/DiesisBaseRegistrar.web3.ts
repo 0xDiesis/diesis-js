@@ -2,73 +2,83 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisBaseRegistrarAbi } from '../../generated/viem/DiesisBaseRegistrar.abi.js';
 
-export interface DiesisBaseRegistrarContract {
-  methods: {
-    DEFAULT_YEAR_PRICE(): { call(): Promise<bigint>; };
-    DS_NODE(): { call(): Promise<string>; };
-    FOUR_CHAR_YEAR_PRICE(): { call(): Promise<bigint>; };
-    GRACE_PERIOD(): { call(): Promise<bigint>; };
-    MAX_COMMITMENT_AGE(): { call(): Promise<bigint>; };
-    MAX_REGISTRATION_DURATION(): { call(): Promise<bigint>; };
-    MIN_COMMITMENT_AGE(): { call(): Promise<bigint>; };
-    MIN_REGISTRATION_DURATION(): { call(): Promise<bigint>; };
-    PREMIUM_PERIOD(): { call(): Promise<bigint>; };
-    START_PREMIUM(): { call(): Promise<bigint>; };
-    THREE_CHAR_YEAR_PRICE(): { call(): Promise<bigint>; };
-    available(label: string): { call(): Promise<boolean>; };
-    burnShare(): { call(): Promise<bigint>; };
-    burnSink(): { call(): Promise<string>; };
-    commit(commitment: string): { send(options: { from: string }): Promise<unknown>; };
-    commitmentAge(commitment: string): { call(): Promise<bigint>; };
-    commitments(commitment: string): { call(): Promise<bigint>; };
-    currentPremium(label: string): { call(): Promise<bigint>; };
-    defaultYearPrice(): { call(): Promise<bigint>; };
-    fourCharYearPrice(): { call(): Promise<bigint>; };
-    gracePeriod(): { call(): Promise<bigint>; };
-    maintenance(): { call(): Promise<string>; };
-    maintenanceShare(): { call(): Promise<bigint>; };
-    makeCommitment(label: string, owner_: string, resolver_: string, recordsHash: string, duration: Numbers, secret: string, reverseRecord: boolean, nonce: Numbers): { call(): Promise<string>; };
-    maxCommitmentAge(): { call(): Promise<bigint>; };
-    maxRegistrationDuration(): { call(): Promise<bigint>; };
-    minCommitmentAge(): { call(): Promise<bigint>; };
-    minRegistrationDuration(): { call(): Promise<bigint>; };
-    nameExpires(labelhash: string): { call(): Promise<bigint>; };
-    normalizeLabel(label: string): { call(): Promise<string>; };
-    owner(): { call(): Promise<string>; };
-    premiumPeriod(): { call(): Promise<bigint>; };
-    register(label: string, owner_: string, resolver_: string, duration: Numbers, secret: string, reverseRecord: boolean, nonce: Numbers, resolverCalls: string[]): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    registry(): { call(): Promise<string>; };
-    renew(label: string, duration: Numbers): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    renounceOwnership(): { send(options: { from: string }): Promise<unknown>; };
-    rentPrice(label: string, duration: Numbers): { call(): Promise<bigint>; };
-    reservedLabels(labelhash: string): { call(): Promise<boolean>; };
-    reverseRegistrar(): { call(): Promise<string>; };
-    setFeeSplit(burnShare_: Numbers, treasuryShare_: Numbers, maintenanceShare_: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setPricing(threeCharYearPrice_: Numbers, fourCharYearPrice_: Numbers, defaultYearPrice_: Numbers, startPremium_: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setReservedLabel(label: string, reserved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setReverseRegistrar(reverseRegistrar_: string): { send(options: { from: string }): Promise<unknown>; };
-    setTiming(minCommitmentAge_: Numbers, maxCommitmentAge_: Numbers, minRegistrationDuration_: Numbers, maxRegistrationDuration_: Numbers, gracePeriod_: Numbers, premiumPeriod_: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    startPremium(): { call(): Promise<bigint>; };
-    threeCharYearPrice(): { call(): Promise<bigint>; };
-    transferOwnership(newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    treasury(): { call(): Promise<string>; };
-    treasuryShare(): { call(): Promise<bigint>; };
-    usedCommitments(commitment: string): { call(): Promise<boolean>; };
-  };
-  events: {
-    FeeSplitUpdated: { (options?: {}): unknown; };
-    NameCommitted: { (options?: { filter?: { commitment?: string } }): unknown; };
-    NameRegistered: { (options?: { filter?: { labelhash?: string; node?: string; owner?: string } }): unknown; };
-    NameRenewed: { (options?: { filter?: { labelhash?: string } }): unknown; };
-    NameReserved: { (options?: { filter?: { labelhash?: string } }): unknown; };
-    OwnershipTransferred: { (options?: { filter?: { previousOwner?: string; newOwner?: string } }): unknown; };
-    PricingUpdated: { (options?: {}): unknown; };
-    RentPaid: { (options?: { filter?: { labelhash?: string } }): unknown; };
-    ReverseRegistrarChanged: { (options?: { filter?: { reverseRegistrar?: string } }): unknown; };
-    TimingUpdated: { (options?: {}): unknown; };
-  };
+type DiesisBaseRegistrarMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisBaseRegistrarMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisBaseRegistrarMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisBaseRegistrarMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisBaseRegistrarMethods {
+  DEFAULT_YEAR_PRICE(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  DS_NODE(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  FOUR_CHAR_YEAR_PRICE(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  GRACE_PERIOD(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  MAX_COMMITMENT_AGE(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  MAX_REGISTRATION_DURATION(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  MIN_COMMITMENT_AGE(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  MIN_REGISTRATION_DURATION(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  PREMIUM_PERIOD(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  START_PREMIUM(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  THREE_CHAR_YEAR_PRICE(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  available(label: string): DiesisBaseRegistrarMethod<'nonpayable', boolean>;
+  burnShare(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  burnSink(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  commit(commitment: string): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  commitmentAge(commitment: string): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  commitments(commitment: string): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  currentPremium(label: string): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  defaultYearPrice(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  fourCharYearPrice(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  gracePeriod(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  maintenance(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  maintenanceShare(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  makeCommitment(label: string, owner_: string, resolver_: string, recordsHash: string, duration: Numbers, secret: string, reverseRecord: boolean, nonce: Numbers): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  maxCommitmentAge(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  maxRegistrationDuration(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  minCommitmentAge(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  minRegistrationDuration(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  nameExpires(labelhash: string): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  normalizeLabel(label: string): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  owner(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  premiumPeriod(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  register(label: string, owner_: string, resolver_: string, duration: Numbers, secret: string, reverseRecord: boolean, nonce: Numbers, resolverCalls: string[]): DiesisBaseRegistrarMethod<'payable', string>;
+  registry(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  renew(label: string, duration: Numbers): DiesisBaseRegistrarMethod<'payable', bigint>;
+  renounceOwnership(): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  rentPrice(label: string, duration: Numbers): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  reservedLabels(labelhash: string): DiesisBaseRegistrarMethod<'nonpayable', boolean>;
+  reverseRegistrar(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  setFeeSplit(burnShare_: Numbers, treasuryShare_: Numbers, maintenanceShare_: Numbers): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  setPricing(threeCharYearPrice_: Numbers, fourCharYearPrice_: Numbers, defaultYearPrice_: Numbers, startPremium_: Numbers): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  setReservedLabel(label: string, reserved: boolean): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  setReverseRegistrar(reverseRegistrar_: string): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  setTiming(minCommitmentAge_: Numbers, maxCommitmentAge_: Numbers, minRegistrationDuration_: Numbers, maxRegistrationDuration_: Numbers, gracePeriod_: Numbers, premiumPeriod_: Numbers): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  startPremium(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  threeCharYearPrice(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  transferOwnership(newOwner: string): DiesisBaseRegistrarMethod<'nonpayable', void>;
+  treasury(): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  treasuryShare(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  usedCommitments(commitment: string): DiesisBaseRegistrarMethod<'nonpayable', boolean>;
 }
 
+export type DiesisBaseRegistrarContract = Omit<Contract<typeof DiesisBaseRegistrarAbi>, 'methods'> & {
+  readonly methods: DiesisBaseRegistrarMethods;
+};
+
 export function createDiesisBaseRegistrar(web3: Web3, address: string): DiesisBaseRegistrarContract {
-  return new Contract(DiesisBaseRegistrarAbi as any, address, web3) as unknown as DiesisBaseRegistrarContract;
+  return new Contract(DiesisBaseRegistrarAbi, address, web3) as unknown as DiesisBaseRegistrarContract;
 }

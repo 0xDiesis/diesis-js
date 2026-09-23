@@ -2,26 +2,42 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisSettlementRouterAbi } from '../../generated/viem/DiesisSettlementRouter.abi.js';
 
-export interface DiesisSettlementRouterContract {
-  methods: {
-    deposit(token: string, amount: Numbers, beneficiary: string): { send(options: { from: string }): Promise<unknown>; };
-    owner(): { call(): Promise<string>; };
-    renounceOwnership(): { send(options: { from: string }): Promise<unknown>; };
-    setTokenAllowed(token: string, allowed: boolean): { send(options: { from: string }): Promise<unknown>; };
-    settlement(): { call(): Promise<string>; };
-    tokenAllowed(arg0: string): { call(): Promise<boolean>; };
-    totalCustodied(arg0: string): { call(): Promise<bigint>; };
-    transferOwnership(newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    withdraw(token: string, amount: Numbers, recipient: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    OwnershipTransferred: { (options?: { filter?: { previousOwner?: string; newOwner?: string } }): unknown; };
-    RouterDeposit: { (options?: { filter?: { payer?: string; beneficiary?: string; token?: string } }): unknown; };
-    RouterWithdrawal: { (options?: { filter?: { principal?: string; recipient?: string; token?: string } }): unknown; };
-    TokenAllowlistUpdated: { (options?: { filter?: { token?: string } }): unknown; };
-  };
+type DiesisSettlementRouterMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisSettlementRouterMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisSettlementRouterMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisSettlementRouterMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisSettlementRouterMethods {
+  deposit(token: string, amount: Numbers, beneficiary: string): DiesisSettlementRouterMethod<'nonpayable', bigint>;
+  owner(): DiesisSettlementRouterMethod<'nonpayable', string>;
+  renounceOwnership(): DiesisSettlementRouterMethod<'nonpayable', void>;
+  setTokenAllowed(token: string, allowed: boolean): DiesisSettlementRouterMethod<'nonpayable', void>;
+  settlement(): DiesisSettlementRouterMethod<'nonpayable', string>;
+  tokenAllowed(arg0: string): DiesisSettlementRouterMethod<'nonpayable', boolean>;
+  totalCustodied(arg0: string): DiesisSettlementRouterMethod<'nonpayable', bigint>;
+  transferOwnership(newOwner: string): DiesisSettlementRouterMethod<'nonpayable', void>;
+  withdraw(token: string, amount: Numbers, recipient: string): DiesisSettlementRouterMethod<'nonpayable', void>;
 }
 
+export type DiesisSettlementRouterContract = Omit<Contract<typeof DiesisSettlementRouterAbi>, 'methods'> & {
+  readonly methods: DiesisSettlementRouterMethods;
+};
+
 export function createDiesisSettlementRouter(web3: Web3, address: string): DiesisSettlementRouterContract {
-  return new Contract(DiesisSettlementRouterAbi as any, address, web3) as unknown as DiesisSettlementRouterContract;
+  return new Contract(DiesisSettlementRouterAbi, address, web3) as unknown as DiesisSettlementRouterContract;
 }

@@ -2,76 +2,77 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisPositionAbi } from '../../generated/viem/IDiesisPosition.abi.js';
 
-export interface IDiesisPositionContract {
-  methods: {
-    approve(to: string, tokenId: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    balanceOf(owner: string): { call(): Promise<bigint>; };
-    claimRewards(tokenId: Numbers, recipient: string): { send(options: { from: string }): Promise<unknown>; };
-    delegate(tokenId: Numbers): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    effectiveLockUntil(tokenId: Numbers): { call(): Promise<bigint>; };
-    freeCollateralOf(tokenId: Numbers): { call(): Promise<bigint>; };
-    getApproved(tokenId: Numbers): { call(): Promise<string>; };
-    hasLockCapacity(tokenId: Numbers, manager: string, lockId: string): { call(): Promise<boolean>; };
-    isApprovedForAll(owner: string, operator: string): { call(): Promise<boolean>; };
-    isFunctionApproved(tokenId: Numbers, fn: Numbers, caller: string): { call(): Promise<boolean>; };
-    lockPosition(tokenId: Numbers, lockDuration: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    lockPositionFor(tokenId: Numbers, lockId: string, lockDuration: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    lockRecordAt(tokenId: Numbers, index: Numbers): { call(): Promise<[string, string, bigint]>; };
-    lockRecordCount(tokenId: Numbers): { call(): Promise<bigint>; };
-    lockUntilFor(tokenId: Numbers, manager: string, lockId: string): { call(): Promise<bigint>; };
-    mergePosition(fromTokenId: Numbers, intoTokenId: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    mint(validator: Numbers): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    mintLiquidToken(tokenId: Numbers, mintAmount: Numbers, recipient: string): { send(options: { from: string }): Promise<unknown>; };
-    mintShareDebt(tokenId: Numbers, shareDebt: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    ownerOf(tokenId: Numbers): { call(): Promise<string>; };
-    positionInfo(tokenId: Numbers): { call(): Promise<{ debtAmount: bigint; lifetimeDelegated: bigint; lifetimeRewardsClaimed: bigint; lockedUntil: bigint; pendingWithdrawals: bigint[] }>; };
-    redeemShareBacking(fromTokenId: Numbers, toTokenId: Numbers, shareAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    repayLiquidToken(tokenId: Numbers, burnAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    restakeRewards(tokenId: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    revokeFunctionApproval(tokenId: Numbers, fn: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    safeTransferFromAddressAddressUint256(from: string, to: string, tokenId: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    safeTransferFromAddressAddressUint256Bytes(from: string, to: string, tokenId: Numbers, data: string): { send(options: { from: string }): Promise<unknown>; };
-    setApprovalForAll(operator: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setFunctionApproval(tokenId: Numbers, fn: Numbers, delegatee: string, expires: Numbers, revokable: boolean): { send(options: { from: string }): Promise<unknown>; };
-    shareDebtOf(tokenId: Numbers): { call(): Promise<bigint>; };
-    splitPosition(fromTokenId: Numbers, splitAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    stakedAmountOf(tokenId: Numbers): { call(): Promise<bigint>; };
-    supportsInterface(interfaceId: string): { call(): Promise<boolean>; };
-    swapDelegate(fromTokenId: Numbers, toTokenId: Numbers, swapAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    totalDebtOf(tokenId: Numbers): { call(): Promise<bigint>; };
-    totalStakedByValidator(validator: Numbers): { call(): Promise<bigint>; };
-    transferFrom(from: string, to: string, tokenId: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    undelegate(tokenId: Numbers, wrId: Numbers, undelegateAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    unlockPosition(tokenId: Numbers, lockId: string): { send(options: { from: string }): Promise<unknown>; };
-    validatorOf(tokenId: Numbers): { call(): Promise<bigint>; };
-    withdraw(tokenId: Numbers, wrId: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    withdrawTo(tokenId: Numbers, wrId: Numbers, recipient: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    Approval: { (options?: { filter?: { owner?: string; approved?: string; tokenId?: Numbers } }): unknown; };
-    ApprovalForAll: { (options?: { filter?: { owner?: string; operator?: string } }): unknown; };
-    Delegated: { (options?: { filter?: { tokenId?: Numbers; validator?: Numbers } }): unknown; };
-    FunctionApprovalRevoked: { (options?: { filter?: { tokenId?: Numbers; fn?: Numbers } }): unknown; };
-    FunctionApprovalSet: { (options?: { filter?: { tokenId?: Numbers; fn?: Numbers; delegatee?: string } }): unknown; };
-    InstantWithdrawExecuted: { (options?: { filter?: { tokenId?: Numbers; receiver?: string } }): unknown; };
-    LiquidTokenMinted: { (options?: { filter?: { tokenId?: Numbers; recipient?: string } }): unknown; };
-    LiquidTokenRepaid: { (options?: { filter?: { tokenId?: Numbers; payer?: string } }): unknown; };
-    LockRemoved: { (options?: { filter?: { tokenId?: Numbers; manager?: string; lockId?: string } }): unknown; };
-    LockSet: { (options?: { filter?: { tokenId?: Numbers; manager?: string; lockId?: string } }): unknown; };
-    Minted: { (options?: { filter?: { tokenId?: Numbers; owner?: string; validator?: Numbers } }): unknown; };
-    PositionMerged: { (options?: { filter?: { fromTokenId?: Numbers; intoTokenId?: Numbers } }): unknown; };
-    PositionSplit: { (options?: { filter?: { fromTokenId?: Numbers; newTokenId?: Numbers } }): unknown; };
-    RewardsClaimed: { (options?: { filter?: { tokenId?: Numbers; recipient?: string } }): unknown; };
-    RewardsRestaked: { (options?: { filter?: { tokenId?: Numbers } }): unknown; };
-    ShareBackingRedeemed: { (options?: { filter?: { fromTokenId?: Numbers; toTokenId?: Numbers } }): unknown; };
-    SwapDelegated: { (options?: { filter?: { fromTokenId?: Numbers; toTokenId?: Numbers } }): unknown; };
-    Transfer: { (options?: { filter?: { from?: string; to?: string; tokenId?: Numbers } }): unknown; };
-    Undelegated: { (options?: { filter?: { tokenId?: Numbers; validator?: Numbers; wrId?: Numbers } }): unknown; };
-    ValidatorExitFeeSet: { (options?: { filter?: { validatorId_?: Numbers } }): unknown; };
-    Withdrawn: { (options?: { filter?: { tokenId?: Numbers; wrId?: Numbers } }): unknown; };
-  };
+type IDiesisPositionMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisPositionMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisPositionMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisPositionMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisPositionMethods {
+  approve(to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  balanceOf(owner: string): IDiesisPositionMethod<'nonpayable', bigint>;
+  claimRewards(tokenId: Numbers, recipient: string): IDiesisPositionMethod<'nonpayable', void>;
+  delegate(tokenId: Numbers): IDiesisPositionMethod<'payable', void>;
+  effectiveLockUntil(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  freeCollateralOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  getApproved(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', string>;
+  hasLockCapacity(tokenId: Numbers, manager: string, lockId: string): IDiesisPositionMethod<'nonpayable', boolean>;
+  isApprovedForAll(owner: string, operator: string): IDiesisPositionMethod<'nonpayable', boolean>;
+  isFunctionApproved(tokenId: Numbers, fn: Numbers, caller: string): IDiesisPositionMethod<'nonpayable', boolean>;
+  lockPosition(tokenId: Numbers, lockDuration: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  lockPositionFor(tokenId: Numbers, lockId: string, lockDuration: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  lockRecordAt(tokenId: Numbers, index: Numbers): IDiesisPositionMethod<'nonpayable', { 0: string; 1: string; 2: bigint; manager: string; lockId: string; lockedUntil: bigint; __length__: number }>;
+  lockRecordCount(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  lockUntilFor(tokenId: Numbers, manager: string, lockId: string): IDiesisPositionMethod<'nonpayable', bigint>;
+  mergePosition(fromTokenId: Numbers, intoTokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  mint(validator: Numbers): IDiesisPositionMethod<'payable', bigint>;
+  mintLiquidToken(tokenId: Numbers, mintAmount: Numbers, recipient: string): IDiesisPositionMethod<'nonpayable', void>;
+  mintShareDebt(tokenId: Numbers, shareDebt: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  ownerOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', string>;
+  positionInfo(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', { debtAmount: bigint; lifetimeDelegated: bigint; lifetimeRewardsClaimed: bigint; lockedUntil: bigint; pendingWithdrawals: bigint[] }>;
+  redeemShareBacking(fromTokenId: Numbers, toTokenId: Numbers, shareAmount: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  repayLiquidToken(tokenId: Numbers, burnAmount: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  restakeRewards(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  revokeFunctionApproval(tokenId: Numbers, fn: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  safeTransferFrom(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  "safeTransferFrom(address,address,uint256)"(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  safeTransferFrom(from: string, to: string, tokenId: Numbers, data: string): IDiesisPositionMethod<'nonpayable', void>;
+  "safeTransferFrom(address,address,uint256,bytes)"(from: string, to: string, tokenId: Numbers, data: string): IDiesisPositionMethod<'nonpayable', void>;
+  setApprovalForAll(operator: string, approved: boolean): IDiesisPositionMethod<'nonpayable', void>;
+  setFunctionApproval(tokenId: Numbers, fn: Numbers, delegatee: string, expires: Numbers, revokable: boolean): IDiesisPositionMethod<'nonpayable', void>;
+  shareDebtOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  splitPosition(fromTokenId: Numbers, splitAmount: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  stakedAmountOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  supportsInterface(interfaceId: string): IDiesisPositionMethod<'nonpayable', boolean>;
+  swapDelegate(fromTokenId: Numbers, toTokenId: Numbers, swapAmount: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  totalDebtOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  totalStakedByValidator(validator: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  transferFrom(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  undelegate(tokenId: Numbers, wrId: Numbers, undelegateAmount: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  unlockPosition(tokenId: Numbers, lockId: string): IDiesisPositionMethod<'nonpayable', void>;
+  validatorOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
+  withdraw(tokenId: Numbers, wrId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  withdrawTo(tokenId: Numbers, wrId: Numbers, recipient: string): IDiesisPositionMethod<'nonpayable', void>;
 }
 
+export type IDiesisPositionContract = Omit<Contract<typeof IDiesisPositionAbi>, 'methods'> & {
+  readonly methods: IDiesisPositionMethods;
+};
+
 export function createIDiesisPosition(web3: Web3, address: string): IDiesisPositionContract {
-  return new Contract(IDiesisPositionAbi as any, address, web3) as unknown as IDiesisPositionContract;
+  return new Contract(IDiesisPositionAbi, address, web3) as unknown as IDiesisPositionContract;
 }

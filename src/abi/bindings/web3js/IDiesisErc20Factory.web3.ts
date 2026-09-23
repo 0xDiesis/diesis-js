@@ -2,20 +2,38 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisErc20FactoryAbi } from '../../generated/viem/IDiesisErc20Factory.abi.js';
 
-export interface IDiesisErc20FactoryContract {
-  methods: {
-    deploy(params: { symbol: string; name: string; initialSupply: Numbers; deployer: string }): { send(options: { from: string }): Promise<unknown>; };
-    executeTemplateUpdate(): { send(options: { from: string }): Promise<unknown>; };
-    predictAddress(deployer: string, symbol: string): { call(): Promise<string>; };
-    proposeTemplateUpdate(newHash: string): { send(options: { from: string }): Promise<unknown>; };
-    templateBytecodeHash(): { call(): Promise<string>; };
-  };
-  events: {
-    Erc20Deployed: { (options?: { filter?: { token?: string; deployer?: string; symbol?: string } }): unknown; };
-    TemplateUpdated: { (options?: {}): unknown; };
-  };
+type IDiesisErc20FactoryMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisErc20FactoryMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisErc20FactoryMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisErc20FactoryMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisErc20FactoryMethods {
+  deploy(params: { symbol: string; name: string; initialSupply: Numbers; deployer: string }): IDiesisErc20FactoryMethod<'nonpayable', string>;
+  executeTemplateUpdate(): IDiesisErc20FactoryMethod<'nonpayable', void>;
+  predictAddress(deployer: string, symbol: string): IDiesisErc20FactoryMethod<'nonpayable', string>;
+  proposeTemplateUpdate(newHash: string): IDiesisErc20FactoryMethod<'nonpayable', void>;
+  templateBytecodeHash(): IDiesisErc20FactoryMethod<'nonpayable', string>;
 }
 
+export type IDiesisErc20FactoryContract = Omit<Contract<typeof IDiesisErc20FactoryAbi>, 'methods'> & {
+  readonly methods: IDiesisErc20FactoryMethods;
+};
+
 export function createIDiesisErc20Factory(web3: Web3, address: string): IDiesisErc20FactoryContract {
-  return new Contract(IDiesisErc20FactoryAbi as any, address, web3) as unknown as IDiesisErc20FactoryContract;
+  return new Contract(IDiesisErc20FactoryAbi, address, web3) as unknown as IDiesisErc20FactoryContract;
 }

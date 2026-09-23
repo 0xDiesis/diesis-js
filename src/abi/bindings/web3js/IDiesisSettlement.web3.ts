@@ -2,34 +2,48 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisSettlementAbi } from '../../generated/viem/IDiesisSettlement.abi.js';
 
-export interface IDiesisSettlementContract {
-  methods: {
-    authorizeSessionKeyV2(sessionKey: string, actionScope: Numbers, validUntil: Numbers, maxNotionalOrSpend: Numbers, allowedMarketsMask: string): { send(options: { from: string }): Promise<unknown>; };
-    availableBalance(user: string, token: string): { call(): Promise<bigint>; };
-    cancelNonceWord(wordPos: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    cancelOrderNonce(nonce: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    creditRouterDeposit(user: string, token: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    debitRouterWithdrawal(user: string, token: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    deposit(token: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    fundPerpBackstopV1(marketId: string, amount: Numbers, nonce: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    getTradingKeyAuth(owner: string, tradingKey: string): { call(): Promise<{ header: string; maxOrderNotional: bigint; allowedMarketsMask: string }>; };
-    isNonceUsed(user: string, nonce: Numbers): { call(): Promise<boolean>; };
-    registerTradingKey(tradingKey: string, validUntil: Numbers, maxOrderNotional: Numbers, allowedMarketsMask: string, canWithdraw: boolean): { send(options: { from: string }): Promise<unknown>; };
-    revokeSessionKeyV2(sessionKey: string): { send(options: { from: string }): Promise<unknown>; };
-    revokeTradingKey(tradingKey: string): { send(options: { from: string }): Promise<unknown>; };
-    totalBalance(user: string, token: string): { call(): Promise<bigint>; };
-    withdraw(token: string, amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    Deposit: { (options?: { filter?: { user?: string; token?: string } }): unknown; };
-    NonceCancelled: { (options?: { filter?: { user?: string } }): unknown; };
-    PerpBackstopFunded: { (options?: { filter?: { funder?: string; marketId?: string; quoteToken?: string } }): unknown; };
-    TradingKeyRegistered: { (options?: { filter?: { owner?: string; tradingKey?: string } }): unknown; };
-    TradingKeyRevoked: { (options?: { filter?: { owner?: string; tradingKey?: string } }): unknown; };
-    Withdrawal: { (options?: { filter?: { user?: string; token?: string } }): unknown; };
-  };
+type IDiesisSettlementMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisSettlementMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisSettlementMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisSettlementMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisSettlementMethods {
+  authorizeSessionKeyV2(sessionKey: string, actionScope: Numbers, validUntil: Numbers, maxNotionalOrSpend: Numbers, allowedMarketsMask: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  availableBalance(user: string, token: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  cancelNonceWord(wordPos: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
+  cancelOrderNonce(nonce: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
+  creditRouterDeposit(user: string, token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
+  debitRouterWithdrawal(user: string, token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
+  deposit(token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
+  fundPerpBackstopV1(marketId: string, amount: Numbers, nonce: Numbers): IDiesisSettlementMethod<'nonpayable', string>;
+  getTradingKeyAuth(owner: string, tradingKey: string): IDiesisSettlementMethod<'nonpayable', { header: string; maxOrderNotional: bigint; allowedMarketsMask: string }>;
+  isNonceUsed(user: string, nonce: Numbers): IDiesisSettlementMethod<'nonpayable', boolean>;
+  registerTradingKey(tradingKey: string, validUntil: Numbers, maxOrderNotional: Numbers, allowedMarketsMask: string, canWithdraw: boolean): IDiesisSettlementMethod<'nonpayable', void>;
+  revokeSessionKeyV2(sessionKey: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  revokeTradingKey(tradingKey: string): IDiesisSettlementMethod<'nonpayable', void>;
+  totalBalance(user: string, token: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  withdraw(token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
 }
 
+export type IDiesisSettlementContract = Omit<Contract<typeof IDiesisSettlementAbi>, 'methods'> & {
+  readonly methods: IDiesisSettlementMethods;
+};
+
 export function createIDiesisSettlement(web3: Web3, address: string): IDiesisSettlementContract {
-  return new Contract(IDiesisSettlementAbi as any, address, web3) as unknown as IDiesisSettlementContract;
+  return new Contract(IDiesisSettlementAbi, address, web3) as unknown as IDiesisSettlementContract;
 }

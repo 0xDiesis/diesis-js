@@ -2,30 +2,46 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisPrivacyPoolsAbi } from '../../generated/viem/DiesisPrivacyPools.abi.js';
 
-export interface DiesisPrivacyPoolsContract {
-  methods: {
-    acceptOwnership(): { send(options: { from: string }): Promise<unknown>; };
-    artifactClass(): { call(): Promise<string>; };
-    associationVerifier(): { call(): Promise<string>; };
-    initialized(): { call(): Promise<boolean>; };
-    owner(): { call(): Promise<string>; };
-    pendingOwner(): { call(): Promise<string>; };
-    providerCount(): { call(): Promise<bigint>; };
-    providerList(arg0: Numbers): { call(): Promise<string>; };
-    providers(arg0: string): { call(): Promise<[string, boolean, string]>; };
-    registerProvider(provider: string, name: string): { send(options: { from: string }): Promise<unknown>; };
-    transferOwnership(newOwner: string): { send(options: { from: string }): Promise<unknown>; };
-    updateAssociationSet(newRoot: string): { send(options: { from: string }): Promise<unknown>; };
-    verifyAssociation(proof: string, associationSetRoot: string, nullifier: string, provider: string): { call(): Promise<boolean>; };
-  };
-  events: {
-    AssociationSetUpdated: { (options?: { filter?: { provider?: string } }): unknown; };
-    OwnershipTransferStarted: { (options?: { filter?: { currentOwner?: string; pendingOwner?: string } }): unknown; };
-    OwnershipTransferred: { (options?: { filter?: { previousOwner?: string; newOwner?: string } }): unknown; };
-    ProviderRegistered: { (options?: { filter?: { provider?: string } }): unknown; };
-  };
+type DiesisPrivacyPoolsMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisPrivacyPoolsMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisPrivacyPoolsMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisPrivacyPoolsMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisPrivacyPoolsMethods {
+  acceptOwnership(): DiesisPrivacyPoolsMethod<'nonpayable', void>;
+  artifactClass(): DiesisPrivacyPoolsMethod<'nonpayable', string>;
+  associationVerifier(): DiesisPrivacyPoolsMethod<'nonpayable', string>;
+  initialized(): DiesisPrivacyPoolsMethod<'nonpayable', boolean>;
+  owner(): DiesisPrivacyPoolsMethod<'nonpayable', string>;
+  pendingOwner(): DiesisPrivacyPoolsMethod<'nonpayable', string>;
+  providerCount(): DiesisPrivacyPoolsMethod<'nonpayable', bigint>;
+  providerList(arg0: Numbers): DiesisPrivacyPoolsMethod<'nonpayable', string>;
+  providers(arg0: string): DiesisPrivacyPoolsMethod<'nonpayable', { 0: string; 1: boolean; 2: string; name: string; registered: boolean; associationSetRoot: string; __length__: number }>;
+  registerProvider(provider: string, name: string): DiesisPrivacyPoolsMethod<'nonpayable', void>;
+  transferOwnership(newOwner: string): DiesisPrivacyPoolsMethod<'nonpayable', void>;
+  updateAssociationSet(newRoot: string): DiesisPrivacyPoolsMethod<'nonpayable', void>;
+  verifyAssociation(proof: string, associationSetRoot: string, nullifier: string, provider: string): DiesisPrivacyPoolsMethod<'nonpayable', boolean>;
 }
 
+export type DiesisPrivacyPoolsContract = Omit<Contract<typeof DiesisPrivacyPoolsAbi>, 'methods'> & {
+  readonly methods: DiesisPrivacyPoolsMethods;
+};
+
 export function createDiesisPrivacyPools(web3: Web3, address: string): DiesisPrivacyPoolsContract {
-  return new Contract(DiesisPrivacyPoolsAbi as any, address, web3) as unknown as DiesisPrivacyPoolsContract;
+  return new Contract(DiesisPrivacyPoolsAbi, address, web3) as unknown as DiesisPrivacyPoolsContract;
 }

@@ -2,32 +2,46 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IValidatorShareAbi } from '../../generated/viem/IValidatorShare.abi.js';
 
-export interface IValidatorShareContract {
-  methods: {
-    DIESIS_POSITION(): { call(): Promise<string>; };
-    MAX_LOTS_PER_REDEMPTION(): { call(): Promise<bigint>; };
-    MIN_BACKING_LOT(): { call(): Promise<bigint>; };
-    backingLot(validator: Numbers, slot: Numbers): { call(): Promise<[bigint, bigint, bigint, boolean]>; };
-    backingLotForPosition(validator: Numbers, sourcePositionId: Numbers): { call(): Promise<[bigint, bigint, boolean]>; };
-    backingPoolState(validator: Numbers): { call(): Promise<[bigint, bigint, bigint, bigint]>; };
-    mintShares(positionTokenId: Numbers, shareAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    pooledBacking(validator: Numbers): { call(): Promise<bigint>; };
-    redeemShares(receiverPositionId: Numbers, shareTokenId: Numbers, shareAmount: Numbers, maxLots: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    repayShares(sourcePositionId: Numbers, shareAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    swapPositionBalance(fromTokenId: Numbers, toTokenId: Numbers, swapAmount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    totalSupply(shareTokenId: Numbers): { call(): Promise<bigint>; };
-    validatorShareTokenId(validator: Numbers): { call(): Promise<bigint>; };
-  };
-  events: {
-    BackingAdded: { (options?: { filter?: { validator?: Numbers; sourcePositionId?: Numbers } }): unknown; };
-    BackingConsumed: { (options?: { filter?: { validator?: Numbers; sourcePositionId?: Numbers; receiverPositionId?: Numbers } }): unknown; };
-    BackingRepaid: { (options?: { filter?: { validator?: Numbers; sourcePositionId?: Numbers } }): unknown; };
-    PositionBalanceSwapped: { (options?: { filter?: { fromTokenId?: Numbers; toTokenId?: Numbers } }): unknown; };
-    SharesMinted: { (options?: { filter?: { positionTokenId?: Numbers; shareTokenId?: Numbers } }): unknown; };
-    SharesRedeemed: { (options?: { filter?: { receiverPositionId?: Numbers; shareTokenId?: Numbers } }): unknown; };
-  };
+type IValidatorShareMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IValidatorShareMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IValidatorShareMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IValidatorShareMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IValidatorShareMethods {
+  DIESIS_POSITION(): IValidatorShareMethod<'nonpayable', string>;
+  MAX_LOTS_PER_REDEMPTION(): IValidatorShareMethod<'nonpayable', bigint>;
+  MIN_BACKING_LOT(): IValidatorShareMethod<'nonpayable', bigint>;
+  backingLot(validator: Numbers, slot: Numbers): IValidatorShareMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; 3: boolean; sourcePositionId: bigint; remaining: bigint; next: bigint; active: boolean; __length__: number }>;
+  backingLotForPosition(validator: Numbers, sourcePositionId: Numbers): IValidatorShareMethod<'nonpayable', { 0: bigint; 1: bigint; 2: boolean; slot: bigint; remaining: bigint; active: boolean; __length__: number }>;
+  backingPoolState(validator: Numbers): IValidatorShareMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; 3: bigint; head: bigint; tail: bigint; liveLots: bigint; backing: bigint; __length__: number }>;
+  mintShares(positionTokenId: Numbers, shareAmount: Numbers): IValidatorShareMethod<'nonpayable', void>;
+  pooledBacking(validator: Numbers): IValidatorShareMethod<'nonpayable', bigint>;
+  redeemShares(receiverPositionId: Numbers, shareTokenId: Numbers, shareAmount: Numbers, maxLots: Numbers): IValidatorShareMethod<'nonpayable', void>;
+  repayShares(sourcePositionId: Numbers, shareAmount: Numbers): IValidatorShareMethod<'nonpayable', void>;
+  swapPositionBalance(fromTokenId: Numbers, toTokenId: Numbers, swapAmount: Numbers): IValidatorShareMethod<'nonpayable', void>;
+  totalSupply(shareTokenId: Numbers): IValidatorShareMethod<'nonpayable', bigint>;
+  validatorShareTokenId(validator: Numbers): IValidatorShareMethod<'nonpayable', bigint>;
 }
 
+export type IValidatorShareContract = Omit<Contract<typeof IValidatorShareAbi>, 'methods'> & {
+  readonly methods: IValidatorShareMethods;
+};
+
 export function createIValidatorShare(web3: Web3, address: string): IValidatorShareContract {
-  return new Contract(IValidatorShareAbi as any, address, web3) as unknown as IValidatorShareContract;
+  return new Contract(IValidatorShareAbi, address, web3) as unknown as IValidatorShareContract;
 }

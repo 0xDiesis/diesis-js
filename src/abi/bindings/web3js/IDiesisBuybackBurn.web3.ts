@@ -2,21 +2,38 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisBuybackBurnAbi } from '../../generated/viem/IDiesisBuybackBurn.abi.js';
 
-export interface IDiesisBuybackBurnContract {
-  methods: {
-    cumulativeBurnedDs(): { call(): Promise<bigint>; };
-    lastTwapAveragePrice(token: string): { call(): Promise<bigint>; };
-    nextWindowStartBlock(token: string): { call(): Promise<bigint>; };
-    pendingPurchaseByAsset(token: string): { call(): Promise<bigint>; };
-    windowState(token: string): { call(): Promise<{ windowStartBlock: bigint; windowEndBlock: bigint; windowLengthBlocks: bigint; chunksTotal: bigint; chunksRemaining: bigint; initialPending: bigint; twapAveragePrice: bigint }>; };
-  };
-  events: {
-    AssetApproved: { (options?: { filter?: { token?: string } }): unknown; };
-    BurnChunk: { (options?: { filter?: { token?: string } }): unknown; };
-    DsBurned: { (options?: {}): unknown; };
-  };
+type IDiesisBuybackBurnMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisBuybackBurnMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisBuybackBurnMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisBuybackBurnMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisBuybackBurnMethods {
+  cumulativeBurnedDs(): IDiesisBuybackBurnMethod<'nonpayable', bigint>;
+  lastTwapAveragePrice(token: string): IDiesisBuybackBurnMethod<'nonpayable', bigint>;
+  nextWindowStartBlock(token: string): IDiesisBuybackBurnMethod<'nonpayable', bigint>;
+  pendingPurchaseByAsset(token: string): IDiesisBuybackBurnMethod<'nonpayable', bigint>;
+  windowState(token: string): IDiesisBuybackBurnMethod<'nonpayable', { windowStartBlock: bigint; windowEndBlock: bigint; windowLengthBlocks: bigint; chunksTotal: bigint; chunksRemaining: bigint; initialPending: bigint; twapAveragePrice: bigint }>;
 }
 
+export type IDiesisBuybackBurnContract = Omit<Contract<typeof IDiesisBuybackBurnAbi>, 'methods'> & {
+  readonly methods: IDiesisBuybackBurnMethods;
+};
+
 export function createIDiesisBuybackBurn(web3: Web3, address: string): IDiesisBuybackBurnContract {
-  return new Contract(IDiesisBuybackBurnAbi as any, address, web3) as unknown as IDiesisBuybackBurnContract;
+  return new Contract(IDiesisBuybackBurnAbi, address, web3) as unknown as IDiesisBuybackBurnContract;
 }

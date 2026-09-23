@@ -2,16 +2,34 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisMarginAbi } from '../../generated/viem/IDiesisMargin.abi.js';
 
-export interface IDiesisMarginContract {
-  methods: {
-    resolvePerpProtectionV1(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    AutoDeleverage: { (options?: { filter?: { marketId?: string; deleveraged?: string; counterparty?: string } }): unknown; };
-    Liquidation: { (options?: { filter?: { marketId?: string; trader?: string } }): unknown; };
-  };
+type IDiesisMarginMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisMarginMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisMarginMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisMarginMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisMarginMethods {
+  resolvePerpProtectionV1(marketId: string): IDiesisMarginMethod<'nonpayable', string>;
 }
 
+export type IDiesisMarginContract = Omit<Contract<typeof IDiesisMarginAbi>, 'methods'> & {
+  readonly methods: IDiesisMarginMethods;
+};
+
 export function createIDiesisMargin(web3: Web3, address: string): IDiesisMarginContract {
-  return new Contract(IDiesisMarginAbi as any, address, web3) as unknown as IDiesisMarginContract;
+  return new Contract(IDiesisMarginAbi, address, web3) as unknown as IDiesisMarginContract;
 }

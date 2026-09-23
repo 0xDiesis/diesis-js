@@ -2,20 +2,38 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisMarketsAbi } from '../../generated/viem/IDiesisMarkets.abi.js';
 
-export interface IDiesisMarketsContract {
-  methods: {
-    checkCircuitBreaker(marketId: string, currentPrice: Numbers, referencePrice: Numbers, thresholdBps: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    createSpotMarket(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, bond: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    deployTokenAndSpotBook(symbol: string, name: string, initialSupply: Numbers, dsBond: Numbers, usdcFee: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    getMarket(marketId: string): { call(): Promise<{ slot0: string; slot1: string; maxOpenInterest: bigint }>; };
-    resumeMarket(marketId: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    CircuitBreakerTriggered: { (options?: { filter?: { marketId?: string } }): unknown; };
-    MarketCreated: { (options?: { filter?: { marketId?: string } }): unknown; };
-  };
+type IDiesisMarketsMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisMarketsMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisMarketsMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisMarketsMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisMarketsMethods {
+  checkCircuitBreaker(marketId: string, currentPrice: Numbers, referencePrice: Numbers, thresholdBps: Numbers): IDiesisMarketsMethod<'nonpayable', bigint>;
+  createSpotMarket(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, bond: Numbers): IDiesisMarketsMethod<'nonpayable', string>;
+  deployTokenAndSpotBook(symbol: string, name: string, initialSupply: Numbers, dsBond: Numbers, usdcFee: Numbers): IDiesisMarketsMethod<'nonpayable', { 0: string; 1: string; marketId: string; token: string; __length__: number }>;
+  getMarket(marketId: string): IDiesisMarketsMethod<'nonpayable', { slot0: string; slot1: string; maxOpenInterest: bigint }>;
+  resumeMarket(marketId: string): IDiesisMarketsMethod<'nonpayable', bigint>;
 }
 
+export type IDiesisMarketsContract = Omit<Contract<typeof IDiesisMarketsAbi>, 'methods'> & {
+  readonly methods: IDiesisMarketsMethods;
+};
+
 export function createIDiesisMarkets(web3: Web3, address: string): IDiesisMarketsContract {
-  return new Contract(IDiesisMarketsAbi as any, address, web3) as unknown as IDiesisMarketsContract;
+  return new Contract(IDiesisMarketsAbi, address, web3) as unknown as IDiesisMarketsContract;
 }

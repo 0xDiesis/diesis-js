@@ -2,21 +2,37 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisConductorsAbi } from '../../generated/viem/IDiesisConductors.abi.js';
 
-export interface IDiesisConductorsContract {
-  methods: {
-    finalizeDecrease(): { send(options: { from: string }): Promise<unknown>; };
-    getConductor(conductor: string): { call(): Promise<{ conductor: string; bond: bigint; tier: bigint; totalEarned: bigint; todayEarned: bigint; todayCapacityRemainingDs: bigint; bondAvailableAfterBlock: bigint; pendingRefund: bigint }>; };
-    registerOrTopup(): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    requestDecrease(amount: Numbers): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    DecreaseFinalized: { (options?: { filter?: { conductor?: string } }): unknown; };
-    DecreaseRequested: { (options?: { filter?: { conductor?: string } }): unknown; };
-    Registered: { (options?: { filter?: { conductor?: string } }): unknown; };
-    ShareEarned: { (options?: { filter?: { conductor?: string } }): unknown; };
-  };
+type IDiesisConductorsMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisConductorsMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisConductorsMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisConductorsMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisConductorsMethods {
+  finalizeDecrease(): IDiesisConductorsMethod<'nonpayable', void>;
+  getConductor(conductor: string): IDiesisConductorsMethod<'nonpayable', { conductor: string; bond: bigint; tier: bigint; totalEarned: bigint; todayEarned: bigint; todayCapacityRemainingDs: bigint; bondAvailableAfterBlock: bigint; pendingRefund: bigint }>;
+  registerOrTopup(): IDiesisConductorsMethod<'payable', void>;
+  requestDecrease(amount: Numbers): IDiesisConductorsMethod<'nonpayable', void>;
 }
 
+export type IDiesisConductorsContract = Omit<Contract<typeof IDiesisConductorsAbi>, 'methods'> & {
+  readonly methods: IDiesisConductorsMethods;
+};
+
 export function createIDiesisConductors(web3: Web3, address: string): IDiesisConductorsContract {
-  return new Contract(IDiesisConductorsAbi as any, address, web3) as unknown as IDiesisConductorsContract;
+  return new Contract(IDiesisConductorsAbi, address, web3) as unknown as IDiesisConductorsContract;
 }

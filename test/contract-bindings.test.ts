@@ -1,7 +1,7 @@
-import { type BaseContract, JsonRpcProvider } from 'ethers'
+import { JsonRpcProvider } from 'ethers'
 import { getContract, createPublicClient, http } from 'viem'
 import { describe, expect, it } from 'vitest'
-import { Web3, type Contract } from 'web3'
+import { Web3 } from 'web3'
 
 import * as addresses from '../src/addresses.js'
 import {
@@ -51,11 +51,8 @@ describe('ethers v6 wrappers', () => {
       provider,
     )
 
-    // The generated interface omits BaseContract members, though the runtime
-    // object is a Contract.
-    const contract = staking as unknown as BaseContract
-    expect(await contract.getAddress()).toBe(addresses.DIESIS_STAKING)
-    expect(contract.interface.getFunction('stake')?.payable).toBe(true)
+    expect(await staking.getAddress()).toBe(addresses.DIESIS_STAKING)
+    expect(staking.interface.getFunction('stake')?.payable).toBe(true)
     expect(typeof staking.stake).toBe('function')
   })
 
@@ -65,9 +62,8 @@ describe('ethers v6 wrappers', () => {
       provider,
     )
 
-    const contract = wrappedDS as unknown as BaseContract
     expect(
-      contract.interface.encodeFunctionData('withdraw', [1n]).slice(0, 10),
+      wrappedDS.interface.encodeFunctionData('withdraw', [1n]).slice(0, 10),
     ).toBe('0x2e1a7d4d')
   })
 })
@@ -90,7 +86,7 @@ describe('web3.js wrappers', () => {
     const staking = createDiesisStaking(
       new Web3('http://127.0.0.1:1'),
       diesisContracts.staking.address,
-    ) as unknown as Contract<typeof DiesisStakingAbi>
+    )
 
     expect(staking.options.address?.toLowerCase()).toBe(
       addresses.DIESIS_STAKING.toLowerCase(),

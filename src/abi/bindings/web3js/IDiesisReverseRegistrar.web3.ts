@@ -2,21 +2,39 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisReverseRegistrarAbi } from '../../generated/viem/IDiesisReverseRegistrar.abi.js';
 
-export interface IDiesisReverseRegistrarContract {
-  methods: {
-    controllers(controller: string): { call(): Promise<boolean>; };
-    name(addr: string): { call(): Promise<string>; };
-    node(addr: string): { call(): Promise<string>; };
-    setController(controller: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setName(name_: string): { send(options: { from: string }): Promise<unknown>; };
-    setNameForAddr(addr: string, name_: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    ControllerChanged: { (options?: { filter?: { controller?: string } }): unknown; };
-    ReverseNameChanged: { (options?: { filter?: { addr?: string } }): unknown; };
-  };
+type IDiesisReverseRegistrarMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisReverseRegistrarMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisReverseRegistrarMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisReverseRegistrarMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisReverseRegistrarMethods {
+  controllers(controller: string): IDiesisReverseRegistrarMethod<'nonpayable', boolean>;
+  name(addr: string): IDiesisReverseRegistrarMethod<'nonpayable', string>;
+  node(addr: string): IDiesisReverseRegistrarMethod<'nonpayable', string>;
+  setController(controller: string, approved: boolean): IDiesisReverseRegistrarMethod<'nonpayable', void>;
+  setName(name_: string): IDiesisReverseRegistrarMethod<'nonpayable', string>;
+  setNameForAddr(addr: string, name_: string): IDiesisReverseRegistrarMethod<'nonpayable', string>;
 }
 
+export type IDiesisReverseRegistrarContract = Omit<Contract<typeof IDiesisReverseRegistrarAbi>, 'methods'> & {
+  readonly methods: IDiesisReverseRegistrarMethods;
+};
+
 export function createIDiesisReverseRegistrar(web3: Web3, address: string): IDiesisReverseRegistrarContract {
-  return new Contract(IDiesisReverseRegistrarAbi as any, address, web3) as unknown as IDiesisReverseRegistrarContract;
+  return new Contract(IDiesisReverseRegistrarAbi, address, web3) as unknown as IDiesisReverseRegistrarContract;
 }

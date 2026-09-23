@@ -2,30 +2,47 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisNameVerifierAbi } from '../../generated/viem/IDiesisNameVerifier.abi.js';
 
-export interface IDiesisNameVerifierContract {
-  methods: {
-    attest(node: string, subject: string, kind: string, digest: string, expiresAt: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    attestationDigest(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }): { call(): Promise<string>; };
-    attestationHash(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }): { call(): Promise<string>; };
-    attestationsBytes32Bytes32(node: string, attestationType: string): { call(): Promise<string[]>; };
-    attestationsBytes32(attestationId: string): { call(): Promise<{ node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>; };
-    isAttested(node: string, attestationType: string, issuer: string): { call(): Promise<boolean>; };
-    isValid(attestationId: string): { call(): Promise<boolean>; };
-    issuers(issuer: string): { call(): Promise<boolean>; };
-    revoke(attestationId: string): { send(options: { from: string }): Promise<unknown>; };
-    revokeAttestation(node: string, attestationHash: string): { send(options: { from: string }): Promise<unknown>; };
-    setIssuer(issuer: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    submitAttestation(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }, signature: string): { send(options: { from: string }): Promise<unknown>; };
-  };
-  events: {
-    AttestationRevoked: { (options?: { filter?: { node?: string; attestationHash?: string; issuer?: string } }): unknown; };
-    AttestationSubmitted: { (options?: { filter?: { node?: string; attestationType?: string; issuer?: string } }): unknown; };
-    Attested: { (options?: { filter?: { attestationId?: string; node?: string; subject?: string } }): unknown; };
-    IssuerChanged: { (options?: { filter?: { issuer?: string } }): unknown; };
-    Revoked: { (options?: { filter?: { attestationId?: string } }): unknown; };
-  };
+type IDiesisNameVerifierMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisNameVerifierMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisNameVerifierMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisNameVerifierMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisNameVerifierMethods {
+  attest(node: string, subject: string, kind: string, digest: string, expiresAt: Numbers): IDiesisNameVerifierMethod<'nonpayable', string>;
+  attestationDigest(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }): IDiesisNameVerifierMethod<'nonpayable', string>;
+  attestationHash(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }): IDiesisNameVerifierMethod<'nonpayable', string>;
+  attestations(node: string, attestationType: string): IDiesisNameVerifierMethod<'nonpayable', string[]>;
+  "attestations(bytes32,bytes32)"(node: string, attestationType: string): IDiesisNameVerifierMethod<'nonpayable', string[]>;
+  attestations(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
+  "attestations(bytes32)"(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
+  isAttested(node: string, attestationType: string, issuer: string): IDiesisNameVerifierMethod<'nonpayable', boolean>;
+  isValid(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', boolean>;
+  issuers(issuer: string): IDiesisNameVerifierMethod<'nonpayable', boolean>;
+  revoke(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', void>;
+  revokeAttestation(node: string, attestationHash: string): IDiesisNameVerifierMethod<'nonpayable', void>;
+  setIssuer(issuer: string, approved: boolean): IDiesisNameVerifierMethod<'nonpayable', void>;
+  submitAttestation(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }, signature: string): IDiesisNameVerifierMethod<'nonpayable', void>;
 }
 
+export type IDiesisNameVerifierContract = Omit<Contract<typeof IDiesisNameVerifierAbi>, 'methods'> & {
+  readonly methods: IDiesisNameVerifierMethods;
+};
+
 export function createIDiesisNameVerifier(web3: Web3, address: string): IDiesisNameVerifierContract {
-  return new Contract(IDiesisNameVerifierAbi as any, address, web3) as unknown as IDiesisNameVerifierContract;
+  return new Contract(IDiesisNameVerifierAbi, address, web3) as unknown as IDiesisNameVerifierContract;
 }

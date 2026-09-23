@@ -2,40 +2,57 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { DiesisShieldedPoolAbi } from '../../generated/viem/DiesisShieldedPool.abi.js';
 
-export interface DiesisShieldedPoolContract {
-  methods: {
-    DENOMINATION(): { call(): Promise<bigint>; };
-    DEPTH(): { call(): Promise<bigint>; };
-    ENCRYPTED_NOTE_BYTES(): { call(): Promise<bigint>; };
-    MAX_LEAVES(): { call(): Promise<bigint>; };
-    ROOT_HISTORY_SIZE(): { call(): Promise<bigint>; };
-    artifactClass(): { call(): Promise<string>; };
-    commitmentSeen(arg0: string): { call(): Promise<boolean>; };
-    currentRootIndex(): { call(): Promise<bigint>; };
-    deposit(commitment: string, encryptedNote: string): { send(options: { from: string; value?: Numbers }): Promise<unknown>; };
-    filledSubtrees(arg0: Numbers): { call(): Promise<string>; };
-    initialized(): { call(): Promise<boolean>; };
-    isKnownRoot(rootValue: string): { call(): Promise<boolean>; };
-    nextIndex(): { call(): Promise<bigint>; };
-    nullifiers(arg0: string): { call(): Promise<boolean>; };
-    outstandingNotes(): { call(): Promise<bigint>; };
-    root(): { call(): Promise<string>; };
-    rootHistory(arg0: Numbers): { call(): Promise<string>; };
-    rootReferenceCount(arg0: string): { call(): Promise<bigint>; };
-    transact(proof: string, merkleRoot: string, inputNullifiers: string[], outputCommitments: string[], activeCount: Numbers, encryptedOutputs: string): { send(options: { from: string }): Promise<unknown>; };
-    transferVerifier(): { call(): Promise<string>; };
-    treeInitialized(): { call(): Promise<boolean>; };
-    withdraw(proof: string, merkleRoot: string, nullifier: string, recipient: string, relayer: string, fee: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    withdrawVerifier(): { call(): Promise<string>; };
-    zeros(arg0: Numbers): { call(): Promise<string>; };
-  };
-  events: {
-    DepositV1: { (options?: { filter?: { commitment?: string; leafIndex?: Numbers } }): unknown; };
-    TransferV1: { (options?: {}): unknown; };
-    WithdrawalV1: { (options?: { filter?: { nullifier?: string; recipient?: string; relayer?: string } }): unknown; };
-  };
+type DiesisShieldedPoolMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type DiesisShieldedPoolMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  DiesisShieldedPoolMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<DiesisShieldedPoolMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface DiesisShieldedPoolMethods {
+  DENOMINATION(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  DEPTH(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  ENCRYPTED_NOTE_BYTES(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  MAX_LEAVES(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  ROOT_HISTORY_SIZE(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  artifactClass(): DiesisShieldedPoolMethod<'nonpayable', string>;
+  commitmentSeen(arg0: string): DiesisShieldedPoolMethod<'nonpayable', boolean>;
+  currentRootIndex(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  deposit(commitment: string, encryptedNote: string): DiesisShieldedPoolMethod<'payable', void>;
+  filledSubtrees(arg0: Numbers): DiesisShieldedPoolMethod<'nonpayable', string>;
+  initialized(): DiesisShieldedPoolMethod<'nonpayable', boolean>;
+  isKnownRoot(rootValue: string): DiesisShieldedPoolMethod<'nonpayable', boolean>;
+  nextIndex(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  nullifiers(arg0: string): DiesisShieldedPoolMethod<'nonpayable', boolean>;
+  outstandingNotes(): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  root(): DiesisShieldedPoolMethod<'nonpayable', string>;
+  rootHistory(arg0: Numbers): DiesisShieldedPoolMethod<'nonpayable', string>;
+  rootReferenceCount(arg0: string): DiesisShieldedPoolMethod<'nonpayable', bigint>;
+  transact(proof: string, merkleRoot: string, inputNullifiers: string[], outputCommitments: string[], activeCount: Numbers, encryptedOutputs: string): DiesisShieldedPoolMethod<'nonpayable', void>;
+  transferVerifier(): DiesisShieldedPoolMethod<'nonpayable', string>;
+  treeInitialized(): DiesisShieldedPoolMethod<'nonpayable', boolean>;
+  withdraw(proof: string, merkleRoot: string, nullifier: string, recipient: string, relayer: string, fee: Numbers): DiesisShieldedPoolMethod<'nonpayable', void>;
+  withdrawVerifier(): DiesisShieldedPoolMethod<'nonpayable', string>;
+  zeros(arg0: Numbers): DiesisShieldedPoolMethod<'nonpayable', string>;
 }
 
+export type DiesisShieldedPoolContract = Omit<Contract<typeof DiesisShieldedPoolAbi>, 'methods'> & {
+  readonly methods: DiesisShieldedPoolMethods;
+};
+
 export function createDiesisShieldedPool(web3: Web3, address: string): DiesisShieldedPoolContract {
-  return new Contract(DiesisShieldedPoolAbi as any, address, web3) as unknown as DiesisShieldedPoolContract;
+  return new Contract(DiesisShieldedPoolAbi, address, web3) as unknown as DiesisShieldedPoolContract;
 }

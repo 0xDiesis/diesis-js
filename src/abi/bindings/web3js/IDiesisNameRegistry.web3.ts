@@ -2,39 +2,52 @@
 import { Contract, type Numbers, type Web3 } from 'web3';
 import { IDiesisNameRegistryAbi } from '../../generated/viem/IDiesisNameRegistry.abi.js';
 
-export interface IDiesisNameRegistryContract {
-  methods: {
-    controllers(controller: string): { call(): Promise<boolean>; };
-    expiry(node: string): { call(): Promise<bigint>; };
-    isApprovedForAll(owner_: string, operator: string): { call(): Promise<boolean>; };
-    isAuthorized(node: string, actor: string): { call(): Promise<boolean>; };
-    isExpired(node: string): { call(): Promise<boolean>; };
-    namePolicy(): { call(): Promise<string>; };
-    owner(node: string): { call(): Promise<string>; };
-    ownershipEpoch(node: string): { call(): Promise<bigint>; };
-    resolver(node: string): { call(): Promise<string>; };
-    setApprovalForAll(operator: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setController(controller: string, approved: boolean): { send(options: { from: string }): Promise<unknown>; };
-    setExpiry(node: string, expiry_: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setNamePolicy(policy: string): { send(options: { from: string }): Promise<unknown>; };
-    setOwner(node: string, owner_: string): { send(options: { from: string }): Promise<unknown>; };
-    setResolver(node: string, resolver_: string): { send(options: { from: string }): Promise<unknown>; };
-    setSubnodeOwner(node: string, label: string, owner_: string): { send(options: { from: string }): Promise<unknown>; };
-    setSubnodeRecord(node: string, label: string, owner_: string, resolver_: string, ttl_: Numbers, expiry_: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    setTTL(node: string, ttl_: Numbers): { send(options: { from: string }): Promise<unknown>; };
-    ttl(node: string): { call(): Promise<bigint>; };
-  };
-  events: {
-    ApprovalForAll: { (options?: { filter?: { owner?: string; operator?: string } }): unknown; };
-    ControllerChanged: { (options?: { filter?: { controller?: string } }): unknown; };
-    ExpiryChanged: { (options?: { filter?: { node?: string } }): unknown; };
-    NamePolicyChanged: { (options?: { filter?: { policy?: string } }): unknown; };
-    OwnerChanged: { (options?: { filter?: { node?: string; owner?: string } }): unknown; };
-    ResolverChanged: { (options?: { filter?: { node?: string; resolver?: string } }): unknown; };
-    TTLChanged: { (options?: { filter?: { node?: string } }): unknown; };
-  };
+type IDiesisNameRegistryMethodObject<Mutability extends 'payable' | 'nonpayable'> = ReturnType<
+  Contract<
+    readonly [
+      {
+        readonly type: 'function';
+        readonly name: 'm';
+        readonly stateMutability: Mutability;
+        readonly inputs: readonly [];
+        readonly outputs: readonly [];
+      },
+    ]
+  >['methods']['m']
+>;
+type IDiesisNameRegistryMethod<Mutability extends 'payable' | 'nonpayable', Output> = Omit<
+  IDiesisNameRegistryMethodObject<Mutability>,
+  'call'
+> & {
+  call(...args: Parameters<IDiesisNameRegistryMethodObject<Mutability>['call']>): Promise<Output>;
+};
+
+export interface IDiesisNameRegistryMethods {
+  controllers(controller: string): IDiesisNameRegistryMethod<'nonpayable', boolean>;
+  expiry(node: string): IDiesisNameRegistryMethod<'nonpayable', bigint>;
+  isApprovedForAll(owner_: string, operator: string): IDiesisNameRegistryMethod<'nonpayable', boolean>;
+  isAuthorized(node: string, actor: string): IDiesisNameRegistryMethod<'nonpayable', boolean>;
+  isExpired(node: string): IDiesisNameRegistryMethod<'nonpayable', boolean>;
+  namePolicy(): IDiesisNameRegistryMethod<'nonpayable', string>;
+  owner(node: string): IDiesisNameRegistryMethod<'nonpayable', string>;
+  ownershipEpoch(node: string): IDiesisNameRegistryMethod<'nonpayable', bigint>;
+  resolver(node: string): IDiesisNameRegistryMethod<'nonpayable', string>;
+  setApprovalForAll(operator: string, approved: boolean): IDiesisNameRegistryMethod<'nonpayable', void>;
+  setController(controller: string, approved: boolean): IDiesisNameRegistryMethod<'nonpayable', void>;
+  setExpiry(node: string, expiry_: Numbers): IDiesisNameRegistryMethod<'nonpayable', void>;
+  setNamePolicy(policy: string): IDiesisNameRegistryMethod<'nonpayable', void>;
+  setOwner(node: string, owner_: string): IDiesisNameRegistryMethod<'nonpayable', void>;
+  setResolver(node: string, resolver_: string): IDiesisNameRegistryMethod<'nonpayable', void>;
+  setSubnodeOwner(node: string, label: string, owner_: string): IDiesisNameRegistryMethod<'nonpayable', string>;
+  setSubnodeRecord(node: string, label: string, owner_: string, resolver_: string, ttl_: Numbers, expiry_: Numbers): IDiesisNameRegistryMethod<'nonpayable', string>;
+  setTTL(node: string, ttl_: Numbers): IDiesisNameRegistryMethod<'nonpayable', void>;
+  ttl(node: string): IDiesisNameRegistryMethod<'nonpayable', bigint>;
 }
 
+export type IDiesisNameRegistryContract = Omit<Contract<typeof IDiesisNameRegistryAbi>, 'methods'> & {
+  readonly methods: IDiesisNameRegistryMethods;
+};
+
 export function createIDiesisNameRegistry(web3: Web3, address: string): IDiesisNameRegistryContract {
-  return new Contract(IDiesisNameRegistryAbi as any, address, web3) as unknown as IDiesisNameRegistryContract;
+  return new Contract(IDiesisNameRegistryAbi, address, web3) as unknown as IDiesisNameRegistryContract;
 }
