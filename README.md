@@ -1,20 +1,66 @@
-# @diesis/sdk
+<div align="center">
 
-TypeScript SDK for the Diesis EVM L1 chain. Extends [viem](https://viem.sh) with Diesis-specific chain definitions, typed custom RPC actions, exchange precompile wrappers, gasless intent signing, and bundle utilities.
+<img src="https://github.com/0xDiesis/diesis/raw/main/docs/diesis.png" alt="Diesis" width="120">
 
-## Installation
+<pre>
+ ___ ___ ___ ___ ___ ___
+|   \_ _| __/ __|_ _/ __|
+| |) | || _|\__ \| |\__ \
+|___/___|___|___/___|___/
+ -  -  -  -  -  -  -  -
+</pre>
 
-The SDK is not currently published to the npm registry. Install it from the
-private repository using authenticated Git access and the revision consumed by
-the exchange workspace:
+**The TypeScript SDK for Diesis**
+
+Trade on the chain's built-in order books, let a sponsor pay your users' gas,
+bundle transactions into one plan, and resolve `.ds` names. It all plugs into
+the [viem](https://viem.sh) client you already use.
+
+Chain ID `1980` · Token **DS** · Runtime **viem 2** · Language **TypeScript**
+
+_Greek δίεσις: the smallest interval in music.<br>Diesis aims for the smallest interval between blocks._
+
+</div>
+
+---
+
+## Why this SDK
+
+Diesis builds trading, fee sponsorship, names, staking, and private transfers
+into the chain itself. Each of those has its own RPC methods, precompile
+addresses, and signing formats. This package wraps them so you call
+`publicClient.exchange.getOrderBook()` instead of hand-encoding calldata.
+
+- It extends viem clients with `.extend()`. No new client type to learn.
+- Every system contract address and ABI ships as a typed constant.
+- Signing helpers use the same EIP-712 field order and domains as the Rust
+  node and the [Python SDK](https://github.com/0xDiesis/diesis-py). Both SDKs
+  test their addresses and chain data against the same `canonical.json`.
+- ABIs are generated from the Solidity sources for viem, wagmi, ethers, and
+  web3.js.
+
+## Install
+
+The package is not on the npm registry yet. Install it from GitHub with
+authenticated Git access, and pin a commit so builds stay reproducible:
 
 ```bash
-pnpm add 'git+https://github.com/0xDiesis/diesis-sdk.git#b5f75e129d18c7e51fec8bb788d38f9d0f5d1b23' 'viem@^2.55.10'
+pnpm add 'git+https://github.com/0xDiesis/diesis-sdk.git#<commit>' viem
 ```
 
-That reachable revision is the immutable version used by exchange and does not contain the current `@diesis/sdk/canonical.json` export. Until a new immutable SDK revision is pushed, use or package this source checkout when that data-only subpath is required.
+The `prepare` script runs `tsc` on install, so the `dist/` output is built for
+you.
 
-## Quick Start
+## Connect
+
+**In short.** You make two clients. One reads from the chain. The other holds
+your key and sends transactions. Diesis methods get added to both.
+
+**Details.** `diesisPublicActions` adds exchange, bundle, patronage, privacy,
+and node status reads. `diesisWalletActions` adds intent signing, synchronous
+sends, and privacy writes. Both work with any viem transport. The `diesis` and
+`diesisTestnet` chain objects carry the chain ID, native currency, and default
+RPC URLs.
 
 ```typescript
 import { createPublicClient, createWalletClient, http } from 'viem'
@@ -22,62 +68,111 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { diesis } from '@diesis/sdk/chains'
 import { diesisPublicActions, diesisWalletActions } from '@diesis/sdk'
 
-// Public client with all Diesis read actions
 const publicClient = createPublicClient({
   chain: diesis,
   transport: http(),
 }).extend(diesisPublicActions)
 
-// Wallet client with signing and write actions
-const account = privateKeyToAccount('0x...')
 const walletClient = createWalletClient({
-  account,
+  account: privateKeyToAccount('0x...'),
   chain: diesis,
   transport: http(),
 }).extend(diesisWalletActions)
 ```
 
-## Exchange
+| Network        | Chain ID | Export          |
+| -------------- | -------- | --------------- |
+| Diesis Mainnet | 1980     | `diesis`        |
+| Diesis Testnet | 19803    | `diesisTestnet` |
 
-Query order books, markets, and trading accounts via typed RPC:
+## Read the exchange
+
+**In short.** Diesis runs its order books inside the chain, like a stock
+exchange that every node keeps a copy of. You can list markets, see who wants
+to buy and sell at what price, and check your balances.
+
+**Details.** These calls go to the `exchange_*` RPC methods and return typed
+results with `bigint` amounts. `estimateFill` walks the current book and
+reports what a market order of a given size would get, without placing
+anything. A market ID is a hash of the base token, quote token, and market
+type, so you can compute it offline with `marketId`.
 
 ```typescript
-// Get all listed markets
+import { marketId, MarketType, Side } from '@diesis/sdk'
+
 const markets = await publicClient.exchange.getMarkets()
 
-// Get order book depth
 const book = await publicClient.exchange.getOrderBook({
   marketId: markets[0].marketId,
   depth: 20,
 })
 
-// Check trading account balances
-const account = await publicClient.exchange.getAccount({
-  address: '0x...',
-})
+const account = await publicClient.exchange.getAccount({ address: '0x...' })
 
-// Estimate fill before placing an order
 const estimate = await publicClient.exchange.estimateFill({
   marketId: markets[0].marketId,
-  side: 0, // Buy
-  amount: 1000000000000000000n,
+  side: Side.Buy,
+  amount: 1_000000000000000000n,
 })
+
+const id = marketId(baseToken, quoteToken, MarketType.Spot)
 ```
 
-### Compute a Market ID
+Other reads on `publicClient.exchange` include `getMarket`, `getTrades`,
+`getFundingRates`, `getMarkPrices`, and `getInsuranceFund`.
+
+## Trade without gas
+
+**In short.** You sign an order with your wallet, the same way you'd sign a
+login message. A relayer pays the fee and puts it on chain for you. Your
+account never needs DS for gas.
+
+**Details.** An order intent is EIP-712 typed data. Its `verifyingContract`
+must be the book the order is routed to, `DIESIS_SPOT_BOOK` or
+`DIESIS_PERPS_BOOK`. A mismatch fails signature checks on chain.
+`submitIntent` sends it to `diesis_submitIntent`, which is the sponsored retail
+path. An optional conductor can take a fee, capped by `conductorFeeBps` and
+`maxConductorFee`.
 
 ```typescript
-import { marketId } from '@diesis/sdk'
+import { addresses, OrderFlags, OrderType, Side } from '@diesis/sdk'
 
-const id = marketId(baseTokenAddress, quoteTokenAddress, 0) // 0 = Spot
+const signedIntent = await walletClient.signOrderIntent(
+  {
+    trader: walletClient.account.address,
+    marketId: '0x...',
+    side: Side.Buy,
+    orderType: OrderType.Limit,
+    price: 50_000_000000000000000000n,
+    amount: 1_000000000000000000n,
+    triggerPrice: 0n,
+    nonce: 1n,
+    expiry: BigInt(Math.floor(Date.now() / 1000) + 3600),
+    flags: OrderFlags.NONE,
+    conductor: '0x0000000000000000000000000000000000000000',
+    conductorFeeBps: 0,
+    maxConductorFee: 0n,
+  },
+  addresses.DIESIS_SPOT_BOOK,
+)
+
+const intentHash = await walletClient.submitIntent({ intent: signedIntent })
 ```
 
-### Direct Exchange Action V2 Transactions
+`signCancelIntent` and `buildSignedCancelIntent` cover gasless cancels.
+`registerTradingKey` lets a hot key sign on behalf of a main account, within an
+expiry and a notional cap.
 
-Professional order flow uses ordinary signed EVM transactions sent directly to
-the spot or perpetual book precompile. The batch has one Ethereum sender and one
-Ethereum transaction nonce; V2 does not add per-action signatures or action
-nonces.
+## Trade directly with Exchange Actions V2
+
+**In short.** Professional traders skip the relayer. They send a normal
+transaction straight to the order book, and one transaction can hold a batch
+of orders.
+
+**Details.** A V2 batch is an ordinary signed EVM transaction to the spot or
+perpetual book precompile. It has one sender and one transaction nonce. V2
+adds no per-action signatures or action nonces. `atomicity` decides whether one
+rejected action fails the whole batch.
 
 ```typescript
 import {
@@ -106,11 +201,11 @@ const batch = {
   ],
 } as const
 
-// Deterministic `to`, `data`, and zero value for simulation or estimation.
+// Returns `to`, `data`, and a zero `value` for simulation or gas estimation.
 const request = prepareExchangeActionsV2Transaction({ book: 'spot', batch })
 await publicClient.call({ ...request, account: walletClient.account.address })
 
-// Local signing followed by exact eth_sendRawTransaction submission.
+// Signs locally, then submits the exact bytes with eth_sendRawTransaction.
 const hash = await sendExchangeActionsV2Transaction(walletClient, {
   book: 'spot',
   batch,
@@ -123,57 +218,35 @@ const hash = await sendExchangeActionsV2Transaction(walletClient, {
 })
 ```
 
-When decoding the 96-byte precompile return tuple, pass the submitted batch's
-action count to `decodeExchangeActionsV2Result`. The decoder rejects zero,
-over-limit, or mismatched accepted/rejected totals instead of trusting RPC data.
+The precompile returns a 96-byte tuple. Pass the batch's action count to
+`decodeExchangeActionsV2Result`. It throws on a zero count, an over-limit
+count, or accepted and rejected totals that don't add up, so a bad RPC
+response can't pass as a result.
 
-The perpetual V2 wire is frozen for tooling parity, but execution remains
-protocol-gated until the Lane B activation revision. The existing sponsored
-`diesis_submitIntent` relay remains the retail/gasless path, not the
-professional low-latency path.
+The perpetual V2 wire format is fixed, but the chain only executes it once the
+protocol activates it. Until then, perpetual V2 batches are for encoding and
+testing.
 
-Scoped session keys are principal-authorized settlement transactions. Build
-their action bitmap with `exchangeActionScopeV2`, then call
+Session keys let a trading bot act for a main account within limits. Build the
+permitted-action bitmap with `exchangeActionScopeV2`, then call
 `prepareAuthorizeSessionKeyV2Transaction` or
-`prepareRevokeSessionKeyV2Transaction`. A zero spend cap is uncapped, a zero
-market mask permits no markets, and an all-ones market mask is the explicit
-all-markets sentinel. Cancel schedules are regular V2 actions with bounded
-market lists, expected renewal counters, and bounded trigger chunks.
+`prepareRevokeSessionKeyV2Transaction`. A zero spend cap means no cap. A zero
+market mask allows no markets, and an all-ones mask allows all of them. Cancel
+schedules are regular V2 actions with a bounded market list, an expected
+renewal counter, and bounded trigger chunks.
 
-## Gasless Intents
+## Bundle transactions
 
-Sign order intents off-chain using EIP-712 typed data, then submit them for gasless execution:
+**In short.** A bundle is a list of transactions that run in a fixed order as
+one plan. Everyone whose transaction is in the list signs off on the whole
+plan, and a separate payment covers the builder.
 
-```typescript
-import { addresses, OrderFlags, OrderType } from '@diesis/sdk'
-
-const signedIntent = await walletClient.signOrderIntent(
-  {
-    trader: walletClient.account.address,
-    marketId: '0x...',
-    side: 0,
-    orderType: OrderType.Limit,
-    price: 50000000000000000000000n,
-    amount: 1000000000000000000n,
-    triggerPrice: 0n,
-    nonce: 1n,
-    expiry: BigInt(Math.floor(Date.now() / 1000) + 3600),
-    flags: OrderFlags.NONE,
-    conductor: '0x0000000000000000000000000000000000000000',
-    conductorFeeBps: 0,
-    maxConductorFee: 0n,
-  },
-  addresses.DIESIS_SPOT_BOOK,
-)
-
-// Submit the signed intent
-const intentHash = await walletClient.submitIntent({ intent: signedIntent })
-```
-
-## Bundles
-
-Prepare the canonical plan, collect each member's detached consent, then submit
-the signed reservation and member transactions:
+**Details.** The flow has four steps. `prepareBundle` binds the plan and
+returns its hash. Each member signs an EIP-712 consent over the plan hash, its
+index, and its transaction hash. The payer signs a reservation transaction that
+calls `reserveBundleV2` on the escrow contract. `submitBundle` sends all of it.
+`ExecutionFlags` control rollback. The payment transaction stays committed even
+when bundled work rolls back.
 
 ```typescript
 import { keccak256, type Hex } from 'viem'
@@ -238,62 +311,182 @@ const status = await publicClient.getBundleStatus({ planHash: result.planHash })
 console.log(status.members, status.includedBlockNumber, status.failure)
 ```
 
-## Network Status
+`planHash`, `encodeReserveBundleV2`, and `reservationValue` compute the same
+values offline if you'd rather not call the node.
 
-```typescript
-// Pipeline status (consensus, execution, publication heads)
-const pipeline = await publicClient.getPipelineStatus()
+## Sponsor gas
 
-// Transaction lifecycle status
-const txStatus = await publicClient.getTransactionStatus({ hash: '0x...' })
-```
+**In short.** An app can put DS into a gas grant, and the chain spends it on
+fees for that app's users. New users can start before they own any DS.
 
-## Address Constants
-
-All canonical system contract and precompile addresses are available:
-
-```typescript
-import { addresses } from '@diesis/sdk'
-
-addresses.DIESIS_STAKING // 0xD1E5150000000000000000000000000000000001
-addresses.DIESIS_SETTLEMENT // 0xD1E5150000000000000000000000000000005E71
-addresses.DIESIS_SPOT_BOOK // 0xD1E515000000000000000000000000000000590D
-addresses.DIESIS_MARKETS // 0xD1E515000000000000000000000000000000B00C
-addresses.WRAPPED_DS // 0xD1E51500000000000000000000000000000000D5
-addresses.MULTICALL3 // 0xcA11bde05977b3631167028862bE2a173976CA11
-```
-
-## ABIs
-
-Typed ABI constants for contract interactions:
+**Details.** The Patron system contract holds grants and campaigns.
+`getGrant` reads a grant's balance, contributions, spend, and pause state. A
+campaign owner signs `CampaignVoucherV1` vouchers, and each one authorizes a
+single beneficiary to call one target and one function selector, with caps on
+transaction count, lifetime spend, and expiry. The `encode*` helpers build
+calldata for registering, claiming, and revoking.
 
 ```typescript
 import {
-  diesisSettlementAbi,
-  diesisSpotBookAbi,
-  diesisMarketsAbi,
-} from '@diesis/sdk/abi'
+  campaignIdFor,
+  encodeClaimCampaignVoucher,
+  signCampaignVoucher,
+  type CampaignVoucherV1,
+} from '@diesis/sdk/patronage'
+
+const grant = await publicClient.getGrant({ grantId: '0x...' })
+
+const campaignId = campaignIdFor(owner.address, salt)
+const voucher = {
+  campaignId,
+  beneficiary: '0x...',
+  target: '0x...',
+  selector: '0xa9059cbb',
+  maxTransactions: 5,
+  maxLifetimeSpend: 10_000_000_000_000_000n,
+  expiry: BigInt(Math.floor(Date.now() / 1000) + 86_400),
+  nonce: 1n,
+} satisfies CampaignVoucherV1
+const signature = await signCampaignVoucher(owner, voucher, diesis.id)
+const data = encodeClaimCampaignVoucher(voucher, signature)
 ```
 
-## Sub-path Exports
+## Stake DS
 
-The SDK supports granular imports:
+**In short.** You lock DS with a validator to help secure the chain and earn
+rewards. Your stake is a token you hold, and you can claim or restake rewards
+whenever you like.
 
-- `@diesis/sdk` -- everything
-- `@diesis/sdk/chains` -- chain definitions only
-- `@diesis/sdk/canonical.json` -- machine-readable chain and address contract
-- `@diesis/sdk/exchange` -- exchange types, actions, and utils
-- `@diesis/sdk/intents` -- intent signing helpers
-- `@diesis/sdk/bundles` -- bundle utilities
-- `@diesis/sdk/patronage` -- patronage/gas sponsorship
-- `@diesis/sdk/abi` -- ABI constants
+**Details.** Staking actions live on their own subpath and wrap the
+`DiesisStaking` system contract. Each position is an ERC-721 token.
+Unstaking is a two-step request and complete, with a checkpoint and time
+cooldown between them.
 
-## Chain IDs
+```typescript
+import { stakingReadActions, stakingWriteActions } from '@diesis/sdk/staking'
 
-| Network        | Chain ID |
-| -------------- | -------- |
-| Diesis Mainnet | 1980     |
-| Diesis Testnet | 19803    |
+const staking = stakingReadActions(publicClient)
+const validator = await staking.getValidator({ validatorId: 1n })
+const rewards = await staking.getUnclaimedRewards({ tokenId: 42n })
+
+const stakingWrites = stakingWriteActions(walletClient)
+await stakingWrites.stake({ validatorId: 1n, amount: 100_000000000000000000n })
+await stakingWrites.compoundRewards({ tokenId: 42n })
+```
+
+## Resolve `.ds` names
+
+**In short.** `.ds` names work like web addresses for accounts. `alice.ds` is
+easier to read and share than `0xd1e5...`.
+
+**Details.** `normalizeDiesisName` lowercases and validates a name.
+`diesisNamehash` computes the ENS-style node hash used by the registry and
+resolver. Every system contract has a genesis name, such as
+`diesis-spot-book.ds`, and those resolve offline with no RPC call.
+
+```typescript
+import {
+  diesisNamehash,
+  normalizeDiesisName,
+  resolveGenesisPrecompileName,
+} from '@diesis/sdk/names'
+
+normalizeDiesisName('Alice.DS') // 'alice.ds'
+diesisNamehash('alice.ds') // '0x82b9...1b17'
+resolveGenesisPrecompileName('diesis-spot-book.ds')?.address
+```
+
+## Private transfers
+
+**In short.** The shielded pool lets you move tokens without showing who paid
+whom. You put funds in, and later take them out, and a zero-knowledge proof
+shows the math adds up without revealing the details.
+
+**Details.** `@diesis/sdk/privacy` has note creation, Poseidon hashing, the
+Merkle tree, witness building, and Groth16 provers for the Transfer,
+Withdrawal, and Association V1 circuits. Proving runs in a Web Worker through
+`@diesis/sdk/privacy/worker-runtime`. Reads such as
+`publicClient.privacy.getShieldedPoolState()` and
+`isShieldedNullifierSpent` come with `diesisPublicActions`. Writes such as
+`walletClient.privacy.depositShielded` come with `diesisWalletActions`.
+
+```typescript
+import { createNoteV1, deriveCommitmentV1 } from '@diesis/sdk/privacy'
+
+const note = await createNoteV1(ownerPublic)
+const commitment = await deriveCommitmentV1(note)
+
+const pool = await publicClient.privacy.getShieldedPoolState()
+```
+
+## Check node status
+
+**In short.** You can ask the node how far along it is and where your
+transaction is.
+
+**Details.** `getPipelineStatus` reports the consensus, execution, and
+publication heads, the lag between them, and whether back-pressure is on.
+`getTransactionStatus` returns one of `submitted`, `preconfirmed`,
+`committed`, `executed`, or `unknown`, with a timestamp for each stage it
+has reached.
+
+```typescript
+const pipeline = await publicClient.getPipelineStatus()
+const tx = await publicClient.getTransactionStatus({ hash: '0x...' })
+```
+
+## Addresses and ABIs
+
+**In short.** Diesis system contracts live at fixed addresses that start with
+`0xD1E515`. The SDK has all of them, plus the interface for each one.
+
+**Details.** `addresses` exports every system contract and precompile
+address. `@diesis/sdk/abi` exports typed `as const` ABIs for viem. Generated
+bindings for other libraries live under `abi/viem`, `abi/wagmi`, `abi/ethers`,
+and `abi/web3js`. `@diesis/sdk/canonical.json` is the same data in
+machine-readable form, for tools that don't run TypeScript.
+
+```typescript
+import { addresses } from '@diesis/sdk'
+import { DiesisStakingAbi, IDiesisSpotBookAbi } from '@diesis/sdk/abi'
+
+addresses.DIESIS_SPOT_BOOK // 0xD1E515000000000000000000000000000000590D
+addresses.DIESIS_STAKING // 0xD1E5150000000000000000000000000000000001
+addresses.WRAPPED_DS // 0xD1E51500000000000000000000000000000000D5
+```
+
+## Subpath exports
+
+Import only what you need.
+
+| Path                                         | Contents                                        |
+| -------------------------------------------- | ----------------------------------------------- |
+| `@diesis/sdk`                                | The client extensions and the most-used helpers |
+| `@diesis/sdk/chains`                         | `diesis`, `diesisTestnet`                       |
+| `@diesis/sdk/addresses`                      | System contract and precompile addresses        |
+| `@diesis/sdk/canonical.json`                 | Chain and address data as JSON                  |
+| `@diesis/sdk/names`                          | `.ds` normalization, namehash, genesis names    |
+| `@diesis/sdk/exchange`                       | Exchange reads, V2 actions, session keys        |
+| `@diesis/sdk/intents`                        | Order, cancel, and trading key signing          |
+| `@diesis/sdk/bundles`                        | Bundle plans, consent, escrow encoding          |
+| `@diesis/sdk/patronage`                      | Gas grants and campaign vouchers                |
+| `@diesis/sdk/staking`                        | Staking reads and writes                        |
+| `@diesis/sdk/privacy`                        | Shielded notes, trees, witnesses, provers       |
+| `@diesis/sdk/privacy/worker-runtime`         | Web Worker entry for proving                    |
+| `@diesis/sdk/abi`                            | Typed ABI constants                             |
+| `@diesis/sdk/abi/{viem,wagmi,ethers,web3js}` | Generated bindings per library                  |
+
+## Develop
+
+```bash
+pnpm install
+pnpm test          # unit tests
+pnpm test:browser  # Playwright privacy tests
+pnpm quality       # ABI drift check, lint, typecheck, format
+```
+
+`pnpm codegen` regenerates ABIs from the contracts in the
+[diesis](https://github.com/0xDiesis/diesis) repo.
 
 ## License
 
