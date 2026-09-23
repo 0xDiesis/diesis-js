@@ -15,6 +15,6 @@ export default [
     }
   },
   {
-    ignores: ["dist/**", "node_modules/**", "src/abi/generated/**"]
+    ignores: ["dist/**", "node_modules/**", "src/abi/generated/**", "src/abi/bindings/**"]
   }
 ]

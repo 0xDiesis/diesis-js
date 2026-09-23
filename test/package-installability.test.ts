@@ -89,7 +89,7 @@ describe('third-party package installability', () => {
     expect(offenders).toEqual([])
   })
 
-  it('publishes all five self-contained ABI entry points', () => {
+  it('publishes all six self-contained ABI entry points', () => {
     const abiExports = Object.keys(manifest.exports ?? {})
       .filter((entry) => entry.startsWith('./abi'))
       .sort()
@@ -97,6 +97,7 @@ describe('third-party package installability', () => {
     expect(abiExports).toEqual([
       './abi',
       './abi/ethers',
+      './abi/ethers5',
       './abi/viem',
       './abi/wagmi',
       './abi/web3js',
@@ -129,10 +130,10 @@ describe('third-party package installability', () => {
 
   it('generates contracts before syncing and checks vendoring in quality', () => {
     expect(manifest.scripts?.codegen).toBe(
-      'node scripts/sync-contract-abis.mjs --generate',
+      'node scripts/sync-contract-abis.mjs --generate && node scripts/generate-contract-bindings.mjs',
     )
     expect(manifest.scripts?.['codegen:check']).toBe(
-      'node scripts/sync-contract-abis.mjs --check',
+      'node scripts/sync-contract-abis.mjs --check && node scripts/generate-contract-bindings.mjs --check',
     )
     expect(manifest.scripts?.quality).toContain('pnpm run codegen:check')
   })

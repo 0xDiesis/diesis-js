@@ -56,32 +56,36 @@
       "types": "./dist/abi/index.d.ts"
     },
     "./abi/viem": {
-      "import": "./dist/abi/generated/viem/index.js",
-      "types": "./dist/abi/generated/viem/index.d.ts"
+      "import": "./dist/abi/bindings/viem/index.js",
+      "types": "./dist/abi/bindings/viem/index.d.ts"
     },
     "./abi/wagmi": {
-      "import": "./dist/abi/generated/wagmi/index.js",
-      "types": "./dist/abi/generated/wagmi/index.d.ts"
+      "import": "./dist/abi/bindings/wagmi/index.js",
+      "types": "./dist/abi/bindings/wagmi/index.d.ts"
     },
     "./abi/ethers": {
-      "import": "./dist/abi/generated/ethers/index.js",
-      "types": "./dist/abi/generated/ethers/index.d.ts"
+      "import": "./dist/abi/bindings/ethers/index.js",
+      "types": "./dist/abi/bindings/ethers/index.d.ts"
+    },
+    "./abi/ethers5": {
+      "import": "./dist/abi/bindings/ethers5/index.js",
+      "types": "./dist/abi/bindings/ethers5/index.d.ts"
     },
     "./abi/web3js": {
-      "import": "./dist/abi/generated/web3js/index.js",
-      "types": "./dist/abi/generated/web3js/index.d.ts"
+      "import": "./dist/abi/bindings/web3js/index.js",
+      "types": "./dist/abi/bindings/web3js/index.d.ts"
     }
   },
   "scripts": {
-    "codegen": "node scripts/sync-contract-abis.mjs --generate",
-    "codegen:check": "node scripts/sync-contract-abis.mjs --check",
-    "build": "tsc",
+    "codegen": "node scripts/sync-contract-abis.mjs --generate && node scripts/generate-contract-bindings.mjs",
+    "codegen:check": "node scripts/sync-contract-abis.mjs --check && node scripts/generate-contract-bindings.mjs --check",
+    "build": "tsc && tsc -p tsconfig.ethers5.json",
     "clean": "rm -rf dist",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.ts\" \"*.json\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"*.json\" \"*.md\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.ethers5.json --noEmit",
     "test": "vitest run --exclude 'test/browser/**'",
     "test:unit": "vitest run --exclude 'test/browser/**'",
     "test:browser": "playwright test",
@@ -111,7 +115,17 @@
     "access": "public"
   },
   "peerDependencies": {
-    "viem": ">=2.0.0"
+    "ethers": "^5.7.0 || ^6.0.0",
+    "viem": ">=2.0.0",
+    "wagmi": "^2.0.0 || ^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "ethers": {
+      "optional": true
+    },
+    "wagmi": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@noble/ciphers": "1.3.0",
@@ -129,6 +143,7 @@
     "circomlibjs": "0.1.7",
     "eslint": "^10.4.1",
     "ethers": "^6.17.0",
+    "ethers5": "npm:ethers@5.8.0",
     "prettier": "^3.8.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.62.0",

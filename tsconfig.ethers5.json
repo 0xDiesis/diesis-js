@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "ethers": ["./node_modules/ethers5"]
+    }
+  },
+  "include": ["src/abi/bindings/ethers5"],
+  "exclude": []
+}

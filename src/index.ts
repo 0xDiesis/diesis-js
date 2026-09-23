@@ -3,6 +3,10 @@ export { diesis, diesisTestnet } from './chains.js'
 
 // Addresses
 export * as addresses from './addresses.js'
+export {
+  diesisContracts,
+  type DiesisContractName,
+} from './abi/bindings/contracts.js'
 
 // Names
 export {

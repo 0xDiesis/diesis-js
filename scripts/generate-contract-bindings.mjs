@@ -1,0 +1,356 @@
+#!/usr/bin/env node
+
+// Generates typed contract wrappers for the public Diesis contracts with
+// abi-typegen, and the `diesisContracts` address table they are used with.
+//
+// abi-typegen writes its own copy of each ABI next to every wrapper. Those
+// copies are dropped and the wrappers are pointed at the vendored ABIs in
+// src/abi/generated/viem, so every entry point shares one ABI object.
+
+import { spawn } from 'node:child_process'
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
+  ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
+  : path.resolve(sdkRoot, '../diesis/contracts')
+const typegen = path.join(contractsRoot, 'node_modules/.bin/abi-typegen')
+const vendoredAbiRoot = path.join(sdkRoot, 'src/abi/generated/viem')
+const bindingsRoot = path.join(sdkRoot, 'src/abi/bindings')
+
+// Contracts that third-party integrations call. Interfaces are preferred over
+// implementations when both expose the same functions. `address` names the
+// constant in src/addresses.ts; contracts without a fixed address get wrappers
+// but no `diesisContracts` entry.
+const publicContracts = [
+  { key: 'markets', contract: 'IDiesisMarkets', address: 'DIESIS_MARKETS' },
+  { key: 'spotBook', contract: 'IDiesisSpotBook', address: 'DIESIS_SPOT_BOOK' },
+  {
+    key: 'perpsBook',
+    contract: 'IDiesisPerpsBook',
+    address: 'DIESIS_PERPS_BOOK',
+  },
+  { key: 'margin', contract: 'IDiesisMargin', address: 'DIESIS_MARGIN' },
+  {
+    key: 'settlement',
+    contract: 'IDiesisSettlement',
+    address: 'DIESIS_SETTLEMENT',
+  },
+  {
+    key: 'settlementRouter',
+    contract: 'DiesisSettlementRouter',
+    address: 'DIESIS_SETTLEMENT_ROUTER',
+  },
+  {
+    key: 'conductors',
+    contract: 'IDiesisConductors',
+    address: 'DIESIS_CONDUCTORS',
+  },
+  {
+    key: 'erc20Factory',
+    contract: 'IDiesisErc20Factory',
+    address: 'DIESIS_ERC20_FACTORY',
+  },
+  {
+    key: 'perpDeploy',
+    contract: 'IDiesisPerpDeploy',
+    address: 'DIESIS_PERP_DEPLOY',
+  },
+  {
+    key: 'operatorBond',
+    contract: 'IDiesisOperatorBond',
+    address: 'DIESIS_OPERATOR_BOND',
+  },
+  {
+    key: 'bundleEscrow',
+    contract: 'IDiesisBundleEscrow',
+    address: 'DIESIS_BUNDLE_ESCROW',
+  },
+  { key: 'staking', contract: 'DiesisStaking', address: 'DIESIS_STAKING' },
+  { key: 'position', contract: 'IDiesisPosition', address: 'DIESIS_POSITION' },
+  { key: 'validatorShare', contract: 'IValidatorShare' },
+  {
+    key: 'liquidStakedDS',
+    contract: 'ILiquidStakedDS',
+    address: 'LIQUID_STAKED_DS',
+  },
+  { key: 'wrappedDS', contract: 'IWrappedDS', address: 'WRAPPED_DS' },
+  { key: 'patron', contract: 'DiesisPatron', address: 'DIESIS_PATRON' },
+  { key: 'config', contract: 'DiesisConfig', address: 'DIESIS_CONFIG' },
+  {
+    key: 'coreVault',
+    contract: 'IDiesisCoreVault',
+    address: 'DIESIS_CORE_VAULT',
+  },
+  {
+    key: 'issuanceAuction',
+    contract: 'IDiesisIssuanceAuction',
+    address: 'DIESIS_ISSUANCE_AUCTION',
+  },
+  {
+    key: 'buybackBurn',
+    contract: 'IDiesisBuybackBurn',
+    address: 'DIESIS_BUYBACK_BURN',
+  },
+  {
+    key: 'shieldedPool',
+    contract: 'DiesisShieldedPool',
+    address: 'SHIELDED_POOL',
+  },
+  {
+    key: 'privacyPools',
+    contract: 'DiesisPrivacyPools',
+    address: 'PRIVACY_POOLS',
+  },
+  {
+    key: 'nameRegistry',
+    contract: 'IDiesisNameRegistry',
+    address: 'DIESIS_NAME_REGISTRY',
+  },
+  // The implementation carries the pricing and expiry views integrators need.
+  {
+    key: 'baseRegistrar',
+    contract: 'DiesisBaseRegistrar',
+    address: 'DIESIS_BASE_REGISTRAR',
+  },
+  {
+    key: 'publicResolver',
+    contract: 'DiesisPublicResolver',
+    address: 'DIESIS_PUBLIC_RESOLVER',
+  },
+  {
+    key: 'reverseRegistrar',
+    contract: 'IDiesisReverseRegistrar',
+    address: 'DIESIS_REVERSE_REGISTRAR',
+  },
+  {
+    key: 'nameVerifier',
+    contract: 'IDiesisNameVerifier',
+    address: 'DIESIS_NAME_VERIFIER',
+  },
+  {
+    key: 'namePolicy',
+    contract: 'IDiesisNamePolicy',
+    address: 'DIESIS_NAME_POLICY',
+  },
+]
+
+// Entry points under @diesis/sdk/abi/<name>. Each one exports every vendored
+// ABI and `diesisContracts`; `suffix` names the abi-typegen wrapper file for
+// targets that also ship wrappers.
+//
+// Held back until abi-typegen fixes them (0.4.1):
+// - viem: `get*Contract` has no return type annotation, and for large ABIs the
+//   inferred type exceeds what tsc can write to a declaration file (TS7056).
+// - wagmi: write hooks return an inferred type that references `@wagmi/core`
+//   (TS2883), ignore `value` on payable functions, and PascalCasing collides
+//   `PREMIUM_PERIOD` with `premiumPeriod` in DiesisBaseRegistrar.
+// - web3js: numbers are typed as `string`, but web3.js v4 returns `bigint` and
+//   already infers types from `as const` ABIs.
+const targets = [
+  { name: 'viem', suffix: null },
+  { name: 'ethers', suffix: 'ethers' },
+  { name: 'ethers5', suffix: 'ethers5' },
+  { name: 'wagmi', suffix: null },
+  { name: 'web3js', suffix: null },
+]
+const wrapperTargets = targets.filter((target) => target.suffix !== null)
+
+const header =
+  '// Generated by scripts/generate-contract-bindings.mjs. Do not edit.\n'
+
+const arguments_ = process.argv.slice(2)
+if (
+  arguments_.length > 1 ||
+  (arguments_.length === 1 && arguments_[0] !== '--check')
+) {
+  throw new Error('usage: generate-contract-bindings.mjs [--check]')
+}
+const checkOnly = arguments_[0] === '--check'
+
+function run(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      stdio: ['ignore', 'ignore', 'inherit'],
+    })
+    child.once('error', reject)
+    child.once('exit', (code, signal) => {
+      if (code === 0) resolve()
+      else reject(new Error(`${command} failed (${signal ?? `exit ${code}`})`))
+    })
+  })
+}
+
+async function generateWrappers(outDirectory) {
+  await run(typegen, [
+    'generate',
+    '--artifacts',
+    path.join(contractsRoot, 'out'),
+    '--out',
+    outDirectory,
+    '--target',
+    wrapperTargets.map((target) => target.name).join(','),
+    '--contracts',
+    publicContracts.map((entry) => entry.contract).join(','),
+  ])
+}
+
+// The wrappers are typed against the ABI abi-typegen emitted beside them, so it
+// must be byte-identical to the vendored copy they are rewired to import.
+async function assertAbiParity(outDirectory) {
+  const stale = []
+  for (const { contract } of publicContracts) {
+    const file = `${contract}.abi.ts`
+    const [generated, vendored] = await Promise.all([
+      readFile(path.join(outDirectory, wrapperTargets[0].name, file)),
+      readFile(path.join(vendoredAbiRoot, file)).catch(() => null),
+    ])
+    if (vendored === null || !generated.equals(vendored)) stale.push(file)
+  }
+  if (stale.length > 0) {
+    throw new Error(
+      `vendored ABIs differ from the contract artifacts (run pnpm codegen):\n${stale.join('\n')}`,
+    )
+  }
+}
+
+function rewireAbiImport(source, contract) {
+  const local = `from './${contract}.abi.js'`
+  if (!source.includes(local)) {
+    throw new Error(`${contract} wrapper does not import its ABI as expected`)
+  }
+  return source.replace(local, `from '../../generated/viem/${contract}.abi.js'`)
+}
+
+function bindingIndex(wrapperModules) {
+  const lines = [
+    header,
+    "export * from '../../generated/viem/index.js'",
+    "export * from '../contracts.js'",
+    ...wrapperModules.map((module) => `export * from './${module}.js'`),
+  ]
+  return `${lines.join('\n')}\n`
+}
+
+function contractsTable() {
+  const addressed = publicContracts.filter((entry) => entry.address)
+  const addressImports = addressed.map((entry) => entry.address).sort()
+  const abiImports = addressed.map((entry) => `${entry.contract}Abi`).sort()
+  const entries = addressed.map(
+    (entry) =>
+      `  ${entry.key}: {\n    address: ${entry.address},\n    abi: ${entry.contract}Abi,\n  },`,
+  )
+  return [
+    header,
+    '/**',
+    ' * Fixed-address Diesis system contracts, each paired with its typed ABI.',
+    ' * Spread an entry into viem `getContract` or wagmi `useReadContract`, or pass',
+    ' * its `address` to a generated `connect*` or `get*Contract` wrapper.',
+    ' */',
+    'import {',
+    ...addressImports.map((name) => `  ${name},`),
+    "} from '../../addresses.js'",
+    'import {',
+    ...abiImports.map((name) => `  ${name},`),
+    "} from '../generated/viem/index.js'",
+    '',
+    'export const diesisContracts = {',
+    ...entries,
+    '} as const',
+    '',
+    'export type DiesisContractName = keyof typeof diesisContracts',
+    '',
+  ].join('\n')
+}
+
+async function expectedFiles(outDirectory) {
+  const files = new Map([['contracts.ts', contractsTable()]])
+  for (const target of targets) {
+    const wrapperModules = []
+    if (target.suffix !== null) {
+      for (const { contract } of publicContracts) {
+        const module = `${contract}.${target.suffix}`
+        const source = await readFile(
+          path.join(outDirectory, target.name, `${module}.ts`),
+          'utf8',
+        )
+        files.set(
+          `${target.name}/${module}.ts`,
+          rewireAbiImport(source, contract),
+        )
+        wrapperModules.push(module)
+      }
+    }
+    files.set(`${target.name}/index.ts`, bindingIndex(wrapperModules))
+  }
+  return files
+}
+
+async function listFiles(root, prefix = '') {
+  let entries
+  try {
+    entries = await readdir(root, { withFileTypes: true })
+  } catch (error) {
+    if (error?.code === 'ENOENT') return []
+    throw error
+  }
+  const files = []
+  for (const entry of entries) {
+    const relative = path.posix.join(prefix, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...(await listFiles(path.join(root, entry.name), relative)))
+    } else {
+      files.push(relative)
+    }
+  }
+  return files
+}
+
+const outDirectory = await mkdtemp(path.join(tmpdir(), 'diesis-sdk-bindings-'))
+try {
+  await generateWrappers(outDirectory)
+  await assertAbiParity(outDirectory)
+  const expected = await expectedFiles(outDirectory)
+  const existing = await listFiles(bindingsRoot)
+  const differences = []
+
+  for (const [file, contents] of expected) {
+    const destination = path.join(bindingsRoot, file)
+    const current = await readFile(destination, 'utf8').catch(() => null)
+    if (current === contents) continue
+    if (checkOnly) {
+      differences.push(
+        `src/abi/bindings/${file} ${current === null ? 'is missing' : 'differs'}`,
+      )
+    } else {
+      await mkdir(path.dirname(destination), { recursive: true })
+      await writeFile(destination, contents)
+      console.log(`generated src/abi/bindings/${file}`)
+    }
+  }
+  for (const file of existing) {
+    if (expected.has(file)) continue
+    if (checkOnly) {
+      differences.push(`src/abi/bindings/${file} is stale`)
+    } else {
+      await rm(path.join(bindingsRoot, file))
+      console.log(`removed src/abi/bindings/${file}`)
+    }
+  }
+
+  if (differences.length > 0) {
+    throw new Error(`contract bindings are stale:\n${differences.join('\n')}`)
+  }
+} finally {
+  await rm(outDirectory, { recursive: true, force: true })
+}

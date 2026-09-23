@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import * as abiBarrel from '../src/abi/index.js'
-import * as ethersBindings from '../src/abi/generated/ethers/index.js'
+import * as ethersBindings from '../src/abi/bindings/ethers/index.js'
+import * as viemEntry from '../src/abi/bindings/viem/index.js'
+import * as wagmiBindings from '../src/abi/bindings/wagmi/index.js'
+import * as web3Bindings from '../src/abi/bindings/web3js/index.js'
 import * as viemBindings from '../src/abi/generated/viem/index.js'
-import * as wagmiBindings from '../src/abi/generated/wagmi/index.js'
-import * as web3Bindings from '../src/abi/generated/web3js/index.js'
 import * as packageRoot from '../src/index.js'
 
 /**
@@ -51,20 +52,16 @@ describe('ABI barrel re-export', () => {
   })
 })
 
+// The ethers v5 entry point imports `ethers` v5 at runtime, so it is covered by
+// `tsc -p tsconfig.ethers5.json` rather than imported here next to ethers v6.
 describe('ABI provider entry-point parity', () => {
   const providers = {
+    viem: viemEntry,
     ethers: ethersBindings,
     wagmi: wagmiBindings,
     web3js: web3Bindings,
   }
   const viemExports = Object.keys(viemBindings).sort()
-
-  it.each(Object.entries(providers))(
-    '%s exposes exactly the canonical viem export set',
-    (_provider, bindings) => {
-      expect(Object.keys(bindings).sort()).toEqual(viemExports)
-    },
-  )
 
   it.each(Object.entries(providers))(
     '%s re-exports the identical canonical ABI objects',
@@ -77,4 +74,23 @@ describe('ABI provider entry-point parity', () => {
       expect(divergent).toEqual([])
     },
   )
+
+  it.each(Object.entries(providers))(
+    '%s re-exports the package root contract table',
+    (_provider, bindings) => {
+      expect(bindings.diesisContracts).toBe(packageRoot.diesisContracts)
+    },
+  )
+
+  it('adds wrappers only to entry points with a wrapper target', () => {
+    const extras = (bindings: object) =>
+      Object.keys(bindings).filter(
+        (name) => !viemExports.includes(name) && name !== 'diesisContracts',
+      )
+
+    expect(extras(viemEntry)).toEqual([])
+    expect(extras(wagmiBindings)).toEqual([])
+    expect(extras(web3Bindings)).toEqual([])
+    expect(extras(ethersBindings)).toContain('connectDiesisStaking')
+  })
 })

@@ -206,6 +206,9 @@ importers:
       ethers:
         specifier: ^6.17.0
         version: 6.17.0
+      ethers5:
+        specifier: npm:ethers@5.8.0
+        version: ethers@5.8.0
       prettier:
         specifier: ^3.8.4
         version: 3.8.4
