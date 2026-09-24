@@ -109,7 +109,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/0xDiesis/diesis-sdk.git"
+    "url": "https://github.com/0xDiesis/diesis-js.git"
   },
   "publishConfig": {
     "access": "public"

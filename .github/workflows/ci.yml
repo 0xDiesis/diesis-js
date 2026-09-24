@@ -28,9 +28,8 @@ jobs:
           owner: 0xDiesis
           repositories: diesis-contracts
 
-      # The ABI drift checks and fixtures read ../diesis/contracts, as in a
-      # local workspace checkout. The checkout moves out of the workspace so
-      # this repository's tools never scan it.
+      # Use an explicit contracts root for this standalone checkout. Keep it
+      # outside the SDK so repository tools do not scan contract sources.
       - name: Checkout contracts
         uses: actions/checkout@v6
         with:
@@ -45,6 +44,7 @@ jobs:
           mkdir -p ../diesis
           mv contracts-checkout ../diesis/contracts
           echo "dir=$(cd ../diesis/contracts && pwd)" >> "$GITHUB_OUTPUT"
+          echo "DIESIS_CONTRACTS_DIR=$(cd ../diesis/contracts && pwd)" >> "$GITHUB_ENV"
           echo "sha=$(git -C ../diesis/contracts rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "deps=$(sha256sum ../diesis/contracts/soldeer.lock | cut -c1-16)" >> "$GITHUB_OUTPUT"
 

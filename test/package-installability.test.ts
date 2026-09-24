@@ -124,7 +124,7 @@ describe('third-party package installability', () => {
 
     expect(readme).not.toContain('npm install @diesis/sdk')
     expect(readme).toContain(
-      "pnpm add 'git+https://github.com/0xDiesis/diesis-sdk.git#<commit>'",
+      "pnpm add 'git+https://github.com/0xDiesis/diesis-js.git#<commit>'",
     )
   })
 

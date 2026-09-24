@@ -45,7 +45,7 @@ The package is not on the npm registry yet. Install it from GitHub with
 authenticated Git access, and pin a commit so builds stay reproducible:
 
 ```bash
-pnpm add 'git+https://github.com/0xDiesis/diesis-sdk.git#<commit>' viem
+pnpm add 'git+https://github.com/0xDiesis/diesis-js.git#<commit>' viem
 ```
 
 The `prepare` script runs `tsc` on install, so the `dist/` output is built for

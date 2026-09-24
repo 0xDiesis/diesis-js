@@ -3,13 +3,18 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { resolveContractsCircuitsRoot } from '../helpers/contracts-circuits.js'
 
 const temporaryRoots: string[] = []
 
+beforeEach(() => {
+  vi.stubEnv('DIESIS_CONTRACTS_DIR', undefined)
+})
+
 afterEach(async () => {
+  vi.unstubAllEnvs()
   await Promise.all(
     temporaryRoots.splice(0).map((root) => rm(root, { recursive: true })),
   )
@@ -17,7 +22,7 @@ afterEach(async () => {
 
 describe('contracts circuit artifact discovery', () => {
   it('finds the core checkout from an isolated SDK worktree without a symlink', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'diesis-sdk-artifacts-'))
+    const root = await mkdtemp(join(tmpdir(), 'diesis-js-artifacts-'))
     temporaryRoots.push(root)
     const sdkTest = join(
       root,
@@ -51,7 +56,7 @@ describe('contracts circuit artifact discovery', () => {
   })
 
   it('finds artifacts in a linked contracts worktree when the main checkout lacks them', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'diesis-sdk-artifacts-'))
+    const root = await mkdtemp(join(tmpdir(), 'diesis-js-artifacts-'))
     temporaryRoots.push(root)
     const sdkTest = join(
       root,
@@ -79,7 +84,7 @@ describe('contracts circuit artifact discovery', () => {
   })
 
   it('fails closed when multiple linked contracts worktrees contain artifacts', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'diesis-sdk-artifacts-'))
+    const root = await mkdtemp(join(tmpdir(), 'diesis-js-artifacts-'))
     temporaryRoots.push(root)
     const sdkTest = join(
       root,

@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
   ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
-  : path.resolve(sdkRoot, '../diesis/contracts')
+  : path.resolve(sdkRoot, '../../diesis/contracts')
 // ABI_TYPEGEN points at a specific abi-typegen binary; by default the one
 // installed in the contracts checkout is used.
 const typegen = process.env.ABI_TYPEGEN
@@ -333,7 +333,7 @@ async function listFiles(root, prefix = '') {
   return files
 }
 
-const outDirectory = await mkdtemp(path.join(tmpdir(), 'diesis-sdk-bindings-'))
+const outDirectory = await mkdtemp(path.join(tmpdir(), 'diesis-js-bindings-'))
 try {
   await assertTypegenVersion()
   await generateWrappers(outDirectory)
