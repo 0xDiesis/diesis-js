@@ -1124,6 +1124,25 @@ export const IDiesisPositionAbi = [
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "manager",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "LockManagerSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
@@ -1411,6 +1430,19 @@ export const IDiesisPositionAbi = [
         }
       ],
       "name": "ValidatorExitFeeSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validatorShare",
+          "type": "address"
+        }
+      ],
+      "name": "ValidatorShareSet",
       "type": "event"
     },
     {

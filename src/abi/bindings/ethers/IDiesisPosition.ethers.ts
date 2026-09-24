@@ -54,6 +54,7 @@ export interface IDiesisPositionMethods {
     InstantWithdrawExecuted(tokenId?: BigNumberish | null, withdrawAmount?: null, fee?: null, receiver?: AddressLike | null): DeferredTopicFilter;
     LiquidTokenMinted(tokenId?: BigNumberish | null, recipient?: AddressLike | null): DeferredTopicFilter;
     LiquidTokenRepaid(tokenId?: BigNumberish | null, payer?: AddressLike | null): DeferredTopicFilter;
+    LockManagerSet(manager?: AddressLike | null): DeferredTopicFilter;
     LockRemoved(tokenId?: BigNumberish | null, manager?: AddressLike | null, lockId?: BytesLike | null): DeferredTopicFilter;
     LockSet(tokenId?: BigNumberish | null, manager?: AddressLike | null, lockId?: BytesLike | null): DeferredTopicFilter;
     Minted(tokenId?: BigNumberish | null, owner?: AddressLike | null, validator?: BigNumberish | null): DeferredTopicFilter;
@@ -66,6 +67,7 @@ export interface IDiesisPositionMethods {
     Transfer(from?: AddressLike | null, to?: AddressLike | null, tokenId?: BigNumberish | null): DeferredTopicFilter;
     Undelegated(tokenId?: BigNumberish | null, validator?: BigNumberish | null, wrId?: BigNumberish | null): DeferredTopicFilter;
     ValidatorExitFeeSet(validatorId_?: BigNumberish | null): DeferredTopicFilter;
+    ValidatorShareSet(validatorShare?: AddressLike | null): DeferredTopicFilter;
     Withdrawn(tokenId?: BigNumberish | null, wrId?: BigNumberish | null): DeferredTopicFilter;
   };
 }

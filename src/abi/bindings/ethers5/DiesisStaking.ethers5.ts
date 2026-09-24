@@ -143,11 +143,15 @@ export interface DiesisStakingContract extends ethers.Contract {
     OperatorTakeRateActivated(validatorId?: BigNumberish | null): ethers.EventFilter;
     OperatorTakeRateScheduled(validatorId?: BigNumberish | null): ethers.EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): ethers.EventFilter;
+    ParticipationPoolBpsUpdated(): ethers.EventFilter;
     ParticipationRewards(checkpoint?: BigNumberish | null): ethers.EventFilter;
+    RecoveryAuthorizerSet(authorizer?: string | null): ethers.EventFilter;
     RewardsCompounded(tokenId?: BigNumberish | null, toValidatorId?: BigNumberish | null): ethers.EventFilter;
     RewardsHarvested(tokenId?: BigNumberish | null, toValidatorId?: BigNumberish | null): ethers.EventFilter;
     SlashRefundRatioUpdated(validatorId?: BigNumberish | null): ethers.EventFilter;
+    StakeObserverSet(observer?: string | null): ethers.EventFilter;
     Staked(delegator?: string | null, toValidatorId?: BigNumberish | null, tokenId?: BigNumberish | null): ethers.EventFilter;
+    SubScoreWeightsUpdated(): ethers.EventFilter;
     TokensBurned(burner?: string | null): ethers.EventFilter;
     Transfer(from?: string | null, to?: string | null, tokenId?: BigNumberish | null): ethers.EventFilter;
     TreasuryFeesFlushed(): ethers.EventFilter;

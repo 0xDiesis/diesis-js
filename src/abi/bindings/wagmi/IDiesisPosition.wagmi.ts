@@ -677,6 +677,15 @@ export function useIDiesisPositionLiquidTokenRepaidEvent(address: Address, liste
   });
 }
 
+export function useIDiesisPositionLockManagerSetEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisPositionAbi,
+    eventName: 'LockManagerSet',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
 export function useIDiesisPositionLockRemovedEvent(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
@@ -781,6 +790,15 @@ export function useIDiesisPositionValidatorExitFeeSetEvent(address: Address, lis
     address,
     abi: IDiesisPositionAbi,
     eventName: 'ValidatorExitFeeSet',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useIDiesisPositionValidatorShareSetEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisPositionAbi,
+    eventName: 'ValidatorShareSet',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

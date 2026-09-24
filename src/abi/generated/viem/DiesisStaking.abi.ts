@@ -2941,6 +2941,19 @@ export const DiesisStakingAbi = [
       "anonymous": false,
       "inputs": [
         {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "bps",
+          "type": "uint256"
+        }
+      ],
+      "name": "ParticipationPoolBpsUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": true,
           "internalType": "uint256",
           "name": "checkpoint",
@@ -2966,6 +2979,19 @@ export const DiesisStakingAbi = [
         }
       ],
       "name": "ParticipationRewards",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "authorizer",
+          "type": "address"
+        }
+      ],
+      "name": "RecoveryAuthorizerSet",
       "type": "event"
     },
     {
@@ -3049,6 +3075,19 @@ export const DiesisStakingAbi = [
         {
           "indexed": true,
           "internalType": "address",
+          "name": "observer",
+          "type": "address"
+        }
+      ],
+      "name": "StakeObserverSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "delegator",
           "type": "address"
         },
@@ -3072,6 +3111,19 @@ export const DiesisStakingAbi = [
         }
       ],
       "name": "Staked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256[3]",
+          "name": "weights",
+          "type": "uint256[3]"
+        }
+      ],
+      "name": "SubScoreWeightsUpdated",
       "type": "event"
     },
     {

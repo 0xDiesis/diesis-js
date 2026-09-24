@@ -54,6 +54,7 @@ export interface IDiesisPositionContract extends ethers.Contract {
     InstantWithdrawExecuted(tokenId?: BigNumberish | null, withdrawAmount?: null, fee?: null, receiver?: string | null): ethers.EventFilter;
     LiquidTokenMinted(tokenId?: BigNumberish | null, recipient?: string | null): ethers.EventFilter;
     LiquidTokenRepaid(tokenId?: BigNumberish | null, payer?: string | null): ethers.EventFilter;
+    LockManagerSet(manager?: string | null): ethers.EventFilter;
     LockRemoved(tokenId?: BigNumberish | null, manager?: string | null, lockId?: BytesLike | null): ethers.EventFilter;
     LockSet(tokenId?: BigNumberish | null, manager?: string | null, lockId?: BytesLike | null): ethers.EventFilter;
     Minted(tokenId?: BigNumberish | null, owner?: string | null, validator?: BigNumberish | null): ethers.EventFilter;
@@ -66,6 +67,7 @@ export interface IDiesisPositionContract extends ethers.Contract {
     Transfer(from?: string | null, to?: string | null, tokenId?: BigNumberish | null): ethers.EventFilter;
     Undelegated(tokenId?: BigNumberish | null, validator?: BigNumberish | null, wrId?: BigNumberish | null): ethers.EventFilter;
     ValidatorExitFeeSet(validatorId_?: BigNumberish | null): ethers.EventFilter;
+    ValidatorShareSet(validatorShare?: string | null): ethers.EventFilter;
     Withdrawn(tokenId?: BigNumberish | null, wrId?: BigNumberish | null): ethers.EventFilter;
   };
 }

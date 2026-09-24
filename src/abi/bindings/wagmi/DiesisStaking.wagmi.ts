@@ -1734,11 +1734,29 @@ export function useDiesisStakingOwnershipTransferredEvent(address: Address, list
   });
 }
 
+export function useDiesisStakingParticipationPoolBpsUpdatedEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: DiesisStakingAbi,
+    eventName: 'ParticipationPoolBpsUpdated',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
 export function useDiesisStakingParticipationRewardsEvent(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: DiesisStakingAbi,
     eventName: 'ParticipationRewards',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useDiesisStakingRecoveryAuthorizerSetEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: DiesisStakingAbi,
+    eventName: 'RecoveryAuthorizerSet',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
@@ -1770,11 +1788,29 @@ export function useDiesisStakingSlashRefundRatioUpdatedEvent(address: Address, l
   });
 }
 
+export function useDiesisStakingStakeObserverSetEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: DiesisStakingAbi,
+    eventName: 'StakeObserverSet',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
 export function useDiesisStakingStakedEvent(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: DiesisStakingAbi,
     eventName: 'Staked',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useDiesisStakingSubScoreWeightsUpdatedEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: DiesisStakingAbi,
+    eventName: 'SubScoreWeightsUpdated',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

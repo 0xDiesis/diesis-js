@@ -143,11 +143,15 @@ export interface DiesisStakingMethods {
     OperatorTakeRateActivated(validatorId?: BigNumberish | null): DeferredTopicFilter;
     OperatorTakeRateScheduled(validatorId?: BigNumberish | null): DeferredTopicFilter;
     OwnershipTransferred(previousOwner?: AddressLike | null, newOwner?: AddressLike | null): DeferredTopicFilter;
+    ParticipationPoolBpsUpdated(): DeferredTopicFilter;
     ParticipationRewards(checkpoint?: BigNumberish | null): DeferredTopicFilter;
+    RecoveryAuthorizerSet(authorizer?: AddressLike | null): DeferredTopicFilter;
     RewardsCompounded(tokenId?: BigNumberish | null, toValidatorId?: BigNumberish | null): DeferredTopicFilter;
     RewardsHarvested(tokenId?: BigNumberish | null, toValidatorId?: BigNumberish | null): DeferredTopicFilter;
     SlashRefundRatioUpdated(validatorId?: BigNumberish | null): DeferredTopicFilter;
+    StakeObserverSet(observer?: AddressLike | null): DeferredTopicFilter;
     Staked(delegator?: AddressLike | null, toValidatorId?: BigNumberish | null, tokenId?: BigNumberish | null): DeferredTopicFilter;
+    SubScoreWeightsUpdated(): DeferredTopicFilter;
     TokensBurned(burner?: AddressLike | null): DeferredTopicFilter;
     Transfer(from?: AddressLike | null, to?: AddressLike | null, tokenId?: BigNumberish | null): DeferredTopicFilter;
     TreasuryFeesFlushed(): DeferredTopicFilter;
