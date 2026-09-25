@@ -28,6 +28,7 @@ export interface IDiesisPerpsBookMethods {
     OrderFilled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
     OrderPlaced(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
     PositionClosed(marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
+    PositionCollateralAdjusted(marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
   };
 }
 

@@ -28,6 +28,7 @@ export interface IDiesisPerpsBookContract extends ethers.Contract {
     OrderFilled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderPlaced(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     PositionClosed(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
+    PositionCollateralAdjusted(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
   };
 }
 

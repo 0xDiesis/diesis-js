@@ -223,9 +223,8 @@ The precompile returns a 96-byte tuple. Pass the batch's action count to
 count, or accepted and rejected totals that don't add up, so a bad RPC
 response can't pass as a result.
 
-The perpetual V2 wire format is fixed, but the chain only executes it once the
-protocol activates it. Until then, perpetual V2 batches are for encoding and
-testing.
+The wire codec and ABI do not prove that a runtime supports every perpetual
+action. Check the operation's capability read before offering it to a user.
 
 Session keys let a trading bot act for a main account within limits. Build the
 permitted-action bitmap with `exchangeActionScopeV2`, then call
@@ -234,6 +233,103 @@ permitted-action bitmap with `exchangeActionScopeV2`, then call
 market mask allows no markets, and an all-ones mask allows all of them. Cancel
 schedules are regular V2 actions with a bounded market list, an expected
 renewal counter, and bounded trigger chunks.
+
+### Add or release position collateral
+
+`getPositionCollateral` returns the current materialized claim and the server's
+addable and withdrawable amounts as decimal strings in quote-asset atomic
+units. Check `active` and `eligible` before signing; when unavailable, the
+amounts are `null` and `unavailableReason` explains why. An older runtime may
+reject the RPC method. Do not substitute a local balance estimate for this
+read. The bound can change before inclusion, and settlement checks it again.
+
+A positive `collateralDelta` adds collateral from the owner's available global
+settlement balance to an existing canonical perpetual position. A negative
+value releases it back to that owner's global settlement balance. This is not
+an external token deposit or withdrawal, and it does not create an isolated
+position or change its size. Zero and values outside signed int256 are rejected.
+
+```typescript
+import { parseSignature } from 'viem'
+import { DIESIS_PERPS_BOOK } from '@diesis/sdk/addresses'
+import {
+  computeActionsHash,
+  computePerpRelayActionHash,
+  encodeExchangeActionBatchV2,
+  signPerpActions,
+  type SignedPerpRelayEnvelope,
+} from '@diesis/sdk/exchange'
+
+const trader = walletClient.account.address
+const marketId = '0x...' // canonical perpetual market ID
+const availability = await publicClient.exchange.getPositionCollateral({
+  user: trader,
+  marketId,
+})
+if (
+  !availability.active ||
+  !availability.eligible ||
+  availability.withdrawableCollateral === null
+) {
+  throw new Error(
+    availability.unavailableReason ?? 'Collateral adjustment unavailable',
+  )
+}
+
+const collateralDelta = -1_000_000n // release one million quote atomic units
+if (-collateralDelta > BigInt(availability.withdrawableCollateral)) {
+  throw new Error('Release exceeds the current server-computed bound')
+}
+const actions = encodeExchangeActionBatchV2({
+  atomicity: 'atomicAll',
+  actions: [
+    {
+      kind: 'adjustPositionCollateral',
+      clientActionId: '0x000102030405060708090a0b0c0d0e0f',
+      marketId,
+      collateralDelta,
+    },
+  ],
+})
+const nonce = 42n // use a fresh owner nonce for each signed request
+const expiry = BigInt(Math.floor(Date.now() / 1000) + 300)
+const actionsHash = computeActionsHash(actions)
+const rawSignature = await signPerpActions(
+  walletClient.account,
+  {
+    trader,
+    nonce,
+    expiry,
+    actionsHash,
+  },
+  diesis.id,
+  DIESIS_PERPS_BOOK,
+)
+const { r, s, yParity } = parseSignature(rawSignature)
+const signed: SignedPerpRelayEnvelope = {
+  trader,
+  nonce: `0x${nonce.toString(16)}`,
+  expiry: Number(expiry),
+  chainId: diesis.id,
+  verifyingContract: DIESIS_PERPS_BOOK,
+  actionsHash,
+  actions,
+  signature: { r, s, v: 27 + yParity },
+}
+const expectedActionHash = computePerpRelayActionHash(signed)
+```
+
+Send `signed` unchanged as the sole parameter to `diesis_submitIntent`. Persist
+`expectedActionHash` before submission so a lost response can be reconciled;
+compare any returned hash and use the relay receipt and action outcome to
+determine success. The helper hashes the exact raw envelope, including hex
+casing. It accepts string nonces and numeric fields within JavaScript's safe
+integer range; other RPC payload forms need their own normalization.
+
+A delegated session key needs the separate
+`exchangeActionScopeV2(['adjustPositionCollateral'])` bit (tag 10). Earlier
+place/cancel grants do not authorize collateral release. Session market scope
+and absolute-amount limits still apply.
 
 ## Bundle transactions
 

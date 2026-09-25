@@ -332,3 +332,12 @@ export function useIDiesisPerpsBookPositionClosedEvent(address: Address, listene
     onLogs: (logs) => logs.forEach(listener),
   });
 }
+
+export function useIDiesisPerpsBookPositionCollateralAdjustedEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisPerpsBookAbi,
+    eventName: 'PositionCollateralAdjusted',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}

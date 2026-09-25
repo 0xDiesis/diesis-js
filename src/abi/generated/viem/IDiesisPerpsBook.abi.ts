@@ -756,5 +756,36 @@ export const IDiesisPerpsBookAbi = [
       ],
       "name": "PositionClosed",
       "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "int256",
+          "name": "collateralDelta",
+          "type": "int256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newClaim",
+          "type": "uint256"
+        }
+      ],
+      "name": "PositionCollateralAdjusted",
+      "type": "event"
     }
   ] as const;

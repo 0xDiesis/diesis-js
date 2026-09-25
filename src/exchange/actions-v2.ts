@@ -115,12 +115,21 @@ export type CancelMarketChunkActionV2 = {
   maxOrders: number
 }
 
+/** Owner-signed canonical position collateral movement in quote atomic units. */
+export type AdjustPositionCollateralActionV2 = {
+  kind: 'adjustPositionCollateral'
+  clientActionId: Hex
+  marketId: Hex
+  collateralDelta: bigint
+}
+
 export type ExchangeActionV2 =
   | PlaceActionV2
   | CancelByOrderIdActionV2
   | CancelByClientOrderIdActionV2
   | CancelReplaceActionV2
   | CancelMarketChunkActionV2
+  | AdjustPositionCollateralActionV2
   | CancelScheduleActionV2
 
 export type ExchangeActionBatchV2 = {
@@ -135,6 +144,8 @@ const VERSION = 2
 const HEADER_BYTES = 12
 const ACTION_PREFIX_BYTES = 20
 const ZERO_32 = new Uint8Array(32)
+const INT256_MIN = -(1n << 255n)
+const INT256_MAX = (1n << 255n) - 1n
 
 const RADIX_WRITES_PER_CHANGED_LEVEL = 64
 const STORAGE_OPS_PER_CHANGED_LEVEL = 71
@@ -149,6 +160,7 @@ const CANCEL_STORAGE_OPS =
   STORAGE_OPS_PER_CHANGED_LEVEL + STORAGE_OPS_PER_FILL + STORAGE_OPS_PER_SEARCH
 const ARM_SCHEDULE_FIXED_STORAGE_OPS = 5
 const RENEW_SCHEDULE_STORAGE_OPS = 2
+const POSITION_COLLATERAL_STORAGE_OPS = 2_048
 
 const ACTION_KEYS: Readonly<
   Record<ExchangeActionV2['kind'], readonly string[]>
@@ -221,6 +233,12 @@ const ACTION_KEYS: Readonly<
     'expectedRenewalCounter',
   ],
   triggerCancelSchedule: ['kind', 'clientActionId', 'scheduleId'],
+  adjustPositionCollateral: [
+    'kind',
+    'clientActionId',
+    'marketId',
+    'collateralDelta',
+  ],
 }
 
 function strictObjectKeys(
@@ -560,6 +578,23 @@ function encodeAction(action: ExchangeActionV2): Uint8Array {
     prefix(writer, 0x08, 60, action.clientActionId)
     writer.push(nonzeroBytes(action.scheduleId, 32, 'scheduleId'))
     writer.u64(action.expectedRenewalCounter, 'expectedRenewalCounter')
+  } else if (action.kind === 'adjustPositionCollateral') {
+    if (
+      typeof action.collateralDelta !== 'bigint' ||
+      action.collateralDelta === 0n ||
+      action.collateralDelta < INT256_MIN ||
+      action.collateralDelta > INT256_MAX
+    ) {
+      throw new Error('collateralDelta must be a nonzero int256')
+    }
+    prefix(writer, 0x0a, 84, action.clientActionId)
+    writer.push(nonzeroBytes(action.marketId, 32, 'marketId'))
+    writer.u256(
+      action.collateralDelta < 0n
+        ? (1n << 256n) + action.collateralDelta
+        : action.collateralDelta,
+      'collateralDelta',
+    )
   } else {
     prefix(writer, 0x09, 52, action.clientActionId)
     writer.push(nonzeroBytes(action.scheduleId, 32, 'scheduleId'))
@@ -618,6 +653,7 @@ function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
 function placeActionWork(
   fills: number,
   remainderCancel: boolean,
+  marginContribution = false,
 ): ActionWorkV2 {
   const twiceFills = fills * 2
   const changedLevels = fills + 2
@@ -628,11 +664,19 @@ function placeActionWork(
     storageOperations:
       changedLevels * STORAGE_OPS_PER_CHANGED_LEVEL +
       fills * STORAGE_OPS_PER_FILL +
-      searches * STORAGE_OPS_PER_SEARCH,
+      searches * STORAGE_OPS_PER_SEARCH +
+      (remainderCancel ? 40 : 0) +
+      (marginContribution ? POSITION_COLLATERAL_STORAGE_OPS : 0),
     l3Logs,
     l3LogBytes: l3Logs * L3_LOG_BYTES,
-    economicLogs: fills * ECONOMIC_LOGS_PER_FILL,
-    economicLogBytes: fills * ECONOMIC_LOG_BYTES_PER_FILL,
+    economicLogs:
+      fills * ECONOMIC_LOGS_PER_FILL +
+      Number(remainderCancel) +
+      Number(marginContribution),
+    economicLogBytes:
+      fills * ECONOMIC_LOG_BYTES_PER_FILL +
+      (remainderCancel ? 256 : 0) +
+      (marginContribution ? 256 : 0),
     statefulScheduleRefinements: 0,
   }
 }
@@ -677,6 +721,7 @@ function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
     return placeActionWork(
       action.maxFills,
       placeLeavesRemainderCancel(action.orderKind, action.timeInForce),
+      action.marginContribution !== undefined,
     )
   }
   if (
@@ -694,6 +739,7 @@ function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
           action.replacementOrderKind,
           action.replacementTimeInForce,
         ),
+        action.marginContribution !== undefined,
       ),
     )
   }
@@ -708,6 +754,14 @@ function actionWorkFromModel(action: ExchangeActionV2): ActionWorkV2 {
   }
   if (action.kind === 'disarmCancelSchedule') {
     return scheduleActionWork(EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
+  }
+  if (action.kind === 'adjustPositionCollateral') {
+    return {
+      ...EMPTY_WORK,
+      storageOperations: POSITION_COLLATERAL_STORAGE_OPS,
+      economicLogs: 1,
+      economicLogBytes: 256,
+    }
   }
   return { ...EMPTY_WORK, statefulScheduleRefinements: 1 }
 }
@@ -1070,6 +1124,19 @@ function decodeRecord(record: Uint8Array): ExchangeActionV2 {
     if (reader.u16('reserved') !== 0) throw new Error('nonzero reserved bytes')
     return { kind: 'cancelMarketChunk', clientActionId, marketId, maxOrders }
   }
+  if (tag === 0x0a) {
+    const marketId = bytesToHex(reader.take(32, 'market id'))
+    const raw = reader.u256('collateral delta')
+    const collateralDelta = raw >= 1n << 255n ? raw - (1n << 256n) : raw
+    if (collateralDelta === 0n)
+      throw new Error('collateral delta must be nonzero')
+    return {
+      kind: 'adjustPositionCollateral',
+      clientActionId,
+      marketId,
+      collateralDelta,
+    }
+  }
   const scheduleId = bytesToHex(reader.take(32, 'schedule id'))
   if (tag === 0x06) {
     const authorizationExpiry = reader.u64('authorization expiry')
@@ -1156,6 +1223,7 @@ function exactWireRecordLength(
     7: 68,
     8: 60,
     9: 52,
+    10: 84,
   }
   if (tag === 6) {
     if (length < 80) throw new Error('truncated arm schedule record')
@@ -1182,6 +1250,7 @@ function exactWireRecordLength(
     return placeActionWork(
       readWireU16(bytes, offset + 84),
       wireRemainderCancel(bytes[offset + 53]!, bytes[offset + 54]!),
+      (bytes[offset + 56]! & 0x04) !== 0,
     )
   }
   if (tag === 2 || tag === 3) return cancelActionWork(1)
@@ -1191,6 +1260,7 @@ function exactWireRecordLength(
       placeActionWork(
         readWireU16(bytes, offset + 148),
         wireRemainderCancel(bytes[offset + 54]!, bytes[offset + 55]!),
+        (bytes[offset + 57]! & 0x04) !== 0,
       ),
     )
   }
@@ -1200,6 +1270,14 @@ function exactWireRecordLength(
   }
   if (tag === 8) {
     return scheduleActionWork(EXCHANGE_ACTION_V2_LIMITS.maxMarkets)
+  }
+  if (tag === 10) {
+    return {
+      ...EMPTY_WORK,
+      storageOperations: POSITION_COLLATERAL_STORAGE_OPS,
+      economicLogs: 1,
+      economicLogBytes: 256,
+    }
   }
   return { ...EMPTY_WORK, statefulScheduleRefinements: 1 }
 }

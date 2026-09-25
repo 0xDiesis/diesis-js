@@ -48,14 +48,15 @@ const ACTION_TAG: Readonly<Record<ExchangeActionKindV2, number>> = {
   renewCancelSchedule: 7,
   disarmCancelSchedule: 8,
   triggerCancelSchedule: 9,
+  adjustPositionCollateral: 10,
 }
-const ALL_ACTION_SCOPE_V2 = 0x3fen
+const ALL_ACTION_SCOPE_V2 = 0x7fen
 const UINT64_MAX = (1n << 64n) - 1n
 const UINT256_MAX = (1n << 256n) - 1n
 
 export type AuthorizeSessionKeyV2Parameters = {
   sessionKey: Address
-  /** Bits 1..=9 map exactly to the frozen DXA2 action tags. */
+  /** Bits 1..=10 map exactly to the DXA2 action tags. */
   actionScope: bigint
   /** Unix timestamp in seconds. Runtime additionally requires it to be future. */
   validUntil: bigint

@@ -101,3 +101,18 @@ export interface FillEstimate {
   fills: number
   slippageBps: number
 }
+/** Versioned canonical claim-transfer capability. Amounts are quote atomic-unit decimal strings. */
+export type PositionCollateralCapability = {
+  capabilityVersion: 1
+  active: boolean
+  eligible: boolean
+  user: import('viem').Address
+  marketId: import('viem').Hex
+  quoteToken: import('viem').Address
+  side: number | null
+  size: string | null
+  currentClaim: string | null
+  addableCollateral: string | null
+  withdrawableCollateral: string | null
+  unavailableReason: string | null
+}

@@ -719,7 +719,8 @@ describe('canonical exchange action V2 wire', () => {
 
   it('bounds IOC emission within max_log_bytes at the reservation boundary', () => {
     // Four IOC places at seven fills each: the corrected 2*fills + 2
-    // reservation totals 33792 log bytes, and its true emission equals the
+    // reservation totals 34816 log bytes including remainder-cancel events,
+    // and its true emission equals the
     // reservation, so the reserved total is what any log-byte ceiling checks.
     // The equivalent GTC batch reserves exactly 32640 (<= max_log_bytes).
     const iocPlace = (client: number): PlaceActionV2 => ({
@@ -745,7 +746,7 @@ describe('canonical exchange action V2 wire', () => {
     expect(gtc.totalLogBytes).toBeLessThanOrEqual(
       EXCHANGE_ACTION_V2_LIMITS.maxLogBytes,
     )
-    expect(ioc.totalLogBytes).toBe(33_792)
+    expect(ioc.totalLogBytes).toBe(34_816)
     expect(ioc.totalLogBytes).toBeGreaterThan(
       EXCHANGE_ACTION_V2_LIMITS.maxLogBytes,
     )

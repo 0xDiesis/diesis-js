@@ -19,6 +19,7 @@ import type {
   InsuranceFundStatus,
   FillEstimate,
   MarkPrice,
+  PositionCollateralCapability,
 } from './types.js'
 
 type FactoryFunctionName =
@@ -123,6 +124,10 @@ export type ExchangePublicActions = {
     getMarkets: () => Promise<MarketInfo[]>
     getMarket: (params: { marketId: Hex }) => Promise<MarketInfo>
     getAccount: (params: { address: Address }) => Promise<TradingAccount>
+    getPositionCollateral: (params: {
+      user: Address
+      marketId: Hex
+    }) => Promise<PositionCollateralCapability>
     getTrades: (params: { marketId: Hex; limit?: number }) => Promise<Trade[]>
     getFundingRates: (params: { marketId: Hex }) => Promise<FundingRateInfo>
     getMarkPrices: (params: { marketIds: Hex[] }) => Promise<MarkPrice[]>
@@ -185,6 +190,11 @@ export function exchangePublicActions<
         client.request({
           method: 'exchange_getAccount' as never,
           params: [params.address],
+        } as never),
+      getPositionCollateral: (params) =>
+        client.request({
+          method: 'exchange_getPositionCollateral' as never,
+          params: [params.user, params.marketId],
         } as never),
       getTrades: (params) =>
         client.request({
