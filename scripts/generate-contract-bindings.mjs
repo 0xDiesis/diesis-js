@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
   ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
-  : path.resolve(sdkRoot, '../../diesis/contracts')
+  : path.resolve(sdkRoot, '../../diesis-core/diesis/contracts')
 // ABI_TYPEGEN points at a specific abi-typegen binary; by default the one
 // installed in the contracts checkout is used.
 const typegen = process.env.ABI_TYPEGEN

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
   ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
-  : path.resolve(sdkRoot, '../../diesis/contracts')
+  : path.resolve(sdkRoot, '../../diesis-core/diesis/contracts')
 const upstreamAbiRoot = path.join(contractsRoot, 'src/abi')
 const destinationAbiRoot = path.join(sdkRoot, 'src/abi')
 const providers = ['viem', 'wagmi', 'ethers', 'web3js']
