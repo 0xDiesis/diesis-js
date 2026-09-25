@@ -8,7 +8,7 @@ export {
 export {
   BUNDLE_PLAN_TAG,
   BUNDLE_MEMBER_CONSENT_TYPES,
-  canonicalBundleV2,
+  canonicalBundle,
   consentDigest,
   consentDomain,
   planHash,
@@ -16,7 +16,7 @@ export {
   type BundleConsentAccount,
   type ConsentDigestParams,
 } from './plan.js'
-export { encodeReserveBundleV2, reservationValue } from './escrow.js'
+export { encodeReserveBundle, reservationValue } from './escrow.js'
 export {
   consentToWire,
   flagsFromWire,
@@ -35,12 +35,12 @@ export {
   type BundleLifecycle,
   type BundleManifestEntry,
   type BundleMember,
-  type BundleMemberConsentV2,
+  type BundleMemberConsent,
   type BundleMemberRole,
   type BundleOrdering,
   type BundlePaymentOutcome,
   type BundlePaymentTerms,
-  type BundlePlanV2,
+  type BundlePlan,
   type BundleStatus,
   type BundleStatusResult,
   type PreparedBundle,

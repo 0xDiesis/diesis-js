@@ -29,7 +29,7 @@ export interface BundleManifestEntry {
 }
 
 /** The ordered plan every member's detached consent commits to. */
-export interface BundlePlanV2 {
+export interface BundlePlan {
   chainId: number
   expiry: number | bigint
   flags: number
@@ -38,7 +38,7 @@ export interface BundlePlanV2 {
 }
 
 /** A member's detached EIP-712 consent over the plan hash and its own slot. */
-export interface BundleMemberConsentV2 {
+export interface BundleMemberConsent {
   planHash: Hex
   memberIndex: number
   transactionHash: Hex
@@ -55,7 +55,7 @@ export type BundleStatus =
   | 'dropped'
   | 'unknown'
 
-/** Canonical `BundleLifecycleV2` label surfaced by `diesis_getBundleStatus`. */
+/** Canonical `BundleLifecycle` label surfaced by `diesis_getBundleStatus`. */
 export type BundleLifecycle =
   | 'admitted'
   | 'disseminating'

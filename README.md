@@ -244,7 +244,7 @@ plan, and a separate payment covers the builder.
 **Details.** The flow has four steps. `prepareBundle` binds the plan and
 returns its hash. Each member signs an EIP-712 consent over the plan hash, its
 index, and its transaction hash. The payer signs a reservation transaction that
-calls `reserveBundleV2` on the escrow contract. `submitBundle` sends all of it.
+calls `reserveBundle` on the escrow contract. `submitBundle` sends all of it.
 `ExecutionFlags` control rollback. The payment transaction stays committed even
 when bundled work rolls back.
 
@@ -253,7 +253,7 @@ import { keccak256, type Hex } from 'viem'
 import {
   ExecutionFlags,
   signMemberConsent,
-  type BundlePlanV2,
+  type BundlePlan,
   type SubmitBundleMember,
 } from '@diesis/sdk'
 
@@ -275,7 +275,7 @@ const plan = {
       gasAllowance: 250_000,
     },
   ],
-} satisfies BundlePlanV2
+} satisfies BundlePlan
 
 const prepared = await publicClient.prepareBundle({ plan })
 const signature = await signMemberConsent(walletClient.account, {
@@ -285,7 +285,7 @@ const signature = await signMemberConsent(walletClient.account, {
   chainId: plan.chainId,
 })
 
-// Signed transaction that calls reserveBundleV2 for this plan and payment.
+// Signed transaction that calls reserveBundle for this plan and payment.
 const payment = '0x...signedReservationTransaction' as Hex
 const members: SubmitBundleMember[] = [
   {
@@ -311,7 +311,7 @@ const status = await publicClient.getBundleStatus({ planHash: result.planHash })
 console.log(status.members, status.includedBlockNumber, status.failure)
 ```
 
-`planHash`, `encodeReserveBundleV2`, and `reservationValue` compute the same
+`planHash`, `encodeReserveBundle`, and `reservationValue` compute the same
 values offline if you'd rather not call the node.
 
 ## Sponsor gas

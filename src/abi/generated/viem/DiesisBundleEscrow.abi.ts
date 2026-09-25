@@ -18,7 +18,7 @@ export const DiesisBundleEscrowAbi = [
           "type": "uint256"
         }
       ],
-      "name": "cancelBundleV2",
+      "name": "cancelBundle",
       "outputs": [
         {
           "internalType": "uint256",
@@ -76,7 +76,7 @@ export const DiesisBundleEscrowAbi = [
           "type": "address"
         }
       ],
-      "name": "finalizeBundleV2",
+      "name": "finalizeBundle",
       "outputs": [
         {
           "internalType": "uint256",
@@ -110,7 +110,7 @@ export const DiesisBundleEscrowAbi = [
           "type": "uint256"
         }
       ],
-      "name": "reclaimExpiredBundleV2",
+      "name": "reclaimExpiredBundle",
       "outputs": [
         {
           "internalType": "uint256",
@@ -215,7 +215,7 @@ export const DiesisBundleEscrowAbi = [
           "type": "uint64"
         }
       ],
-      "name": "reserveBundleV2",
+      "name": "reserveBundle",
       "outputs": [
         {
           "internalType": "uint256",

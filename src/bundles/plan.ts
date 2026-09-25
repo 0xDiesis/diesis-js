@@ -10,7 +10,7 @@ import {
 } from 'viem'
 
 import { DIESIS_BUNDLE_ESCROW } from '../addresses.js'
-import type { BundlePlanV2 } from './types.js'
+import type { BundlePlan } from './types.js'
 
 /**
  * Domain-separation tag prepended to the canonical plan bytes before hashing.
@@ -18,7 +18,7 @@ import type { BundlePlanV2 } from './types.js'
  * Mirrors the Rust `PLAN_HASH_TAG` in `crates/bundles/src/types.rs`. Changing
  * this string changes every plan hash and invalidates all consent.
  */
-export const BUNDLE_PLAN_TAG = 'DIESIS_BUNDLE_PLAN_V2'
+export const BUNDLE_PLAN_TAG = 'DIESIS_BUNDLE_PLAN_V1'
 
 function bytes32(value: Hex, name: string): Hex {
   const raw = value.startsWith('0x') ? value.slice(2) : value
@@ -35,14 +35,14 @@ function address20(value: Address, name: string): Hex {
 /**
  * The explicit, big-endian, length-prefixed canonical encoding of a plan.
  *
- * Field order and widths mirror the Rust `canonical_bundle_v2` exactly:
+ * Field order and widths mirror the Rust `canonical_bundle` exactly:
  * `chainId` (8), `expiry` (8), `flags` (2), `payer` (20),
  * `maximumBuilderPayment` (32), `refundGasPrice` (32), `maximumRefund` (32),
  * `escrowNonce` (32), member count (4), then each ordered
  * `(transactionHash[32], gasAllowance[8])` entry. The member index is implicit
  * in ordering and is not encoded.
  */
-export function canonicalBundleV2(plan: BundlePlanV2): Hex {
+export function canonicalBundle(plan: BundlePlan): Hex {
   const { payment } = plan
   const parts: Hex[] = [
     numberToHex(BigInt(plan.chainId), { size: 8 }),
@@ -65,12 +65,12 @@ export function canonicalBundleV2(plan: BundlePlanV2): Hex {
 /**
  * The domain-separated canonical plan hash every member signs consent over.
  *
- * `keccak256("DIESIS_BUNDLE_PLAN_V2" || canonicalBundleV2(plan))` — the exact
+ * `keccak256("DIESIS_BUNDLE_PLAN_V1" || canonicalBundle(plan))` — the exact
  * commitment the node recomputes at `diesis_submitBundle` admission.
  */
-export function planHash(plan: BundlePlanV2): Hex {
+export function planHash(plan: BundlePlan): Hex {
   return keccak256(
-    concat([stringToHex(BUNDLE_PLAN_TAG), canonicalBundleV2(plan)]),
+    concat([stringToHex(BUNDLE_PLAN_TAG), canonicalBundle(plan)]),
   )
 }
 
@@ -95,7 +95,7 @@ export function consentDomain(
 ): TypedDataDomain {
   return {
     name: 'Diesis Bundle',
-    version: '2',
+    version: '1',
     chainId: Number(chainId),
     verifyingContract,
   }

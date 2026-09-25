@@ -180,6 +180,55 @@ export const DiesisEpochAuthorityAbi = [
           "type": "uint64"
         }
       ],
+      "name": "epochIdentityHeader",
+      "outputs": [
+        {
+          "internalType": "uint16",
+          "name": "version",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint64",
+          "name": "chainId",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "genesisHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint64",
+          "name": "identityEpoch",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "activationBlockNumber",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "previousIdentityDigest",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "validatorCount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "epoch",
+          "type": "uint64"
+        }
+      ],
       "name": "epochIdentityMetadata",
       "outputs": [
         {
@@ -928,6 +977,35 @@ export const DiesisEpochAuthorityAbi = [
         }
       ],
       "name": "validatorWithdrawalReady",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "digest",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "signerBitmap",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "aggregateSignature",
+          "type": "bytes"
+        }
+      ],
+      "name": "verifyActiveRandomnessApproval",
       "outputs": [
         {
           "internalType": "bool",

@@ -3,12 +3,12 @@ import { ethers, type BigNumber, type BigNumberish, type BytesLike, type CallOve
 import { IDiesisBundleEscrowAbi } from '../../generated/viem/IDiesisBundleEscrow.abi.js';
 
 export interface IDiesisBundleEscrowContract extends ethers.Contract {
-  cancelBundleV2(payer: string, planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  cancelBundle(payer: string, planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   claimable(account: string, overrides?: CallOverrides): Promise<BigNumber>;
-  finalizeBundleV2(payer: string, planHash: BytesLike, escrowNonce: BigNumberish, skippedGas: BigNumberish, beneficiary: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  reclaimExpiredBundleV2(planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  finalizeBundle(payer: string, planHash: BytesLike, escrowNonce: BigNumberish, skippedGas: BigNumberish, beneficiary: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  reclaimExpiredBundle(planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   reservationOf(payer: string, planHash: BytesLike, escrowNonce: BigNumberish, overrides?: CallOverrides): Promise<[string, BigNumber, BigNumber, BigNumber, BigNumber, boolean] & { payer: string; builderPayment: BigNumber; refundGasPrice: BigNumber; maxRefund: BigNumber; expiry: BigNumber; settled: boolean }>;
-  reserveBundleV2(planHash: BytesLike, maximumBuilderPayment: BigNumberish, refundGasPrice: BigNumberish, maximumRefund: BigNumberish, escrowNonce: BigNumberish, expiry: BigNumberish, overrides?: PayableOverrides): Promise<ethers.ContractTransaction>;
+  reserveBundle(planHash: BytesLike, maximumBuilderPayment: BigNumberish, refundGasPrice: BigNumberish, maximumRefund: BigNumberish, escrowNonce: BigNumberish, expiry: BigNumberish, overrides?: PayableOverrides): Promise<ethers.ContractTransaction>;
   withdraw(overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     BundleCancelled(planHash?: BytesLike | null, escrowNonce?: BigNumberish | null, payer?: string | null): ethers.EventFilter;

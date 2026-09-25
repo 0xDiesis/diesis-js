@@ -23,12 +23,12 @@ type IDiesisBundleEscrowMethod<Mutability extends 'payable' | 'nonpayable', Outp
 };
 
 export interface IDiesisBundleEscrowMethods {
-  cancelBundleV2(payer: string, planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
+  cancelBundle(payer: string, planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
   claimable(account: string): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
-  finalizeBundleV2(payer: string, planHash: string, escrowNonce: Numbers, skippedGas: Numbers, beneficiary: string): IDiesisBundleEscrowMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; builderPaid: bigint; refunded: bigint; unearnedReserve: bigint; __length__: number }>;
-  reclaimExpiredBundleV2(planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
+  finalizeBundle(payer: string, planHash: string, escrowNonce: Numbers, skippedGas: Numbers, beneficiary: string): IDiesisBundleEscrowMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; builderPaid: bigint; refunded: bigint; unearnedReserve: bigint; __length__: number }>;
+  reclaimExpiredBundle(planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
   reservationOf(payer: string, planHash: string, escrowNonce: Numbers): IDiesisBundleEscrowMethod<'nonpayable', { payer: string; builderPayment: bigint; refundGasPrice: bigint; maxRefund: bigint; expiry: bigint; settled: boolean }>;
-  reserveBundleV2(planHash: string, maximumBuilderPayment: Numbers, refundGasPrice: Numbers, maximumRefund: Numbers, escrowNonce: Numbers, expiry: Numbers): IDiesisBundleEscrowMethod<'payable', bigint>;
+  reserveBundle(planHash: string, maximumBuilderPayment: Numbers, refundGasPrice: Numbers, maximumRefund: Numbers, escrowNonce: Numbers, expiry: Numbers): IDiesisBundleEscrowMethod<'payable', bigint>;
   withdraw(): IDiesisBundleEscrowMethod<'nonpayable', bigint>;
 }
 

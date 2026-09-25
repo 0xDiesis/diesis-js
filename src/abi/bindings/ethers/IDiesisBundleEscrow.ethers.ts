@@ -3,12 +3,12 @@ import { Contract, type AddressLike, type BaseContract, type BigNumberish, type 
 import { IDiesisBundleEscrowAbi } from '../../generated/viem/IDiesisBundleEscrow.abi.js';
 
 export interface IDiesisBundleEscrowMethods {
-  cancelBundleV2(payer: AddressLike, planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  cancelBundle(payer: AddressLike, planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   claimable(account: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
-  finalizeBundleV2(payer: AddressLike, planHash: BytesLike, escrowNonce: BigNumberish, skippedGas: BigNumberish, beneficiary: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  reclaimExpiredBundleV2(planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  finalizeBundle(payer: AddressLike, planHash: BytesLike, escrowNonce: BigNumberish, skippedGas: BigNumberish, beneficiary: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  reclaimExpiredBundle(planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   reservationOf(payer: AddressLike, planHash: BytesLike, escrowNonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<[string, bigint, bigint, bigint, bigint, boolean] & { payer: string; builderPayment: bigint; refundGasPrice: bigint; maxRefund: bigint; expiry: bigint; settled: boolean }>;
-  reserveBundleV2(planHash: BytesLike, maximumBuilderPayment: BigNumberish, refundGasPrice: BigNumberish, maximumRefund: BigNumberish, escrowNonce: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ContractTransactionResponse>;
+  reserveBundle(planHash: BytesLike, maximumBuilderPayment: BigNumberish, refundGasPrice: BigNumberish, maximumRefund: BigNumberish, escrowNonce: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ContractTransactionResponse>;
   withdraw(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   filters: {
     BundleCancelled(planHash?: BytesLike | null, escrowNonce?: BigNumberish | null, payer?: AddressLike | null): DeferredTopicFilter;

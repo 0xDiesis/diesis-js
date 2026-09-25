@@ -3,15 +3,15 @@ import { numberToHex, type Hex } from 'viem'
 import {
   ExecutionFlags,
   type BundleManifestEntry,
-  type BundleMemberConsentV2,
+  type BundleMemberConsent,
   type BundlePaymentTerms,
-  type BundlePlanV2,
+  type BundlePlan,
 } from './types.js'
 
 /**
- * Wire (JSON-RPC) serialization for Bundle V2 plans and consent.
+ * Wire (JSON-RPC) serialization for bundle plans and consent.
  *
- * The node deserializes `BundlePlanV2` with serde `rename_all = "camelCase"`.
+ * The node deserializes `BundlePlan` with serde `rename_all = "camelCase"`.
  * Two encoding caveats are reproduced here:
  *
  * - `flags` serialize as a string of set `ExecutionFlags` names joined by
@@ -99,8 +99,8 @@ export interface BundlePlanWire {
   orderedMembers: BundleManifestEntryWire[]
 }
 
-/** Serialize a `BundlePlanV2` to its camelCase JSON-RPC form. */
-export function planToWire(plan: BundlePlanV2): BundlePlanWire {
+/** Serialize a `BundlePlan` to its camelCase JSON-RPC form. */
+export function planToWire(plan: BundlePlan): BundlePlanWire {
   return {
     chainId: plan.chainId,
     expiry: Number(plan.expiry),
@@ -119,7 +119,7 @@ export interface BundleMemberConsentWire {
 }
 
 export function consentToWire(
-  consent: BundleMemberConsentV2,
+  consent: BundleMemberConsent,
 ): BundleMemberConsentWire {
   return {
     planHash: consent.planHash,

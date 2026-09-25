@@ -8,8 +8,8 @@ import {
 
 import { planToWire, consentToWire } from './wire.js'
 import type {
-  BundleMemberConsentV2,
-  BundlePlanV2,
+  BundleMemberConsent,
+  BundlePlan,
   BundleStatusResult,
   PreparedBundle,
   SubmitBundleResult,
@@ -18,11 +18,11 @@ import type {
 /** A submitted member: its raw signed transaction and detached consent. */
 export interface SubmitBundleMember {
   rawTransaction: Hex
-  consent: BundleMemberConsentV2
+  consent: BundleMemberConsent
 }
 
 export interface SubmitBundleInput {
-  plan: BundlePlanV2
+  plan: BundlePlan
   /** Raw RLP-encoded signed reservation/payment transaction. */
   payment: Hex
   members: SubmitBundleMember[]
@@ -30,11 +30,11 @@ export interface SubmitBundleInput {
 }
 
 export interface StealthBundleInput {
-  plan: BundlePlanV2
+  plan: BundlePlan
   planHash: Hex
   funding: Hex
   announcement: Hex
-  consent: BundleMemberConsentV2
+  consent: BundleMemberConsent
 }
 
 function rawBytes(value: Hex): number[] {
@@ -46,13 +46,13 @@ export type BundleActions = {
    * Submit the ordered plan and receive the canonical plan hash plus the
    * per-member EIP-712 digests each member signs to consent.
    */
-  prepareBundle: (params: { plan: BundlePlanV2 }) => Promise<PreparedBundle>
-  /** Submit a fully-signed V2 bundle (plan, reservation, ordered members). */
+  prepareBundle: (params: { plan: BundlePlan }) => Promise<PreparedBundle>
+  /** Submit a fully-signed bundle (plan, reservation, ordered members). */
   submitBundle: (params: SubmitBundleInput) => Promise<SubmitBundleResult>
   getBundleStatus: (params: { planHash: Hex }) => Promise<BundleStatusResult>
   /**
    * Submit a stealth bundle: the node assembles a single-member
-   * `HALT_ON_INVALID` Bundle V2 from the funding + announcement and the
+   * `HALT_ON_INVALID` bundle from the funding + announcement and the
    * announcement signer's detached consent.
    */
   sendStealthBundle: (params: StealthBundleInput) => Promise<SubmitBundleResult>

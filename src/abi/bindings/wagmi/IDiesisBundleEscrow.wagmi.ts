@@ -25,7 +25,7 @@ export function useIDiesisBundleEscrowReservationOf(address: Address, args: { pa
 
 // ── Write hooks ────────────────────────────────────────────────────────
 
-export function useIDiesisBundleEscrowCancelBundleV2(
+export function useIDiesisBundleEscrowCancelBundle(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { payer: `0x${string}`, planHash: `0x${string}`, escrowNonce: bigint }) => void;
@@ -37,13 +37,13 @@ export function useIDiesisBundleEscrowCancelBundleV2(
       writeContract({
         address,
         abi: IDiesisBundleEscrowAbi,
-        functionName: 'cancelBundleV2',
+        functionName: 'cancelBundle',
         args: [args.payer, args.planHash, args.escrowNonce],
       }),
   };
 }
 
-export function useIDiesisBundleEscrowFinalizeBundleV2(
+export function useIDiesisBundleEscrowFinalizeBundle(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { payer: `0x${string}`, planHash: `0x${string}`, escrowNonce: bigint, skippedGas: bigint, beneficiary: `0x${string}` }) => void;
@@ -55,13 +55,13 @@ export function useIDiesisBundleEscrowFinalizeBundleV2(
       writeContract({
         address,
         abi: IDiesisBundleEscrowAbi,
-        functionName: 'finalizeBundleV2',
+        functionName: 'finalizeBundle',
         args: [args.payer, args.planHash, args.escrowNonce, args.skippedGas, args.beneficiary],
       }),
   };
 }
 
-export function useIDiesisBundleEscrowReclaimExpiredBundleV2(
+export function useIDiesisBundleEscrowReclaimExpiredBundle(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { planHash: `0x${string}`, escrowNonce: bigint }) => void;
@@ -73,13 +73,13 @@ export function useIDiesisBundleEscrowReclaimExpiredBundleV2(
       writeContract({
         address,
         abi: IDiesisBundleEscrowAbi,
-        functionName: 'reclaimExpiredBundleV2',
+        functionName: 'reclaimExpiredBundle',
         args: [args.planHash, args.escrowNonce],
       }),
   };
 }
 
-export function useIDiesisBundleEscrowReserveBundleV2(
+export function useIDiesisBundleEscrowReserveBundle(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { planHash: `0x${string}`, maximumBuilderPayment: bigint, refundGasPrice: bigint, maximumRefund: bigint, escrowNonce: bigint, expiry: bigint }, options?: { value?: bigint }) => void;
@@ -91,7 +91,7 @@ export function useIDiesisBundleEscrowReserveBundleV2(
       writeContract({
         address,
         abi: IDiesisBundleEscrowAbi,
-        functionName: 'reserveBundleV2',
+        functionName: 'reserveBundle',
         args: [args.planHash, args.maximumBuilderPayment, args.refundGasPrice, args.maximumRefund, args.escrowNonce, args.expiry],
         value: options?.value,
       }),

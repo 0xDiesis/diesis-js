@@ -17,7 +17,7 @@ export function getIDiesisBundleEscrowContract<TClient extends Client>(
  * @param escrowNonce Reservation nonce.
  * @returns returned Full amount credited to the payer.
  */
-export type IDiesisBundleEscrowCancelBundleV2Params = {
+export type IDiesisBundleEscrowCancelBundleParams = {
   payer: `0x${string}`;
   planHash: `0x${string}`;
   escrowNonce: bigint;
@@ -35,7 +35,7 @@ export type IDiesisBundleEscrowCancelBundleV2Params = {
  * @returns refunded Capped skipped-work refund credited to the payer.
  * @returns unearnedReserve Unused refund reserve credited to the payer.
  */
-export type IDiesisBundleEscrowFinalizeBundleV2Params = {
+export type IDiesisBundleEscrowFinalizeBundleParams = {
   payer: `0x${string}`;
   planHash: `0x${string}`;
   escrowNonce: bigint;
@@ -50,7 +50,7 @@ export type IDiesisBundleEscrowFinalizeBundleV2Params = {
  * @param escrowNonce Reservation nonce.
  * @returns returned Full amount credited to the payer.
  */
-export type IDiesisBundleEscrowReclaimExpiredBundleV2Params = {
+export type IDiesisBundleEscrowReclaimExpiredBundleParams = {
   planHash: `0x${string}`;
   escrowNonce: bigint;
 };
@@ -66,7 +66,7 @@ export type IDiesisBundleEscrowReclaimExpiredBundleV2Params = {
  * @param expiry Committed plan expiry (unix seconds).
  * @returns reservedTotal The total native wei locked.
  */
-export type IDiesisBundleEscrowReserveBundleV2Params = {
+export type IDiesisBundleEscrowReserveBundleParams = {
   planHash: `0x${string}`;
   maximumBuilderPayment: bigint;
   refundGasPrice: bigint;
