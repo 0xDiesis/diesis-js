@@ -25,8 +25,10 @@ export {
   diesisPublicActions,
   type DiesisPublicActions,
   type RuntimeCapabilities,
+  type PipelineStatus,
   type TransactionStatus,
   type TransactionLifecycle,
+  type LifecycleStatus,
   type ExchangeActionStatus,
 } from './actions/public.js'
 export {

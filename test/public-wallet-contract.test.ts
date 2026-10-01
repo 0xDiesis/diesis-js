@@ -12,11 +12,9 @@ function client() {
   }
 }
 describe('node 44bed public and wallet wire contracts', () => {
-  it('exposes only real node finality reads with exact hash parameters', async () => {
+  it('exposes actual node observation reads with exact hash parameters', async () => {
     const transport = client()
     const actions = diesisPublicActions(transport as never)
-    expect('getPipelineStatus' in actions).toBe(false)
-    expect('getBlockWitness' in actions).toBe(false)
     await actions.getRuntimeCapabilities()
     await actions.getTransactionStatus({ hash })
     await actions.getTransactionLifecycle({ hash })
@@ -92,4 +90,88 @@ describe('node 44bed public and wallet wire contracts', () => {
       params: [9007199254740991],
     })
   })
+})
+
+// Source: node 44bed pipeline_status.rs and witness.rs, registered in node/run.rs.
+describe('pipeline and witness node wire contracts', () => {
+  it('returns all eight camelCase pipeline fields as JSON numbers and mode', async () => {
+    const transport = client()
+    const status = {
+      consensusHead: 18,
+      executionHead: 16,
+      publicationHead: 15,
+      executionLag: 2,
+      publicationLag: 1,
+      orderedQueueDepth: 2,
+      executedQueueDepth: 1,
+      backpressureMode: 'throttle' as const,
+    }
+    transport.request.mockResolvedValue(status as never)
+    await expect(
+      diesisPublicActions(transport as never).getPipelineStatus(),
+    ).resolves.toEqual(status)
+    expect(transport.request).toHaveBeenCalledWith({
+      method: 'diesis_getPipelineStatus',
+      params: [],
+    })
+  })
+  it('returns hex witness bytes or null, without constructing a witness DTO', async () => {
+    const transport = client()
+    const actions = diesisPublicActions(transport as never)
+    transport.request
+      .mockResolvedValueOnce('0x00aabb' as never)
+      .mockResolvedValueOnce(null as never)
+    await expect(actions.getBlockWitness({ blockHash: hash })).resolves.toBe(
+      '0x00aabb',
+    )
+    await expect(
+      actions.getBlockWitness({ blockHash: hash }),
+    ).resolves.toBeNull()
+    expect(transport.request).toHaveBeenCalledWith({
+      method: 'diesis_getBlockWitness',
+      params: [hash],
+    })
+  })
+  it('rejects malformed B256 inputs before transport', async () => {
+    const transport = client()
+    for (const blockHash of ['0x12', hash + '00', '0x' + 'zz'.repeat(32), null])
+      await expect(
+        diesisPublicActions(transport as never).getBlockWitness({
+          blockHash: blockHash as never,
+        }),
+      ).rejects.toThrow('B256')
+    expect(transport.request).not.toHaveBeenCalled()
+  })
+})
+it('rejects unsafe pipeline numbers, invented modes and witness objects', async () => {
+  const transport = client(),
+    actions = diesisPublicActions(transport as never)
+  const status = {
+    consensusHead: 18,
+    executionHead: 16,
+    publicationHead: 15,
+    executionLag: 2,
+    publicationLag: 1,
+    orderedQueueDepth: 2,
+    executedQueueDepth: 1,
+    backpressureMode: 'healthy',
+  }
+  for (const invalid of [
+    { ...status, consensusHead: Number.MAX_SAFE_INTEGER + 1 },
+    { ...status, orderedQueueDepth: -1 },
+    { ...status, backpressureMode: 'paused' },
+  ]) {
+    transport.request.mockResolvedValueOnce(invalid as never)
+    await expect(actions.getPipelineStatus()).rejects.toThrow()
+  }
+  for (const invalid of [
+    { blockHash: hash, witness: '0x00' },
+    '0x123',
+    undefined,
+  ]) {
+    transport.request.mockResolvedValueOnce(invalid as never)
+    await expect(actions.getBlockWitness({ blockHash: hash })).rejects.toThrow(
+      'bytes',
+    )
+  }
 })

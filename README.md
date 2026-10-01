@@ -523,9 +523,13 @@ modes and witness policy. `getTransactionStatus` returns `status`, numeric
 return only `{ status: 'unknown', level: -1 }`. `getTransactionLifecycle` returns
 branch-aware lineage, including orphaned and replaced publication episodes.
 These observations do not grant execution authority or establish certified finality.
+The legacy status `publicationStatus` and `publishedAtMs` derive from executed
+level; use the lifecycle `published` transition to observe actual publication.
 
 ```typescript
 const runtime = await publicClient.getRuntimeCapabilities()
+const pipeline = await publicClient.getPipelineStatus()
+const witnessBytes = await publicClient.getBlockWitness({ blockHash })
 const tx = await publicClient.getTransactionStatus({ hash: evmTransactionHash })
 const lineage = await publicClient.getTransactionLifecycle({
   hash: evmTransactionHash,
@@ -537,15 +541,20 @@ const relay = await publicClient.getExchangeActionStatus({
 
 The interfaces follow node commit `44bed910b4fd18c29e287ecd49a12982a90ac5bb`:
 `crates/rpc/src/server/{mod.rs,handler/api.rs,capabilities.rs}`,
-`tx_lifecycle.rs` and `exchange_relay.rs`. The nonexistent pipeline-status and
-block-witness methods have been removed. RPC `u64` fields are JSON numbers;
+`tx_lifecycle.rs`, `exchange_relay.rs`, `pipeline_status.rs` and `witness.rs`,
+with pipeline and witness registration in `crates/node/src/run.rs`. Pipeline
+status preserves eight camelCase fields and `backpressureMode` of `healthy` or
+`throttle`. Block witness returns serialized hex bytes or `null`; these bytes
+are unverified and do not establish a valid proof or certified commitment.
+Availability depends on the node RPC configuration. RPC `u64` fields are JSON numbers;
 values beyond JavaScript's safe integer range need a lossless JSON transport.
 Block-number and consensus-round inputs reject values that ordinary JSON
 cannot represent exactly.
 
 `walletClient.sendTransactionSync(serializedSignedTransaction)` sends signed
 transaction bytes to `diesis_sendRawTransactionSync` and returns the node's
-EIP-7966 receipt directly. It does not sign an unsigned object. An EVM transaction
+EIP-7966 receipt directly. It records inclusion observed by that node, not
+certified finality, and that block may still be orphaned. It does not sign an unsigned object. An EVM transaction
 hash, exchange relay action hash, ERC-4337 UserOperation hash and bundle execution
 plan hash identify different objects: query the corresponding status surface.
 

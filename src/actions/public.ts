@@ -27,6 +27,17 @@ export interface RuntimeCapabilities {
   checkpointReplayMode: string
   blockSequentialFallbackTotal: number
 }
+/** Node 44bed pipeline_status.rs: serde camelCase, JSON integer fields. */
+export interface PipelineStatus {
+  consensusHead: number
+  executionHead: number
+  publicationHead: number
+  executionLag: number
+  publicationLag: number
+  orderedQueueDepth: number
+  executedQueueDepth: number
+  backpressureMode: 'healthy' | 'throttle'
+}
 export type TransactionStatus =
   | { status: 'unknown'; level: -1 }
   | {
@@ -37,6 +48,7 @@ export type TransactionStatus =
       preconfirmedAtMs: number | null
       committedAtMs: number | null
       executedAtMs: number | null
+      /** Legacy status derives this from executed level; use lifecycle for actual publication. */
       publicationStatus: 'published' | null
       publishedAtMs: number | null
       consensusRound: number | null
@@ -100,6 +112,9 @@ export type DiesisPublicActions = ExchangePublicActions &
   BundleActions &
   PatronageActions & {
     privacy: PrivacyReadActions['privacy']
+    getPipelineStatus: () => Promise<PipelineStatus>
+    /** Serialized witness bytes; null means no witness is available. */
+    getBlockWitness: (params: { blockHash: Hex }) => Promise<Hex | null>
     getRules: () => Promise<NetworkRules>
     getRuntimeCapabilities: () => Promise<RuntimeCapabilities>
     getTransactionLifecycle: (params: {
@@ -130,6 +145,31 @@ export function diesisPublicActions<
     ...bundles,
     ...patronage,
     ...privacy,
+    getPipelineStatus: async () => {
+      const response = await client.request({
+        method: 'diesis_getPipelineStatus' as never,
+        params: [],
+      } as never)
+      return pipelineStatus(response)
+    },
+    getBlockWitness: async (params) => {
+      if (
+        typeof params?.blockHash !== 'string' ||
+        !/^0x[0-9a-fA-F]{64}$/.test(params.blockHash)
+      )
+        throw new Error('Block hash must be a canonical B256 hex value')
+      const response: unknown = await client.request({
+        method: 'diesis_getBlockWitness' as never,
+        params: [params.blockHash],
+      } as never)
+      if (response === null) return null
+      if (
+        typeof response !== 'string' ||
+        !/^0x(?:[0-9a-fA-F]{2})*$/.test(response)
+      )
+        throw new Error('Invalid block witness bytes response')
+      return response as Hex
+    },
     getRules: () =>
       client.request({
         method: 'diesis_getRules' as never,
@@ -176,4 +216,33 @@ function safeRpcInteger(value: bigint): number {
   )
     throw new Error('RPC integer cannot be represented safely in JSON')
   return Number(value)
+}
+
+function pipelineStatus(value: unknown): PipelineStatus {
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('Invalid pipeline status response')
+  const record = value as Record<string, unknown>
+  for (const field of [
+    'consensusHead',
+    'executionHead',
+    'publicationHead',
+    'executionLag',
+    'publicationLag',
+    'orderedQueueDepth',
+    'executedQueueDepth',
+  ])
+    if (
+      typeof record[field] !== 'number' ||
+      !Number.isSafeInteger(record[field]) ||
+      (record[field] as number) < 0
+    )
+      throw new Error(
+        'Pipeline status integer cannot be represented safely in JSON',
+      )
+  if (
+    record.backpressureMode !== 'healthy' &&
+    record.backpressureMode !== 'throttle'
+  )
+    throw new Error('Invalid pipeline backpressure mode')
+  return value as PipelineStatus
 }
