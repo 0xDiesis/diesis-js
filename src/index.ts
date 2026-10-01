@@ -24,10 +24,15 @@ export type { GenesisPrecompileName, NameServiceRecordType } from './names.js'
 export {
   diesisPublicActions,
   type DiesisPublicActions,
+  type RuntimeCapabilities,
+  type TransactionStatus,
+  type TransactionLifecycle,
+  type ExchangeActionStatus,
 } from './actions/public.js'
 export {
   diesisWalletActions,
   type DiesisWalletActions,
+  type SyncTransactionReceipt,
 } from './actions/wallet.js'
 
 // Exchange
@@ -159,3 +164,5 @@ export type {
 // generation by construction. `export *` is static, so tree-shaking and the
 // emitted declarations are unaffected.
 export * from './abi/index.js'
+
+export * from './exchange/actions-v2-results.js'

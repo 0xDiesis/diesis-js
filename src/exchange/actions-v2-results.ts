@@ -122,7 +122,7 @@ export function computeExchangeResultHashV2(
     if (outcome.actionIndex !== index) {
       throw new Error('noncanonical outcome index')
     }
-    if (outcome.actionTag < 1 || outcome.actionTag > 9) {
+    if (outcome.actionTag < 1 || outcome.actionTag > 10) {
       throw new Error('unknown action tag')
     }
     writer.u16(outcome.actionIndex, 'action index')

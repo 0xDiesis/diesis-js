@@ -27,11 +27,9 @@ import {
 
 export type DiesisWalletActions = ExchangeWalletActions &
   PrivacyWriteActions & {
-    sendTransactionSync: (params: {
-      to: `0x${string}`
-      value?: bigint
-      data?: Hex
-    }) => Promise<{ hash: Hex; receipt: Record<string, unknown> }>
+    sendTransactionSync: (
+      serializedTransactionHex: Hex,
+    ) => Promise<SyncTransactionReceipt>
     /**
      * Nonblocking gated raw submission: applies the reserved-cancel admission
      * gate then submits the serialized transaction to the pool, returning the
@@ -64,11 +62,19 @@ export function diesisWalletActions<
   return {
     ...exchange,
     ...privacy,
-    sendTransactionSync: (params) =>
-      client.request({
+    sendTransactionSync: async (serializedTransactionHex) => {
+      if (
+        typeof serializedTransactionHex !== 'string' ||
+        !/^0x(?:[0-9a-fA-F]{2})+$/.test(serializedTransactionHex)
+      )
+        throw new Error(
+          'Sync submission requires serialized signed transaction bytes',
+        )
+      return client.request({
         method: 'diesis_sendRawTransactionSync' as never,
-        params: [params],
-      } as never),
+        params: [serializedTransactionHex],
+      } as never)
+    },
     sendRawTransactionGated: (serializedTransactionHex) =>
       client.request({
         method: 'diesis_sendRawTransaction' as never,
@@ -84,4 +90,30 @@ export function diesisWalletActions<
         params: [params.intent],
       } as never),
   }
+}
+
+/** Node EIP-7966 response, not a fabricated hash/receipt wrapper. */
+export interface SyncTransactionReceipt {
+  transactionHash: Hash
+  transactionIndex: number
+  blockHash: Hex
+  blockNumber: number
+  from: Address
+  to: Address | null
+  gasUsed: number
+  effectiveGasPrice: Hex
+  contractAddress: Address | null
+  logs: Array<{
+    address: Address
+    topics: Hex[]
+    data: Hex
+    blockHash: Hex
+    blockNumber: number
+    transactionHash: Hash
+    transactionIndex: number
+    logIndex: number
+  }>
+  logsBloom: Hex
+  type: number
+  status: number
 }

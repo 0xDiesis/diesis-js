@@ -517,19 +517,41 @@ const pool = await publicClient.privacy.getShieldedPoolState()
 
 ## Check node status
 
-**In short.** You can ask the node how far along it is and where your
-transaction is.
-
-**Details.** `getPipelineStatus` reports the consensus, execution, and
-publication heads, the lag between them, and whether back-pressure is on.
-`getTransactionStatus` returns one of `submitted`, `preconfirmed`,
-`committed`, `executed`, or `unknown`, with a timestamp for each stage it
-has reached.
+`getRuntimeCapabilities` returns the node's configured and effective execution
+modes and witness policy. `getTransactionStatus` returns `status`, numeric
+`level`, `advisory` and stage timestamps such as `committedAtMs`; unknown hashes
+return only `{ status: 'unknown', level: -1 }`. `getTransactionLifecycle` returns
+branch-aware lineage, including orphaned and replaced publication episodes.
+These observations do not grant execution authority or establish certified finality.
 
 ```typescript
-const pipeline = await publicClient.getPipelineStatus()
-const tx = await publicClient.getTransactionStatus({ hash: '0x...' })
+const runtime = await publicClient.getRuntimeCapabilities()
+const tx = await publicClient.getTransactionStatus({ hash: evmTransactionHash })
+const lineage = await publicClient.getTransactionLifecycle({
+  hash: evmTransactionHash,
+})
+const relay = await publicClient.getExchangeActionStatus({
+  actionHash: relayActionHash,
+})
 ```
+
+The interfaces follow node commit `44bed910b4fd18c29e287ecd49a12982a90ac5bb`:
+`crates/rpc/src/server/{mod.rs,handler/api.rs,capabilities.rs}`,
+`tx_lifecycle.rs` and `exchange_relay.rs`. The nonexistent pipeline-status and
+block-witness methods have been removed. RPC `u64` fields are JSON numbers;
+values beyond JavaScript's safe integer range need a lossless JSON transport.
+Block-number and consensus-round inputs reject values that ordinary JSON
+cannot represent exactly.
+
+`walletClient.sendTransactionSync(serializedSignedTransaction)` sends signed
+transaction bytes to `diesis_sendRawTransactionSync` and returns the node's
+EIP-7966 receipt directly. It does not sign an unsigned object. An EVM transaction
+hash, exchange relay action hash, ERC-4337 UserOperation hash and bundle execution
+plan hash identify different objects: query the corresponding status surface.
+
+The public `@diesis/sdk/exchange/results` subpath exports V2 result decoding,
+ordered outcome commitment hashing, reason codes and outcome types. A decoded
+result tuple is a count and commitment, not proof of execution authority.
 
 ## Addresses and ABIs
 

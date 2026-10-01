@@ -74,6 +74,10 @@
     "./abi/web3js": {
       "import": "./dist/abi/bindings/web3js/index.js",
       "types": "./dist/abi/bindings/web3js/index.d.ts"
+    },
+    "./exchange/results": {
+      "import": "./dist/exchange/actions-v2-results.js",
+      "types": "./dist/exchange/actions-v2-results.d.ts"
     }
   },
   "scripts": {
