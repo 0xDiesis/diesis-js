@@ -1,12 +1,29 @@
 import { describe, expect, it } from 'vitest'
 
+import { IDiesisSettlementAbi } from '../src/abi/index.js'
+
 import {
+  ExchangeSessionKeysV2Abi,
   exchangeActionScopeV2,
   prepareAuthorizeSessionKeyV2Transaction,
   prepareRevokeSessionKeyV2Transaction,
 } from '../src/exchange/index.js'
 
 describe('canonical exchange session-key V2 transactions', () => {
+  it('uses the generated settlement function entries', () => {
+    expect(ExchangeSessionKeysV2Abi).toHaveLength(2)
+    expect(ExchangeSessionKeysV2Abi[0]).toBe(
+      IDiesisSettlementAbi.find(
+        (item) => item.type === 'function' && item.name === 'authorizeSessionKeyV2',
+      ),
+    )
+    expect(ExchangeSessionKeysV2Abi[1]).toBe(
+      IDiesisSettlementAbi.find(
+        (item) => item.type === 'function' && item.name === 'revokeSessionKeyV2',
+      ),
+    )
+  })
+
   it('matches the Task 6 frozen settlement ABI exactly', () => {
     const sessionKey = '0x2222222222222222222222222222222222222222'
     const actionScope = exchangeActionScopeV2([

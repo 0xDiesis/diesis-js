@@ -7,33 +7,21 @@ import {
 } from 'viem'
 
 import { DIESIS_SETTLEMENT } from '../addresses.js'
+import { IDiesisSettlementAbi } from '../abi/index.js'
+import type {
+  IDiesisSettlementAuthorizeSessionKeyV2Params,
+  IDiesisSettlementRevokeSessionKeyV2Params,
+} from '../abi/bindings/viem/index.js'
 import type { ExchangeActionV2 } from './actions-v2.js'
 
-/**
- * Frozen by `diesis-contracts` commit db8c45f. Keep this local until that
- * contracts child is merged and the SDK dependency is regenerated from it.
- */
+/** Settlement function definitions come from the generated contract ABI. */
 export const ExchangeSessionKeysV2Abi = [
-  {
-    type: 'function',
-    name: 'authorizeSessionKeyV2',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'sessionKey', type: 'address' },
-      { name: 'actionScope', type: 'uint256' },
-      { name: 'validUntil', type: 'uint64' },
-      { name: 'maxNotionalOrSpend', type: 'uint256' },
-      { name: 'allowedMarketsMask', type: 'bytes32' },
-    ],
-    outputs: [{ name: 'generation', type: 'uint64' }],
-  },
-  {
-    type: 'function',
-    name: 'revokeSessionKeyV2',
-    stateMutability: 'nonpayable',
-    inputs: [{ name: 'sessionKey', type: 'address' }],
-    outputs: [{ name: 'generation', type: 'uint64' }],
-  },
+  IDiesisSettlementAbi.find(
+    (item) => item.type === 'function' && item.name === 'authorizeSessionKeyV2',
+  )!,
+  IDiesisSettlementAbi.find(
+    (item) => item.type === 'function' && item.name === 'revokeSessionKeyV2',
+  )!,
 ] as const
 
 export type ExchangeActionKindV2 = ExchangeActionV2['kind']
@@ -54,19 +42,11 @@ const ALL_ACTION_SCOPE_V2 = 0x7fen
 const UINT64_MAX = (1n << 64n) - 1n
 const UINT256_MAX = (1n << 256n) - 1n
 
-export type AuthorizeSessionKeyV2Parameters = {
-  sessionKey: Address
-  /** Bits 1..=10 map exactly to the DXA2 action tags. */
-  actionScope: bigint
-  /** Unix timestamp in seconds. Runtime additionally requires it to be future. */
-  validUntil: bigint
-  /** Zero means uncapped. */
-  maxNotionalOrSpend: bigint
-  /** Zero means no markets; all ones is the explicit all-markets sentinel. */
-  allowedMarketsMask: Hex
-}
+export type AuthorizeSessionKeyV2Parameters =
+  IDiesisSettlementAuthorizeSessionKeyV2Params
 
-export type RevokeSessionKeyV2Parameters = { sessionKey: Address }
+export type RevokeSessionKeyV2Parameters =
+  IDiesisSettlementRevokeSessionKeyV2Params
 
 /** Construct the canonical action-tag bitmap for one session authorization. */
 export function exchangeActionScopeV2(

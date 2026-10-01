@@ -100,23 +100,29 @@ type, so you can compute it offline with `marketId`.
 ```typescript
 import { marketId, MarketType, Side } from '@diesis/sdk'
 
-const markets = await publicClient.exchange.getMarkets()
+const marketSnapshot = await publicClient.exchange.getMarkets()
+const market = marketSnapshot.data[0]
+if (!market) throw new Error('No markets are available at this indexed block')
 
 const book = await publicClient.exchange.getOrderBook({
-  marketId: markets[0].marketId,
+  marketId: market.marketId,
   depth: 20,
 })
 
 const account = await publicClient.exchange.getAccount({ address: '0x...' })
 
 const estimate = await publicClient.exchange.estimateFill({
-  marketId: markets[0].marketId,
+  marketId: market.marketId,
   side: Side.Buy,
   amount: 1_000000000000000000n,
 })
 
 const id = marketId(baseToken, quoteToken, MarketType.Spot)
 ```
+
+Market, book, account, trade and fill-estimate snapshots carry `.data` plus
+`blockNumber`, `blockHash` and `indexDigest`. Retain those fields when comparing
+indexed results. `getMarket` returns `null` when the market is absent.
 
 Other reads on `publicClient.exchange` include `getMarket`, `getTrades`,
 `getFundingRates`, `getMarkPrices`, and `getInsuranceFund`.
@@ -679,6 +685,7 @@ export ABI_TYPEGEN=/absolute/path/verified/abi-typegen
 pnpm codegen:check # reproduce without changing source
 pnpm codegen       # regenerate the 45 ABIs and five wrapper targets
 pnpm build         # emit JavaScript and declarations
+pnpm test:consumer # check built package declarations and Exchange migration examples
 ```
 
 The generator must be the independently verified raw abi-typegen 0.7.0 executable.

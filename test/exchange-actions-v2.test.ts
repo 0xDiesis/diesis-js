@@ -3,12 +3,15 @@ import { readFile } from 'node:fs/promises'
 import {
   bytesToHex,
   createWalletClient,
+  hexToBytes,
   custom,
   keccak256,
   type Hex,
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
+
+import type { CancelReplaceActionV2 } from '../src/exchange/actions-v2.js'
 
 import {
   computeExchangeResultHashV2,
@@ -79,6 +82,7 @@ const place = (clientByte = 1): PlaceActionV2 => ({
   timeInForce: { kind: 'gtc' },
   postOnly: false,
   reduceOnly: false,
+  pricingVersion: 0,
   marginType: 'cross',
   priceTicks: 100n,
   quantityLots: 5n,
@@ -134,6 +138,7 @@ const canonicalBatches = (): Readonly<
           replacementTimeInForce: { kind: 'gtc' },
           replacementPostOnly: false,
           replacementReduceOnly: false,
+          replacementPricingVersion: 0,
           replacementMarginType: 'cross',
           replacementPriceTicks: 101n,
           replacementQuantityLots: 3n,
@@ -913,6 +918,163 @@ describe('canonical exchange action V2 wire', () => {
     })
     expect(() => decodeExchangeActionBatchV2(`${encoded}00`)).toThrow(
       /trailing bytes/,
+    )
+  })
+})
+
+// Pricing changes only flags bit 0x04, preserving all record lengths and option bytes.
+describe('signed DXA2 pricing version', () => {
+  const replacement = (): CancelReplaceActionV2 => ({
+    ...(canonicalBatches().continue_mixed_ordering!
+      .actions[4] as CancelReplaceActionV2),
+  })
+  const encodeSingle = (action: PlaceActionV2 | CancelReplaceActionV2): Hex =>
+    encodeExchangeActionBatchV2({ atomicity: 'atomicAll', actions: [action] })
+
+  it('keeps omitted and explicit zero place bytes equal to the legacy fixture', () => {
+    const original = canonicalBatches().atomic_spot_gtc_limit!
+      .actions[0] as PlaceActionV2
+    const { pricingVersion: _version, ...omitted } = original
+    const encoded = encodeSingle(omitted)
+    expect(encoded).toBe(hex(vector('atomic_spot_gtc_limit').encoded_hex))
+    expect(encodeSingle({ ...omitted, pricingVersion: 0 })).toBe(encoded)
+    expect(decodeExchangeActionBatchV2(encoded).actions[0]).toMatchObject({
+      pricingVersion: 0,
+    })
+  })
+
+  it('keeps omitted and explicit zero replacement bytes identical', () => {
+    const { replacementPricingVersion: _version, ...omitted } = replacement()
+    const encoded = encodeSingle(omitted)
+    expect(encodeSingle({ ...omitted, replacementPricingVersion: 0 })).toBe(
+      encoded,
+    )
+    expect(decodeExchangeActionBatchV2(encoded).actions[0]).toMatchObject({
+      replacementPricingVersion: 0,
+    })
+  })
+
+  it.each(['place', 'replacement'] as const)(
+    'refuses prospective %s pricing before transaction preparation or signing',
+    (kind) => {
+      const action =
+        kind === 'place'
+          ? { ...place(), pricingVersion: 1 as const }
+          : { ...replacement(), replacementPricingVersion: 1 as const }
+      const batch: ExchangeActionBatchV2 = {
+        atomicity: 'atomicAll',
+        actions: [action],
+      }
+      // The wire codec remains available for independent future-native fixtures.
+      expect(encodeExchangeActionBatchV2(batch)).toMatch(/^0x44584132/)
+      expect(() =>
+        prepareExchangeActionsV2Transaction({ book: 'perpetual', batch }),
+      ).toThrow('Pricing version 1 requires qualified native admission')
+      let signatures = 0
+      const account = {
+        signTransaction: async () => {
+          signatures += 1
+          return '0x00' as Hex
+        },
+      }
+      expect(() =>
+        signExchangeActionsV2Transaction(account, {
+          book: 'perpetual',
+          batch,
+          transaction: {
+            chainId: 1980,
+            nonce: 7,
+            gas: 500_000n,
+            maxFeePerGas: 100n,
+            maxPriorityFeePerGas: 1n,
+          },
+        }),
+      ).toThrow('Pricing version 1 requires qualified native admission')
+      expect(signatures).toBe(0)
+    },
+  )
+
+  it('sets version 1 only at place flags offset 55 and round-trips it', () => {
+    const legacy = hexToBytes(encodeSingle(place()))
+    const priced = {
+      ...place(),
+      pricingVersion: 1 as const,
+      reduceOnly: true,
+      postOnly: true,
+      maxFills: 0,
+      maxPriceLevels: 0,
+    }
+    const expected = hexToBytes(encodeSingle({ ...priced, pricingVersion: 0 }))
+    expected[12 + 55] = 0x07
+    const encoded = encodeSingle(priced)
+    expect(hexToBytes(encoded)).toEqual(expected)
+    expect(hexToBytes(encoded).length).toBe(legacy.length)
+    expect(decodeExchangeActionBatchV2(encoded).actions[0]).toEqual(priced)
+  })
+
+  it('sets version 1 only at replacement flags offset 56 and round-trips it', () => {
+    const priced = {
+      ...replacement(),
+      replacementPricingVersion: 1 as const,
+      replacementReduceOnly: true,
+      replacementPostOnly: true,
+      maxFills: 0,
+      maxPriceLevels: 0,
+    }
+    const expected = hexToBytes(
+      encodeSingle({ ...priced, replacementPricingVersion: 0 }),
+    )
+    expected[12 + 56] = 0x07
+    const encoded = encodeSingle(priced)
+    expect(hexToBytes(encoded)).toEqual(expected)
+    expect(decodeExchangeActionBatchV2(encoded).actions[0]).toEqual(priced)
+  })
+
+  it.each([0x08, 0x10, 0x20, 0x40, 0x80])(
+    'rejects unknown flags bit %i on either order leg',
+    (bit) => {
+      for (const [action, offset] of [
+        [place(), 55],
+        [replacement(), 56],
+      ] as const) {
+        const bytes = hexToBytes(encodeSingle(action))
+        bytes[12 + offset] |= bit
+        expect(() => decodeExchangeActionBatchV2(bytesToHex(bytes))).toThrow(
+          'reserved order bits',
+        )
+      }
+    },
+  )
+
+  it.each([2, -1, 1.5, null, '1', true])(
+    'rejects malformed pricing version %s on either order leg',
+    (version) => {
+      expect(() =>
+        encodeSingle({ ...place(), pricingVersion: version } as PlaceActionV2),
+      ).toThrow('pricingVersion')
+      expect(() =>
+        encodeSingle({
+          ...replacement(),
+          replacementPricingVersion: version,
+        } as CancelReplaceActionV2),
+      ).toThrow('pricingVersion')
+    },
+  )
+
+  it('rejects replacement pricing under the place field name', () => {
+    expect(() =>
+      encodeSingle({
+        ...replacement(),
+        pricingVersion: 1,
+      } as CancelReplaceActionV2),
+    ).toThrow('unknown cancelReplace field pricingVersion')
+  })
+
+  it('does not reinterpret version 1 as the margin option', () => {
+    const bytes = hexToBytes(encodeSingle({ ...place(), pricingVersion: 1 }))
+    bytes[12 + 56] |= 0x04
+    expect(() => decodeExchangeActionBatchV2(bytesToHex(bytes))).toThrow(
+      'noncanonical margin option',
     )
   })
 })

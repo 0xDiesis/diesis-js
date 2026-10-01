@@ -49,6 +49,8 @@ jobs:
         run: pnpm run quality
       - name: Build published JavaScript and declarations
         run: pnpm run build
+      - name: Built package consumer compatibility
+        run: pnpm run test:consumer
       - name: Helper regressions
         run: |
           pnpm run test:codegen

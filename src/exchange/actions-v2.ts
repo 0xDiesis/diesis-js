@@ -65,8 +65,15 @@ export type PlaceActionV2 = {
   timeInForce: TimeInForceV2
   postOnly: boolean
   reduceOnly: boolean
+  /**
+   * Signed market units. Omission preserves legacy pricing version 0.
+   * Version 1 requires the coordinated native 0x04 flag implementation;
+   * accepted node 44bed910 rejects it. Qualify native admission before use.
+   */
+  pricingVersion?: 0 | 1
   marginType: MarginTypeV2
   priceTicks: bigint
+  /** Public raw base atoms, retaining the legacy field name. */
   quantityLots: bigint
   maxFills: number
   maxPriceLevels: number
@@ -99,8 +106,12 @@ export type CancelReplaceActionV2 = {
   replacementTimeInForce: TimeInForceV2
   replacementPostOnly: boolean
   replacementReduceOnly: boolean
+  /** Signed replacement units, checked before native cancellation or reservation. */
+  /** Version 1 requires separately qualified native 0x04 flag support. */
+  replacementPricingVersion?: 0 | 1
   replacementMarginType: MarginTypeV2
   replacementPriceTicks: bigint
+  /** Public raw base atoms, retaining the legacy field name. */
   replacementQuantityLots: bigint
   maxFills: number
   maxPriceLevels: number
@@ -174,6 +185,7 @@ const ACTION_KEYS: Readonly<
     'timeInForce',
     'postOnly',
     'reduceOnly',
+    'pricingVersion',
     'marginType',
     'priceTicks',
     'quantityLots',
@@ -200,6 +212,7 @@ const ACTION_KEYS: Readonly<
     'replacementTimeInForce',
     'replacementPostOnly',
     'replacementReduceOnly',
+    'replacementPricingVersion',
     'replacementMarginType',
     'replacementPriceTicks',
     'replacementQuantityLots',
@@ -308,6 +321,7 @@ type OrderFields = {
   timeInForce: TimeInForceV2
   postOnly: boolean
   reduceOnly: boolean
+  pricingVersion?: 0 | 1
   priceTicks: bigint
   quantityLots: bigint
   maxFills: number
@@ -328,6 +342,10 @@ function encodedOrderFields(fields: OrderFields): {
   validateTimeInForceKeys(timeInForce)
   booleanValue(postOnly, 'postOnly')
   booleanValue(fields.reduceOnly, 'reduceOnly')
+  const pricingVersion =
+    fields.pricingVersion === undefined ? 0 : fields.pricingVersion
+  if (pricingVersion !== 0 && pricingVersion !== 1)
+    throw new Error('pricingVersion must be 0 or 1')
   if (priceTicks < 0n || priceTicks > UINT64_MAX)
     throw new Error('priceTicks is outside uint64')
   if (quantityLots <= 0n || quantityLots > UINT64_MAX) {
@@ -389,6 +407,7 @@ function encodedOrderFields(fields: OrderFields): {
   let flags = 0
   if (postOnly) flags |= 0x01
   if (fields.reduceOnly) flags |= 0x02
+  if (pricingVersion === 1) flags |= 0x04
   const clientOrderId =
     fields.clientOrderId === undefined
       ? ZERO_32
@@ -467,6 +486,7 @@ function encodeCancelReplace(action: CancelReplaceActionV2): Uint8Array {
     timeInForce: action.replacementTimeInForce,
     postOnly: action.replacementPostOnly,
     reduceOnly: action.replacementReduceOnly,
+    pricingVersion: action.replacementPricingVersion,
     priceTicks: action.replacementPriceTicks,
     quantityLots: action.replacementQuantityLots,
     maxFills: action.maxFills,
@@ -927,6 +947,7 @@ function decodedOrderFields(
   timeInForce: TimeInForceV2
   postOnly: boolean
   reduceOnly: boolean
+  pricingVersion: 0 | 1
   options: number
   marginType: MarginTypeV2
   priceTicks: bigint
@@ -939,7 +960,7 @@ function decodedOrderFields(
   const tif = reader.u8('time in force')
   const flags = reader.u8('flags')
   const options = reader.u8('options')
-  if ((flags & ~0x03) !== 0 || (options & ~0x07) !== 0)
+  if ((flags & ~0x07) !== 0 || (options & ~0x07) !== 0)
     throw new Error('nonzero reserved order bits')
   const marginType = decodeEnum(
     reader.u8('margin type'),
@@ -978,6 +999,7 @@ function decodedOrderFields(
     timeInForce,
     postOnly: (flags & 0x01) !== 0,
     reduceOnly: (flags & 0x02) !== 0,
+    pricingVersion: (flags & 0x04) !== 0 ? 1 : 0,
     options,
     marginType,
     priceTicks,
@@ -1092,6 +1114,7 @@ function decodeRecord(record: Uint8Array): ExchangeActionV2 {
       timeInForce: replacementTimeInForce,
       postOnly: replacementPostOnly,
       reduceOnly: replacementReduceOnly,
+      pricingVersion: replacementPricingVersion,
       marginType: _marginType,
       priceTicks: _priceTicks,
       quantityLots: _quantityLots,
@@ -1109,6 +1132,7 @@ function decodeRecord(record: Uint8Array): ExchangeActionV2 {
       replacementTimeInForce,
       replacementPostOnly,
       replacementReduceOnly,
+      replacementPricingVersion,
       replacementMarginType,
       replacementPriceTicks,
       replacementQuantityLots,
@@ -1362,6 +1386,19 @@ export function prepareExchangeActionsV2Transaction(parameters: {
   batch: ExchangeActionBatchV2
 }): { to: Address; data: Hex; value: 0n } {
   const encodedActions = encodeExchangeActionBatchV2(parameters.batch)
+  // The accepted native baseline rejects 0x04. Keep prospective codecs usable
+  // for fixtures while refusing wallet preparation/signing until native admission
+  // and cross-language vectors have been qualified together.
+  if (
+    parameters.batch.actions.some(
+      (action) =>
+        (action.kind === 'place' && action.pricingVersion === 1) ||
+        (action.kind === 'cancelReplace' &&
+          action.replacementPricingVersion === 1),
+    )
+  ) {
+    throw new Error('Pricing version 1 requires qualified native admission')
+  }
   let to: Address
   if (parameters.book === 'spot') to = DIESIS_SPOT_BOOK
   else if (parameters.book === 'perpetual') to = DIESIS_PERPS_BOOK
