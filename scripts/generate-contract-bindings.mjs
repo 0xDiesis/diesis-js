@@ -7,7 +7,9 @@
 // copies are dropped and the wrappers are pointed at the vendored ABIs in
 // src/abi/generated/viem, so every entry point shares one ABI object.
 
-import { execFile, spawn } from 'node:child_process'
+import process from 'node:process'
+import console from 'node:console'
+import { spawn } from 'node:child_process'
 import {
   mkdtemp,
   mkdir,
@@ -19,16 +21,10 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { codegenInputs } from './codegen-inputs.mjs'
 
 const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
-  ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
-  : path.resolve(sdkRoot, '../../diesis-core/diesis/contracts')
-// ABI_TYPEGEN points at a specific abi-typegen binary; by default the one
-// installed in the contracts checkout is used.
-const typegen = process.env.ABI_TYPEGEN
-  ? path.resolve(process.env.ABI_TYPEGEN)
-  : path.join(contractsRoot, 'node_modules/.bin/abi-typegen')
+const { artifacts, typegen } = await codegenInputs()
 const vendoredAbiRoot = path.join(sdkRoot, 'src/abi/generated/viem')
 const bindingsRoot = path.join(sdkRoot, 'src/abi/bindings')
 
@@ -186,33 +182,11 @@ function run(command, args) {
   })
 }
 
-// 0.5.0 is the release the contracts package pins; its wrappers keep each
-// library's own contract types.
-const minimumTypegen = [0, 5, 0]
-
-async function assertTypegenVersion() {
-  const output = await new Promise((resolve, reject) => {
-    execFile(typegen, ['--version'], (error, stdout) =>
-      error ? reject(error) : resolve(stdout),
-    )
-  })
-  const version = /(\d+)\.(\d+)\.(\d+)/u.exec(output)?.slice(1).map(Number)
-  const index = version?.findIndex((part, i) => part !== minimumTypegen[i])
-  const supported =
-    version !== undefined &&
-    (index === -1 || version[index] > minimumTypegen[index])
-  if (!supported) {
-    throw new Error(
-      `abi-typegen ${minimumTypegen.join('.')} or newer is required, found: ${output.trim()}`,
-    )
-  }
-}
-
 async function generateWrappers(outDirectory) {
   await run(typegen, [
     'generate',
     '--artifacts',
-    path.join(contractsRoot, 'out'),
+    artifacts,
     '--out',
     outDirectory,
     '--target',
@@ -335,7 +309,6 @@ async function listFiles(root, prefix = '') {
 
 const outDirectory = await mkdtemp(path.join(tmpdir(), 'diesis-js-bindings-'))
 try {
-  await assertTypegenVersion()
   await generateWrappers(outDirectory)
   await assertAbiParity(outDirectory)
   const expected = await expectedFiles(outDirectory)

@@ -110,17 +110,24 @@ describe('third-party package installability', () => {
     expect(manifest.publishConfig?.access).toBe('public')
   })
 
-  it('denies the one transitive native build needed for Git installs', () => {
+  it('denies native and generator download scripts for Git installs', () => {
     const workspaceConfig = new URL('../pnpm-workspace.yaml', import.meta.url)
 
     expect(existsSync(workspaceConfig)).toBe(true)
     const config = readFileSync(workspaceConfig, 'utf8')
-    expect(config).toContain('allowBuilds:\n  blake-hash: false\n')
-    expect(config.match(/^  [^\n]+:/gmu)).toEqual(['  blake-hash:'])
+    expect(config).toContain('  blake-hash: false\n')
+    expect(config).toContain("  '@0xdoublesharp/abi-typegen': false\n")
+    expect(config.match(/^  [^\n]+:/gmu)).toEqual([
+      '  blake-hash:',
+      "  '@0xdoublesharp/abi-typegen':",
+    ])
   })
 
   it('documents the pinned authenticated Git install', () => {
-    const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8')
+    const readme = readFileSync(
+      new URL('../README.md', import.meta.url),
+      'utf8',
+    )
 
     expect(readme).not.toContain('npm install @diesis/sdk')
     expect(readme).toContain(

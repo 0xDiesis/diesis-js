@@ -1,105 +1,61 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   quality:
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 20
+    # Official Solidity linux-amd64 distribution; no unqualified arm compiler.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/create-github-app-token@v3
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         id: app-token
         with:
           client-id: ${{ vars.GH_APP_CLIENT_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           owner: 0xDiesis
           repositories: diesis-contracts
-
-      # Use an explicit contracts root for this standalone checkout. Keep it
-      # outside the SDK so repository tools do not scan contract sources.
-      - name: Checkout contracts
-        uses: actions/checkout@v6
+      - name: Checkout exact contracts source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: 0xDiesis/diesis-contracts
+          ref: e905d65c6a52df39f1d73906e9f5e91bd69011e9
           path: contracts-checkout
-          submodules: recursive
+          submodules: false
           token: ${{ steps.app-token.outputs.token }}
-
-      - name: Place contracts at ../diesis/contracts
-        id: contracts
-        run: |
-          mkdir -p ../diesis
-          mv contracts-checkout ../diesis/contracts
-          echo "dir=$(cd ../diesis/contracts && pwd)" >> "$GITHUB_OUTPUT"
-          echo "DIESIS_CONTRACTS_DIR=$(cd ../diesis/contracts && pwd)" >> "$GITHUB_ENV"
-          echo "sha=$(git -C ../diesis/contracts rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "deps=$(sha256sum ../diesis/contracts/soldeer.lock | cut -c1-16)" >> "$GITHUB_OUTPUT"
-
-      # Only the ABIs are consumed, so standard Foundry builds them. The build
-      # is cached per contracts commit and falls back to the newest earlier
-      # build so a contracts change compiles incrementally.
-      - name: Restore contracts build
-        id: contracts-build
-        uses: actions/cache@v5
-        with:
-          path: |
-            ${{ steps.contracts.outputs.dir }}/out
-            ${{ steps.contracts.outputs.dir }}/cache
-          key: contracts-build-${{ steps.contracts.outputs.sha }}
-          restore-keys: contracts-build-
-
-      - name: Restore Solidity dependencies
-        if: steps.contracts-build.outputs.cache-hit != 'true'
-        uses: actions/cache@v5
-        with:
-          path: ${{ steps.contracts.outputs.dir }}/dependencies
-          key: solidity-deps-${{ steps.contracts.outputs.deps }}
-
-      - name: Setup Foundry
-        if: steps.contracts-build.outputs.cache-hit != 'true'
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Build contracts
-        if: steps.contracts-build.outputs.cache-hit != 'true'
-        working-directory: ${{ steps.contracts.outputs.dir }}
-        run: |
-          ./scripts/forge.sh soldeer install
-          ./scripts/forge.sh build
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@f520eceda224fe1a4aed5a2a27a194379a409996 # v6
         with:
           run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version-file: .nvmrc
-          cache: pnpm
-
-      # Installing runs the prepare script, which builds dist/ with both tsc projects.
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # The contracts package provides the abi-typegen binary for the bindings check.
-      - name: Install contracts dependencies
-        run: pnpm --dir ../diesis/contracts install --frozen-lockfile
-
-      - name: ABI drift, lint, typecheck, and format
+      - name: Install SDK dependencies without compiler or generator scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      # No artifact/dependency cache: every run builds once from exact inputs.
+      # No Permit2, submodules, circuits, contracts pnpm generation or forge-ds.
+      - name: Qualify one source-only artifact build
+        run: |
+          python3 scripts/qualify-contract-inputs.py --contracts "$GITHUB_WORKSPACE/contracts-checkout" --work "$RUNNER_TEMP/diesis-sdk-qualified-inputs" --environment-output "$RUNNER_TEMP/diesis-sdk-inputs.env"
+          cat "$RUNNER_TEMP/diesis-sdk-inputs.env" >> "$GITHUB_ENV"
+      - name: ABI drift, lint, typecheck and formatting
         run: pnpm run quality
-
+      - name: Build published JavaScript and declarations
+        run: pnpm run build
+      - name: Helper regressions
+        run: |
+          pnpm run test:codegen
+          python3 -m unittest discover -s test -p 'test_*capture.py' -v
+          python3 -m unittest discover -s test -p 'test_codegen_qualifier.py' -v
       - name: Test
+        env:
+          # Read committed test-circuit fixtures only; do not compile circuits.
+          DIESIS_CONTRACTS_DIR: ${{ github.workspace }}/contracts-checkout
         run: pnpm run test

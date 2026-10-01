@@ -667,8 +667,28 @@ pnpm test:browser  # Playwright privacy tests
 pnpm quality       # ABI drift check, lint, typecheck, format
 ```
 
-`pnpm codegen` regenerates ABIs from the contracts in the
-[diesis](https://github.com/0xDiesis/diesis) repo.
+`pnpm codegen` uses independently qualified artifacts from accepted contracts
+revision `e905d65c6a52df39f1d73906e9f5e91bd69011e9`. Set absolute paths before
+running code generation or quality checks:
+
+```bash
+export DIESIS_ARTIFACT_PREFLIGHT=/absolute/path/preflight.json
+export DIESIS_ARTIFACT_MANIFEST=/absolute/path/manifest.json
+export DIESIS_ARTIFACTS_DIR=/absolute/path/qualified/out
+export ABI_TYPEGEN=/absolute/path/verified/abi-typegen
+pnpm codegen:check # reproduce without changing source
+pnpm codegen       # regenerate the 45 ABIs and five wrapper targets
+pnpm build         # emit JavaScript and declarations
+```
+
+The generator must be the independently verified raw abi-typegen 0.7.0 executable.
+The pinned package's download script is denied; installation alone does not provide
+that executable. No contracts checkout output or checked-in ABI fallback is used.
+See [the qualification tooling guide](scripts/CODEGEN.md) for the separate Linux CI
+and local qualification boundaries.
+
+The public ABI barrels also export `AssociationVerifierV1Abi`,
+`DiesisEpochAuthorityAbi`, `TransferVerifierV1Abi` and `WithdrawVerifierV1Abi`.
 
 ## License
 

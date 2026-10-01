@@ -2,3 +2,4 @@ packages: []
 
 allowBuilds:
   blake-hash: false
+  '@0xdoublesharp/abi-typegen': false

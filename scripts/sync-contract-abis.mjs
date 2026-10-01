@@ -1,17 +1,27 @@
 #!/usr/bin/env node
 
+import process from 'node:process'
+import console from 'node:console'
 import { spawn } from 'node:child_process'
-import { copyFile, mkdir, readFile, readdir, unlink } from 'node:fs/promises'
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  unlink,
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmpdir } from 'node:os'
+import { codegenInputs } from './codegen-inputs.mjs'
 
 const sdkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const contractsRoot = process.env.DIESIS_CONTRACTS_DIR
-  ? path.resolve(process.env.DIESIS_CONTRACTS_DIR)
-  : path.resolve(sdkRoot, '../../diesis-core/diesis/contracts')
-const upstreamAbiRoot = path.join(contractsRoot, 'src/abi')
+const { artifacts, typegen } = await codegenInputs()
 const destinationAbiRoot = path.join(sdkRoot, 'src/abi')
-const providers = ['viem', 'wagmi', 'ethers', 'web3js']
+const providers = ['viem']
 
 const arguments_ = process.argv.slice(2)
 if (
@@ -22,26 +32,47 @@ if (
   throw new Error('usage: sync-contract-abis.mjs [--check|--generate]')
 }
 const checkOnly = arguments_[0] === '--check'
-const generateFirst = arguments_[0] === '--generate'
+const upstreamAbiRoot = await mkdtemp(path.join(tmpdir(), 'diesis-js-abis-'))
 
 async function generateContractAbis() {
+  const contracts = JSON.parse(
+    await readFile(path.join(sdkRoot, 'scripts/abi-contracts.json'), 'utf8'),
+  )
   await new Promise((resolve, reject) => {
-    const child = spawn('pnpm', ['--dir', contractsRoot, 'abi:generate'], {
-      stdio: 'inherit',
-    })
+    const child = spawn(
+      typegen,
+      [
+        'generate',
+        '--artifacts',
+        artifacts,
+        '--out',
+        path.join(upstreamAbiRoot, 'generated/viem'),
+        '--target',
+        'viem',
+        '--no-wrappers',
+        '--contracts',
+        contracts.join(','),
+      ],
+      { stdio: 'inherit' },
+    )
     child.once('error', reject)
-    child.once('exit', (code, signal) => {
-      if (code === 0) {
-        resolve()
-      } else {
-        reject(
-          new Error(
-            `contract ABI generation failed (${signal ?? `exit ${code}`})`,
-          ),
-        )
-      }
-    })
+    child.once('exit', (code, signal) =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`ABI generation failed (${signal ?? code})`)),
+    )
   })
+  const files = await listFiles(path.join(upstreamAbiRoot, 'generated/viem'))
+  const expected = [
+    ...contracts.map((name) => `${name}.abi.ts`),
+    'index.ts',
+  ].sort()
+  if (JSON.stringify([...files].sort()) !== JSON.stringify(expected))
+    throw new Error('Generated ABI contract inventory mismatch')
+  await writeFile(
+    path.join(upstreamAbiRoot, 'index.ts'),
+    "export * from './generated/viem/index.js'\n",
+  )
 }
 
 async function listFiles(root) {
@@ -193,12 +224,11 @@ async function syncVendor(canonicalFiles) {
   }
 }
 
-if (generateFirst) {
+try {
   await generateContractAbis()
-}
-const canonicalFiles = await assertProviderParity()
-if (checkOnly) {
-  await checkVendor(canonicalFiles)
-} else {
-  await syncVendor(canonicalFiles)
+  const canonicalFiles = await assertProviderParity()
+  if (checkOnly) await checkVendor(canonicalFiles)
+  else await syncVendor(canonicalFiles)
+} finally {
+  await rm(upstreamAbiRoot, { recursive: true, force: true })
 }
