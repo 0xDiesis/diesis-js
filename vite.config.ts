@@ -1,7 +1,10 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
+  test: {
+    include: ['test/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+  },
   resolve: {
     // snarkjs publishes a self-contained browser ESM export. Keep the worker
     // graph on that condition so Node-only CLI dependencies cannot enter it.
