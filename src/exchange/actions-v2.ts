@@ -1,0 +1,1483 @@
+import {
+  bytesToHex,
+  encodeFunctionData,
+  hexToBytes,
+  type Address,
+  type Chain,
+  type Client,
+  type Hash,
+  type Hex,
+  type LocalAccount,
+  type Transport,
+  type TransactionSerializableEIP1559,
+} from 'viem'
+import { sendRawTransaction } from 'viem/actions'
+
+import { IDiesisSpotBookAbi } from '../abi/index.js'
+import { DIESIS_PERPS_BOOK, DIESIS_SPOT_BOOK } from '../addresses.js'
+import type { CancelScheduleAction } from './cancel-schedule.js'
+import {
+  fixedBytes,
+  integerNumber,
+  nonzeroBytes,
+  Reader,
+  UINT64_MAX,
+  UINT256_MAX,
+  Writer,
+} from './wire-bytes.js'
+
+export const EXCHANGE_ACTION_LIMITS = {
+  version: 2,
+  maxEncodedBytes: 16_384,
+  maxActions: 32,
+  maxCancels: 64,
+  maxMarkets: 16,
+  maxFills: 64,
+  maxRadixWrites: 2_048,
+  maxPriceLevelsPerAction: 16,
+  maxStorageOperations: 4_096,
+  maxCancelChunk: 32,
+  maxSessionAuthorizationsPerPrincipal: 8,
+  maxSchedulesPerPrincipal: 8,
+  maxLogBytes: 32_768,
+  maxLogs: 256,
+  replayHorizonBlocks: 256,
+  maxActiveOrdersPerMarket: 32_768,
+  maxActiveOrdersPerBook: 262_144,
+} as const
+
+export type BatchAtomicity = 'atomicAll' | 'continueOnReject'
+export type ExchangeActionSide = 'buy' | 'sell'
+export type OrderKind = 'limit' | 'market'
+export type ExchangeActionMarginType = 'cross' | 'isolated' | 'unified'
+export type TimeInForce =
+  | { kind: 'gtc' }
+  | { kind: 'gtd'; expiry: bigint }
+  | { kind: 'ioc' }
+  | { kind: 'fok' }
+
+export type PlaceAction = {
+  kind: 'place'
+  clientActionId: Hex
+  marketId: Hex
+  side: ExchangeActionSide
+  orderKind: OrderKind
+  timeInForce: TimeInForce
+  postOnly: boolean
+  reduceOnly: boolean
+  /**
+   * Signed market units. Omission preserves legacy pricing version 0.
+   * Version 1 requires the coordinated native 0x04 flag implementation;
+   * accepted node 44bed910 rejects it. Qualify native admission before use.
+   */
+  pricingVersion?: 0 | 1
+  marginType: ExchangeActionMarginType
+  priceTicks: bigint
+  /** Public raw base atoms, retaining the legacy field name. */
+  quantityLots: bigint
+  maxFills: number
+  maxPriceLevels: number
+  clientOrderId?: Hex
+  marginContribution?: bigint
+}
+
+export type CancelByOrderIdAction = {
+  kind: 'cancelByOrderId'
+  clientActionId: Hex
+  marketId: Hex
+  orderId: Hex
+}
+
+export type CancelByClientOrderIdAction = {
+  kind: 'cancelByClientOrderId'
+  clientActionId: Hex
+  marketId: Hex
+  clientOrderId: Hex
+}
+
+export type CancelReplaceAction = {
+  kind: 'cancelReplace'
+  clientActionId: Hex
+  marketId: Hex
+  cancelTarget: 'orderId' | 'clientOrderId'
+  targetId: Hex
+  replacementSide: ExchangeActionSide
+  replacementOrderKind: OrderKind
+  replacementTimeInForce: TimeInForce
+  replacementPostOnly: boolean
+  replacementReduceOnly: boolean
+  /** Signed replacement units, checked before native cancellation or reservation. */
+  /** Version 1 requires separately qualified native 0x04 flag support. */
+  replacementPricingVersion?: 0 | 1
+  replacementMarginType: ExchangeActionMarginType
+  replacementPriceTicks: bigint
+  /** Public raw base atoms, retaining the legacy field name. */
+  replacementQuantityLots: bigint
+  maxFills: number
+  maxPriceLevels: number
+  newClientOrderId?: Hex
+  marginContribution?: bigint
+}
+
+export type CancelMarketChunkAction = {
+  kind: 'cancelMarketChunk'
+  clientActionId: Hex
+  marketId: Hex
+  maxOrders: number
+}
+
+/** Owner-signed canonical position collateral movement in quote atomic units. */
+export type AdjustPositionCollateralAction = {
+  kind: 'adjustPositionCollateral'
+  clientActionId: Hex
+  marketId: Hex
+  collateralDelta: bigint
+}
+
+export type ExchangeAction =
+  | PlaceAction
+  | CancelByOrderIdAction
+  | CancelByClientOrderIdAction
+  | CancelReplaceAction
+  | CancelMarketChunkAction
+  | AdjustPositionCollateralAction
+  | CancelScheduleAction
+
+export type ExchangeActionBatch = {
+  atomicity: BatchAtomicity
+  actions: readonly ExchangeAction[]
+}
+
+export type ExchangeBook = 'spot' | 'perpetual'
+
+const MAGIC = Uint8Array.of(0x44, 0x58, 0x41, 0x32)
+const VERSION = 2
+const HEADER_BYTES = 12
+const ACTION_PREFIX_BYTES = 20
+const ZERO_32 = new Uint8Array(32)
+const INT256_MIN = -(1n << 255n)
+const INT256_MAX = (1n << 255n) - 1n
+
+const RADIX_WRITES_PER_CHANGED_LEVEL = 64
+const STORAGE_OPS_PER_CHANGED_LEVEL = 71
+const STORAGE_OPS_PER_FILL = 40
+const STORAGE_OPS_PER_SEARCH = 6
+const ECONOMIC_LOGS_PER_FILL = 2
+const ECONOMIC_LOG_BYTES_PER_FILL = 512
+const ECONOMIC_LOG_BYTES_PER_CANCEL = 256
+const L3_LOG_BYTES = 288
+const OUTCOME_LOG_BYTES = 256
+const CANCEL_STORAGE_OPS =
+  STORAGE_OPS_PER_CHANGED_LEVEL + STORAGE_OPS_PER_FILL + STORAGE_OPS_PER_SEARCH
+const ARM_SCHEDULE_FIXED_STORAGE_OPS = 5
+const RENEW_SCHEDULE_STORAGE_OPS = 2
+const POSITION_COLLATERAL_STORAGE_OPS = 2_048
+
+const ACTION_KEYS: Readonly<Record<ExchangeAction['kind'], readonly string[]>> =
+  {
+    place: [
+      'kind',
+      'clientActionId',
+      'marketId',
+      'side',
+      'orderKind',
+      'timeInForce',
+      'postOnly',
+      'reduceOnly',
+      'pricingVersion',
+      'marginType',
+      'priceTicks',
+      'quantityLots',
+      'maxFills',
+      'maxPriceLevels',
+      'clientOrderId',
+      'marginContribution',
+    ],
+    cancelByOrderId: ['kind', 'clientActionId', 'marketId', 'orderId'],
+    cancelByClientOrderId: [
+      'kind',
+      'clientActionId',
+      'marketId',
+      'clientOrderId',
+    ],
+    cancelReplace: [
+      'kind',
+      'clientActionId',
+      'marketId',
+      'cancelTarget',
+      'targetId',
+      'replacementSide',
+      'replacementOrderKind',
+      'replacementTimeInForce',
+      'replacementPostOnly',
+      'replacementReduceOnly',
+      'replacementPricingVersion',
+      'replacementMarginType',
+      'replacementPriceTicks',
+      'replacementQuantityLots',
+      'maxFills',
+      'maxPriceLevels',
+      'newClientOrderId',
+      'marginContribution',
+    ],
+    cancelMarketChunk: ['kind', 'clientActionId', 'marketId', 'maxOrders'],
+    armCancelSchedule: [
+      'kind',
+      'clientActionId',
+      'scheduleId',
+      'authorizationExpiry',
+      'cancellationDeadline',
+      'expectedRenewalCounter',
+      'maxOrdersPerTrigger',
+      'marketIds',
+    ],
+    renewCancelSchedule: [
+      'kind',
+      'clientActionId',
+      'scheduleId',
+      'expectedRenewalCounter',
+      'newDeadline',
+    ],
+    disarmCancelSchedule: [
+      'kind',
+      'clientActionId',
+      'scheduleId',
+      'expectedRenewalCounter',
+    ],
+    triggerCancelSchedule: ['kind', 'clientActionId', 'scheduleId'],
+    adjustPositionCollateral: [
+      'kind',
+      'clientActionId',
+      'marketId',
+      'collateralDelta',
+    ],
+  }
+
+function strictObjectKeys(
+  value: object,
+  allowedKeys: readonly string[],
+  label: string,
+): void {
+  const allowed = new Set(allowedKeys)
+  for (const key of Object.keys(value)) {
+    if (!allowed.has(key)) throw new Error(`unknown ${label} field ${key}`)
+  }
+}
+
+function strictKeys(action: ExchangeAction): void {
+  const allowed = new Set(ACTION_KEYS[action.kind])
+  for (const key of Object.keys(action)) {
+    if (!allowed.has(key))
+      throw new Error(`unknown ${action.kind} field ${key}`)
+  }
+}
+
+function validateTimeInForceKeys(timeInForce: TimeInForce): void {
+  if (typeof timeInForce !== 'object' || timeInForce === null) {
+    throw new Error('timeInForce must be an object')
+  }
+  if (timeInForce.kind === 'gtd') {
+    strictObjectKeys(timeInForce, ['kind', 'expiry'], 'gtd timeInForce')
+  } else if (
+    timeInForce.kind === 'gtc' ||
+    timeInForce.kind === 'ioc' ||
+    timeInForce.kind === 'fok'
+  ) {
+    strictObjectKeys(timeInForce, ['kind'], `${timeInForce.kind} timeInForce`)
+  } else {
+    throw new Error('unknown timeInForce')
+  }
+}
+
+function prefix(
+  writer: Writer,
+  tag: number,
+  length: number,
+  clientActionId: Hex,
+): void {
+  writer.u8(tag, 'action tag')
+  writer.u8(0, 'reserved')
+  writer.u16(length, 'record length')
+  writer.push(fixedBytes(clientActionId, 16, 'clientActionId'))
+}
+
+function enumValue<T extends string>(
+  value: T,
+  values: Readonly<Record<T, number>>,
+  name: string,
+): number {
+  const encoded = values[value]
+  if (encoded === undefined) throw new Error(`unknown ${name} ${String(value)}`)
+  return encoded
+}
+
+function booleanValue(value: unknown, name: string): asserts value is boolean {
+  if (typeof value !== 'boolean') throw new Error(`${name} must be a boolean`)
+}
+
+type OrderFields = {
+  orderKind: OrderKind
+  timeInForce: TimeInForce
+  postOnly: boolean
+  reduceOnly: boolean
+  pricingVersion?: 0 | 1
+  priceTicks: bigint
+  quantityLots: bigint
+  maxFills: number
+  maxPriceLevels: number
+  clientOrderId?: Hex
+  marginContribution?: bigint
+}
+
+function encodedOrderFields(fields: OrderFields): {
+  tif: number
+  flags: number
+  options: number
+  expiry: bigint
+  clientOrderId: Uint8Array
+  marginContribution: bigint
+} {
+  const { orderKind, timeInForce, postOnly, priceTicks, quantityLots } = fields
+  validateTimeInForceKeys(timeInForce)
+  booleanValue(postOnly, 'postOnly')
+  booleanValue(fields.reduceOnly, 'reduceOnly')
+  const pricingVersion =
+    fields.pricingVersion === undefined ? 0 : fields.pricingVersion
+  if (pricingVersion !== 0 && pricingVersion !== 1)
+    throw new Error('pricingVersion must be 0 or 1')
+  if (priceTicks < 0n || priceTicks > UINT64_MAX)
+    throw new Error('priceTicks is outside uint64')
+  if (quantityLots <= 0n || quantityLots > UINT64_MAX) {
+    throw new Error('quantityLots must be a nonzero uint64')
+  }
+  if (orderKind === 'limit' && priceTicks === 0n)
+    throw new Error('limit price is zero')
+  if (orderKind === 'market' && priceTicks !== 0n)
+    throw new Error('market price is nonzero')
+  if (
+    orderKind === 'market' &&
+    timeInForce.kind !== 'ioc' &&
+    timeInForce.kind !== 'fok'
+  ) {
+    throw new Error('market order requires IOC or FOK')
+  }
+  if (
+    postOnly &&
+    (orderKind !== 'limit' ||
+      timeInForce.kind === 'ioc' ||
+      timeInForce.kind === 'fok')
+  ) {
+    throw new Error('post-only requires limit GTC/GTD')
+  }
+  integerNumber(fields.maxFills, 0xffff, 'maxFills')
+  integerNumber(fields.maxPriceLevels, 0xffff, 'maxPriceLevels')
+  if (postOnly) {
+    if (fields.maxFills !== 0 || fields.maxPriceLevels !== 0) {
+      throw new Error('post-only work caps must be zero')
+    }
+  } else if (fields.maxFills === 0 || fields.maxPriceLevels === 0) {
+    throw new Error('executable order work caps must be nonzero')
+  }
+  if (fields.maxPriceLevels > fields.maxFills)
+    throw new Error('price levels exceed fills')
+  if (fields.maxFills > EXCHANGE_ACTION_LIMITS.maxFills) {
+    throw new Error('fills per action exceed 64')
+  }
+  if (fields.maxPriceLevels > EXCHANGE_ACTION_LIMITS.maxPriceLevelsPerAction) {
+    throw new Error('price levels per action exceed 16')
+  }
+
+  let tif = 0
+  let expiry = 0n
+  let options = 0
+  if (timeInForce.kind === 'gtd') {
+    if (timeInForce.expiry <= 0n || timeInForce.expiry > UINT64_MAX) {
+      throw new Error('GTD expiry must be a nonzero uint64')
+    }
+    tif = 1
+    expiry = timeInForce.expiry
+    options |= 0x02
+  } else if (timeInForce.kind === 'ioc') tif = 2
+  else if (timeInForce.kind === 'fok') tif = 3
+  else if (timeInForce.kind !== 'gtc') throw new Error('unknown timeInForce')
+
+  let flags = 0
+  if (postOnly) flags |= 0x01
+  if (fields.reduceOnly) flags |= 0x02
+  if (pricingVersion === 1) flags |= 0x04
+  const clientOrderId =
+    fields.clientOrderId === undefined
+      ? ZERO_32
+      : nonzeroBytes(fields.clientOrderId, 32, 'clientOrderId')
+  if (fields.clientOrderId !== undefined) options |= 0x01
+  const marginContribution = fields.marginContribution ?? 0n
+  if (fields.marginContribution !== undefined) {
+    if (marginContribution <= 0n || marginContribution > UINT256_MAX) {
+      throw new Error('marginContribution must be a nonzero uint256')
+    }
+    options |= 0x04
+  }
+  return { tif, flags, options, expiry, clientOrderId, marginContribution }
+}
+
+function encodePlace(action: PlaceAction): Uint8Array {
+  const writer = new Writer()
+  prefix(writer, 0x01, 152, action.clientActionId)
+  writer.push(nonzeroBytes(action.marketId, 32, 'marketId'))
+  writer.u8(enumValue(action.side, { buy: 0, sell: 1 }, 'side'), 'side')
+  writer.u8(
+    enumValue(action.orderKind, { limit: 0, market: 1 }, 'orderKind'),
+    'orderKind',
+  )
+  const fields = encodedOrderFields(action)
+  writer.u8(fields.tif, 'timeInForce')
+  writer.u8(fields.flags, 'order flags')
+  writer.u8(fields.options, 'order options')
+  writer.u8(
+    enumValue(
+      action.marginType,
+      { cross: 0, isolated: 1, unified: 2 },
+      'marginType',
+    ),
+    'marginType',
+  )
+  writer.u16(0, 'reserved')
+  writer.u64(action.priceTicks, 'priceTicks')
+  writer.u64(action.quantityLots, 'quantityLots')
+  writer.u64(fields.expiry, 'expiry')
+  writer.u16(action.maxFills, 'maxFills')
+  writer.u16(action.maxPriceLevels, 'maxPriceLevels')
+  writer.push(fields.clientOrderId)
+  writer.u256(fields.marginContribution, 'marginContribution')
+  return writer.output()
+}
+
+function encodeCancelReplace(action: CancelReplaceAction): Uint8Array {
+  const writer = new Writer()
+  prefix(writer, 0x04, 184, action.clientActionId)
+  writer.push(nonzeroBytes(action.marketId, 32, 'marketId'))
+  writer.u8(
+    enumValue(
+      action.cancelTarget,
+      { orderId: 0, clientOrderId: 1 },
+      'cancelTarget',
+    ),
+    'cancelTarget',
+  )
+  writer.u8(
+    enumValue(action.replacementSide, { buy: 0, sell: 1 }, 'replacementSide'),
+    'replacementSide',
+  )
+  writer.u8(
+    enumValue(
+      action.replacementOrderKind,
+      { limit: 0, market: 1 },
+      'replacementOrderKind',
+    ),
+    'replacementOrderKind',
+  )
+  booleanValue(action.replacementPostOnly, 'replacementPostOnly')
+  booleanValue(action.replacementReduceOnly, 'replacementReduceOnly')
+  const fields = encodedOrderFields({
+    orderKind: action.replacementOrderKind,
+    timeInForce: action.replacementTimeInForce,
+    postOnly: action.replacementPostOnly,
+    reduceOnly: action.replacementReduceOnly,
+    pricingVersion: action.replacementPricingVersion,
+    priceTicks: action.replacementPriceTicks,
+    quantityLots: action.replacementQuantityLots,
+    maxFills: action.maxFills,
+    maxPriceLevels: action.maxPriceLevels,
+    clientOrderId: action.newClientOrderId,
+    marginContribution: action.marginContribution,
+  })
+  writer.u8(fields.tif, 'replacementTimeInForce')
+  writer.u8(fields.flags, 'replacement flags')
+  writer.u8(fields.options, 'replacement options')
+  writer.u8(
+    enumValue(
+      action.replacementMarginType,
+      { cross: 0, isolated: 1, unified: 2 },
+      'replacementMarginType',
+    ),
+    'replacementMarginType',
+  )
+  writer.u8(0, 'reserved')
+  writer.push(nonzeroBytes(action.targetId, 32, 'targetId'))
+  writer.push(fields.clientOrderId)
+  writer.u64(action.replacementPriceTicks, 'replacementPriceTicks')
+  writer.u64(action.replacementQuantityLots, 'replacementQuantityLots')
+  writer.u64(fields.expiry, 'expiry')
+  writer.u16(action.maxFills, 'maxFills')
+  writer.u16(action.maxPriceLevels, 'maxPriceLevels')
+  writer.u256(fields.marginContribution, 'marginContribution')
+  return writer.output()
+}
+
+function encodeAction(action: ExchangeAction): Uint8Array {
+  strictKeys(action)
+  if (action.kind === 'place') return encodePlace(action)
+  const writer = new Writer()
+  if (
+    action.kind === 'cancelByOrderId' ||
+    action.kind === 'cancelByClientOrderId'
+  ) {
+    prefix(
+      writer,
+      action.kind === 'cancelByOrderId' ? 0x02 : 0x03,
+      84,
+      action.clientActionId,
+    )
+    writer.push(nonzeroBytes(action.marketId, 32, 'marketId'))
+    writer.push(
+      nonzeroBytes(
+        action.kind === 'cancelByOrderId'
+          ? action.orderId
+          : action.clientOrderId,
+        32,
+        action.kind === 'cancelByOrderId' ? 'orderId' : 'clientOrderId',
+      ),
+    )
+  } else if (action.kind === 'cancelReplace') return encodeCancelReplace(action)
+  else if (action.kind === 'cancelMarketChunk') {
+    if (
+      action.maxOrders <= 0 ||
+      action.maxOrders > EXCHANGE_ACTION_LIMITS.maxCancelChunk
+    ) {
+      throw new Error('maxOrders must be between 1 and 32')
+    }
+    prefix(writer, 0x05, 56, action.clientActionId)
+    writer.push(nonzeroBytes(action.marketId, 32, 'marketId'))
+    writer.u16(action.maxOrders, 'maxOrders')
+    writer.u16(0, 'reserved')
+  } else if (action.kind === 'armCancelSchedule') {
+    if (
+      action.marketIds.length === 0 ||
+      action.marketIds.length > EXCHANGE_ACTION_LIMITS.maxMarkets
+    ) {
+      throw new Error('schedule must contain between 1 and 16 markets')
+    }
+    if (action.authorizationExpiry <= 0n || action.cancellationDeadline <= 0n) {
+      throw new Error('schedule deadlines must be nonzero')
+    }
+    if (action.cancellationDeadline > action.authorizationExpiry) {
+      throw new Error('schedule deadline exceeds authorization expiry')
+    }
+    if (
+      action.maxOrdersPerTrigger <= 0 ||
+      action.maxOrdersPerTrigger > EXCHANGE_ACTION_LIMITS.maxCancelChunk
+    ) {
+      throw new Error('maxOrdersPerTrigger must be between 1 and 32')
+    }
+    const markets = action.marketIds.map((marketId) =>
+      nonzeroBytes(marketId, 32, 'marketId'),
+    )
+    for (let index = 1; index < markets.length; index += 1) {
+      if (bytesToHex(markets[index - 1]!) >= bytesToHex(markets[index]!)) {
+        throw new Error('schedule marketIds must be strictly increasing')
+      }
+    }
+    prefix(writer, 0x06, 80 + markets.length * 32, action.clientActionId)
+    writer.push(nonzeroBytes(action.scheduleId, 32, 'scheduleId'))
+    writer.u64(action.authorizationExpiry, 'authorizationExpiry')
+    writer.u64(action.cancellationDeadline, 'cancellationDeadline')
+    writer.u64(action.expectedRenewalCounter, 'expectedRenewalCounter')
+    writer.u16(action.maxOrdersPerTrigger, 'maxOrdersPerTrigger')
+    writer.u16(markets.length, 'market count')
+    for (const market of markets) writer.push(market)
+  } else if (action.kind === 'renewCancelSchedule') {
+    if (action.newDeadline <= 0n) throw new Error('newDeadline must be nonzero')
+    prefix(writer, 0x07, 68, action.clientActionId)
+    writer.push(nonzeroBytes(action.scheduleId, 32, 'scheduleId'))
+    writer.u64(action.expectedRenewalCounter, 'expectedRenewalCounter')
+    writer.u64(action.newDeadline, 'newDeadline')
+  } else if (action.kind === 'disarmCancelSchedule') {
+    prefix(writer, 0x08, 60, action.clientActionId)
+    writer.push(nonzeroBytes(action.scheduleId, 32, 'scheduleId'))
+    writer.u64(action.expectedRenewalCounter, 'expectedRenewalCounter')
+  } else if (action.kind === 'adjustPositionCollateral') {
+    if (
+      typeof action.collateralDelta !== 'bigint' ||
+      action.collateralDelta === 0n ||
+      action.collateralDelta < INT256_MIN ||
+      action.collateralDelta > INT256_MAX
+    ) {
+      throw new Error('collateralDelta must be a nonzero int256')
+    }
+    prefix(writer, 0x0a, 84, action.clientActionId)
+    writer.push(nonzeroBytes(action.marketId, 32, 'marketId'))
+    writer.u256(
+      action.collateralDelta < 0n
+        ? (1n << 256n) + action.collateralDelta
+        : action.collateralDelta,
+      'collateralDelta',
+    )
+  } else {
+    prefix(writer, 0x09, 52, action.clientActionId)
+    writer.push(nonzeroBytes(action.scheduleId, 32, 'scheduleId'))
+  }
+  return writer.output()
+}
+
+type ActionWorkV2 = {
+  radixWrites: number
+  storageOperations: number
+  l3Logs: number
+  l3LogBytes: number
+  economicLogs: number
+  economicLogBytes: number
+  statefulScheduleRefinements: number
+}
+
+const EMPTY_WORK: ActionWorkV2 = {
+  radixWrites: 0,
+  storageOperations: 0,
+  l3Logs: 0,
+  l3LogBytes: 0,
+  economicLogs: 0,
+  economicLogBytes: 0,
+  statefulScheduleRefinements: 0,
+}
+
+function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
+  const statefulScheduleRefinements =
+    left.statefulScheduleRefinements + right.statefulScheduleRefinements
+  integerNumber(
+    statefulScheduleRefinements,
+    EXCHANGE_ACTION_LIMITS.maxActions,
+    'stateful schedule refinements',
+  )
+  return {
+    radixWrites: left.radixWrites + right.radixWrites,
+    storageOperations: left.storageOperations + right.storageOperations,
+    l3Logs: left.l3Logs + right.l3Logs,
+    l3LogBytes: left.l3LogBytes + right.l3LogBytes,
+    economicLogs: left.economicLogs + right.economicLogs,
+    economicLogBytes: left.economicLogBytes + right.economicLogBytes,
+    statefulScheduleRefinements,
+  }
+}
+
+/**
+ * Structural place work, including the canonical L3 mutation reservation.
+ *
+ * `remainderCancel` is true when the placed order can leave a cancelled
+ * crossing remainder (IOC or market), emitting one extra L3 `Remove` beyond the
+ * `2 * fills + 1` resting/matching mutations. The reservation must dominate
+ * actual emission for every policy so an admissible place can never overshoot
+ * the selected log budget. This mirrors `place_action_work` in Rust exactly.
+ */
+function placeActionWork(
+  fills: number,
+  remainderCancel: boolean,
+  marginContribution = false,
+): ActionWorkV2 {
+  const twiceFills = fills * 2
+  const changedLevels = fills + 2
+  const searches = fills + 1
+  const l3Logs = twiceFills + 1 + (remainderCancel ? 1 : 0)
+  return {
+    radixWrites: (twiceFills + 3) * RADIX_WRITES_PER_CHANGED_LEVEL,
+    storageOperations:
+      changedLevels * STORAGE_OPS_PER_CHANGED_LEVEL +
+      fills * STORAGE_OPS_PER_FILL +
+      searches * STORAGE_OPS_PER_SEARCH +
+      (remainderCancel ? 40 : 0) +
+      (marginContribution ? POSITION_COLLATERAL_STORAGE_OPS : 0),
+    l3Logs,
+    l3LogBytes: l3Logs * L3_LOG_BYTES,
+    economicLogs:
+      fills * ECONOMIC_LOGS_PER_FILL +
+      Number(remainderCancel) +
+      Number(marginContribution),
+    economicLogBytes:
+      fills * ECONOMIC_LOG_BYTES_PER_FILL +
+      (remainderCancel ? 256 : 0) +
+      (marginContribution ? 256 : 0),
+    statefulScheduleRefinements: 0,
+  }
+}
+
+/**
+ * Whether a placed leg can leave a cancelled crossing remainder that emits an
+ * extra L3 `Remove`. IOC and market orders cancel any unfilled residual; GTC,
+ * GTD, post-only, and FOK never do (FOK reverts on any unfilled remainder).
+ * Market FOK is covered conservatively via the market kind. Mirrors Rust's
+ * `place_leaves_remainder_cancel`.
+ */
+function placeLeavesRemainderCancel(
+  orderKind: OrderKind,
+  timeInForce: TimeInForce,
+): boolean {
+  return timeInForce.kind === 'ioc' || orderKind === 'market'
+}
+
+function cancelActionWork(cancels: number): ActionWorkV2 {
+  integerNumber(cancels, EXCHANGE_ACTION_LIMITS.maxCancels, 'cancel work')
+  return {
+    ...EMPTY_WORK,
+    radixWrites: cancels * RADIX_WRITES_PER_CHANGED_LEVEL,
+    storageOperations: cancels * CANCEL_STORAGE_OPS,
+    l3Logs: cancels,
+    l3LogBytes: cancels * L3_LOG_BYTES,
+    // Every successful bounded cancel emits one canonical OrderCancelled log.
+    economicLogs: cancels,
+    economicLogBytes: cancels * ECONOMIC_LOG_BYTES_PER_CANCEL,
+  }
+}
+
+function scheduleActionWork(markets: number): ActionWorkV2 {
+  return {
+    ...EMPTY_WORK,
+    storageOperations: markets + ARM_SCHEDULE_FIXED_STORAGE_OPS,
+  }
+}
+
+function actionWorkFromModel(action: ExchangeAction): ActionWorkV2 {
+  if (action.kind === 'place') {
+    return placeActionWork(
+      action.maxFills,
+      placeLeavesRemainderCancel(action.orderKind, action.timeInForce),
+      action.marginContribution !== undefined,
+    )
+  }
+  if (
+    action.kind === 'cancelByOrderId' ||
+    action.kind === 'cancelByClientOrderId'
+  ) {
+    return cancelActionWork(1)
+  }
+  if (action.kind === 'cancelReplace') {
+    return addActionWork(
+      cancelActionWork(1),
+      placeActionWork(
+        action.maxFills,
+        placeLeavesRemainderCancel(
+          action.replacementOrderKind,
+          action.replacementTimeInForce,
+        ),
+        action.marginContribution !== undefined,
+      ),
+    )
+  }
+  if (action.kind === 'cancelMarketChunk') {
+    return cancelActionWork(action.maxOrders)
+  }
+  if (action.kind === 'armCancelSchedule') {
+    return scheduleActionWork(action.marketIds.length)
+  }
+  if (action.kind === 'renewCancelSchedule') {
+    return { ...EMPTY_WORK, storageOperations: RENEW_SCHEDULE_STORAGE_OPS }
+  }
+  if (action.kind === 'disarmCancelSchedule') {
+    return scheduleActionWork(EXCHANGE_ACTION_LIMITS.maxMarkets)
+  }
+  if (action.kind === 'adjustPositionCollateral') {
+    return {
+      ...EMPTY_WORK,
+      storageOperations: POSITION_COLLATERAL_STORAGE_OPS,
+      economicLogs: 1,
+      economicLogBytes: 256,
+    }
+  }
+  return { ...EMPTY_WORK, statefulScheduleRefinements: 1 }
+}
+
+function enforceActionWork(work: ActionWorkV2, actionCount: number): void {
+  const totalLogs = actionCount + work.l3Logs + work.economicLogs
+  const totalLogBytes =
+    actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes
+  const dimensions = [
+    ['radix writes', work.radixWrites, EXCHANGE_ACTION_LIMITS.maxRadixWrites],
+    [
+      'storage operations',
+      work.storageOperations,
+      EXCHANGE_ACTION_LIMITS.maxStorageOperations,
+    ],
+    ['logs', totalLogs, EXCHANGE_ACTION_LIMITS.maxLogs],
+    ['log bytes', totalLogBytes, EXCHANGE_ACTION_LIMITS.maxLogBytes],
+  ] as const
+  for (const [name, actual, maximum] of dimensions) {
+    if (actual > maximum) {
+      throw new Error(`batch work ${name} ${actual} exceeds ${maximum}`)
+    }
+  }
+}
+
+function validateAggregateBounds(batch: ExchangeActionBatch): void {
+  const clientIds = new Set<string>()
+  const markets = new Set<string>()
+  let cancels = 0
+  let fills = 0
+  let work = EMPTY_WORK
+  for (const action of batch.actions) {
+    const clientId = bytesToHex(
+      fixedBytes(action.clientActionId, 16, 'clientActionId'),
+    ).toLowerCase()
+    if (clientId !== `0x${'00'.repeat(16)}`) {
+      if (clientIds.has(clientId)) throw new Error('duplicate client action id')
+      clientIds.add(clientId)
+    }
+    if ('marketId' in action) markets.add(action.marketId.toLowerCase())
+    if (action.kind === 'armCancelSchedule')
+      for (const market of action.marketIds) markets.add(market.toLowerCase())
+    if (
+      action.kind === 'cancelByOrderId' ||
+      action.kind === 'cancelByClientOrderId' ||
+      action.kind === 'cancelReplace'
+    )
+      cancels += 1
+    else if (action.kind === 'cancelMarketChunk') cancels += action.maxOrders
+    if (action.kind === 'place' || action.kind === 'cancelReplace')
+      fills += action.maxFills
+    work = addActionWork(work, actionWorkFromModel(action))
+  }
+  if (markets.size > EXCHANGE_ACTION_LIMITS.maxMarkets)
+    throw new Error('batch contains more than 16 markets')
+  if (cancels > EXCHANGE_ACTION_LIMITS.maxCancels)
+    throw new Error('batch requests more than 64 cancels')
+  if (fills > EXCHANGE_ACTION_LIMITS.maxFills)
+    throw new Error('batch requests more than 64 fills')
+  enforceActionWork(work, batch.actions.length)
+}
+
+/** State-independent admission work for a batch, mirroring Rust's static summary. */
+export type ExchangeActionAdmissionWork = {
+  /** State-independent canonical L3 logs, including remainder-cancel Removes. */
+  l3Logs: number
+  /** Frozen topic-plus-data bytes for state-independent L3 mutation logs. */
+  l3LogBytes: number
+  /** State-independent fill, cancel, and other economic logs. */
+  economicLogs: number
+  /** Frozen bytes for state-independent economic logs. */
+  economicLogBytes: number
+  /** Stateless total including outcome logs, before schedule-trigger refinement. */
+  totalLogs: number
+  /** Stateless total bytes before schedule-trigger refinement. */
+  totalLogBytes: number
+  /** Trigger actions whose work must be refined from canonical schedule state. */
+  statefulScheduleRefinements: number
+  /** Always true: syntax/static work admission never authorizes mutation. */
+  requiresStatefulPreflight: true
+}
+
+/**
+ * Compute state-independent admission work for a batch without encoding.
+ *
+ * This mirrors the state-independent portion of Rust's `HftAdmissionSummaryV2`.
+ * IOC/market places (and IOC/market cancel-replace replacements) reserve one
+ * extra L3 `Remove` for the cancelled crossing remainder. Schedule triggers
+ * increment `statefulScheduleRefinements`, but their radix, storage, and log
+ * work is intentionally absent from these totals until runtime reads canonical
+ * schedule state and refines every marker. This static summary never authorizes
+ * execution on its own.
+ */
+export function exchangeActionBatchAdmissionWork(
+  batch: ExchangeActionBatch,
+): ExchangeActionAdmissionWork {
+  let work = EMPTY_WORK
+  for (const action of batch.actions) {
+    work = addActionWork(work, actionWorkFromModel(action))
+  }
+  const actionCount = batch.actions.length
+  return {
+    l3Logs: work.l3Logs,
+    l3LogBytes: work.l3LogBytes,
+    economicLogs: work.economicLogs,
+    economicLogBytes: work.economicLogBytes,
+    totalLogs: actionCount + work.l3Logs + work.economicLogs,
+    totalLogBytes:
+      actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes,
+    statefulScheduleRefinements: work.statefulScheduleRefinements,
+    requiresStatefulPreflight: true,
+  }
+}
+
+/** Encode one canonical DXA2 batch with the same selected Task 5 limits as Rust. */
+export function encodeExchangeActionBatch(batch: ExchangeActionBatch): Hex {
+  if (typeof batch !== 'object' || batch === null) {
+    throw new Error('batch must be an object')
+  }
+  strictObjectKeys(batch, ['atomicity', 'actions'], 'batch')
+  if (
+    batch.atomicity !== 'atomicAll' &&
+    batch.atomicity !== 'continueOnReject'
+  ) {
+    throw new Error('unknown batch atomicity')
+  }
+  if (!Array.isArray(batch.actions)) throw new Error('actions must be an array')
+  if (batch.actions.length === 0) throw new Error('actions must be nonempty')
+  if (batch.actions.length > EXCHANGE_ACTION_LIMITS.maxActions) {
+    throw new Error('batch supports at most 32 actions')
+  }
+  const records = batch.actions.map(encodeAction)
+  validateAggregateBounds(batch)
+  const writer = new Writer()
+  writer.push(MAGIC)
+  writer.u8(VERSION, 'version')
+  writer.u8(batch.atomicity === 'atomicAll' ? 0 : 1, 'atomicity')
+  writer.u16(0, 'reserved')
+  writer.u16(records.length, 'action count')
+  writer.u16(0, 'reserved')
+  for (const record of records) writer.push(record)
+  const encoded = writer.output()
+  if (encoded.length > EXCHANGE_ACTION_LIMITS.maxEncodedBytes) {
+    throw new Error('encoded batch exceeds 16384 bytes')
+  }
+  return bytesToHex(encoded)
+}
+
+function decodeEnum<T>(value: number, values: readonly T[], name: string): T {
+  const decoded = values[value]
+  if (decoded === undefined) throw new Error(`unknown ${name} ${value}`)
+  return decoded
+}
+
+function decodedOrderFields(
+  reader: Reader,
+  _orderKind: OrderKind,
+): {
+  timeInForce: TimeInForce
+  postOnly: boolean
+  reduceOnly: boolean
+  pricingVersion: 0 | 1
+  options: number
+  marginType: ExchangeActionMarginType
+  priceTicks: bigint
+  quantityLots: bigint
+  maxFills: number
+  maxPriceLevels: number
+  clientOrderId?: Hex
+  marginContribution?: bigint
+} {
+  const tif = reader.u8('time in force')
+  const flags = reader.u8('flags')
+  const options = reader.u8('options')
+  if ((flags & ~0x07) !== 0 || (options & ~0x07) !== 0)
+    throw new Error('nonzero reserved order bits')
+  const marginType = decodeEnum(
+    reader.u8('margin type'),
+    ['cross', 'isolated', 'unified'] as const,
+    'margin type',
+  )
+  if (reader.u16('reserved') !== 0) throw new Error('nonzero reserved bytes')
+  const priceTicks = reader.u64('price ticks')
+  const quantityLots = reader.u64('quantity lots')
+  const expiry = reader.u64('expiry')
+  const maxFills = reader.u16('max fills')
+  const maxPriceLevels = reader.u16('max price levels')
+  const rawClientOrderId = reader.take(32, 'client order id')
+  const rawMargin = reader.u256('margin contribution')
+  const expiryPresent = (options & 0x02) !== 0
+  const timeInForce: TimeInForce =
+    tif === 0 && !expiryPresent && expiry === 0n
+      ? { kind: 'gtc' }
+      : tif === 1 && expiryPresent && expiry !== 0n
+        ? { kind: 'gtd', expiry }
+        : tif === 2 && !expiryPresent && expiry === 0n
+          ? { kind: 'ioc' }
+          : tif === 3 && !expiryPresent && expiry === 0n
+            ? { kind: 'fok' }
+            : (() => {
+                throw new Error('noncanonical time in force')
+              })()
+  const clientPresent = (options & 0x01) !== 0
+  const clientZero = rawClientOrderId.every((byte) => byte === 0)
+  if (clientPresent === clientZero)
+    throw new Error('noncanonical client order id option')
+  const marginPresent = (options & 0x04) !== 0
+  if (marginPresent === (rawMargin === 0n))
+    throw new Error('noncanonical margin option')
+  return {
+    timeInForce,
+    postOnly: (flags & 0x01) !== 0,
+    reduceOnly: (flags & 0x02) !== 0,
+    pricingVersion: (flags & 0x04) !== 0 ? 1 : 0,
+    options,
+    marginType,
+    priceTicks,
+    quantityLots,
+    maxFills,
+    maxPriceLevels,
+    ...(clientPresent ? { clientOrderId: bytesToHex(rawClientOrderId) } : {}),
+    ...(marginPresent ? { marginContribution: rawMargin } : {}),
+  }
+}
+
+function decodeRecord(record: Uint8Array): ExchangeAction {
+  const reader = new Reader(record)
+  const tag = reader.u8('action tag')
+  if (reader.u8('reserved') !== 0)
+    throw new Error('nonzero reserved action byte')
+  const declaredLength = reader.u16('record length')
+  if (declaredLength !== record.length)
+    throw new Error('record length mismatch')
+  const clientActionId = bytesToHex(reader.take(16, 'client action id'))
+  if (tag === 0x01) {
+    const marketId = bytesToHex(reader.take(32, 'market id'))
+    const side = decodeEnum(reader.u8('side'), ['buy', 'sell'] as const, 'side')
+    const orderKind = decodeEnum(
+      reader.u8('order kind'),
+      ['limit', 'market'] as const,
+      'order kind',
+    )
+    const fields = decodedOrderFields(reader, orderKind)
+    const { options: _options, ...orderFields } = fields
+    return {
+      kind: 'place',
+      clientActionId,
+      marketId,
+      side,
+      orderKind,
+      ...orderFields,
+    }
+  }
+  if (tag === 0x02 || tag === 0x03) {
+    const marketId = bytesToHex(reader.take(32, 'market id'))
+    const id = bytesToHex(reader.take(32, 'cancel id'))
+    return tag === 0x02
+      ? { kind: 'cancelByOrderId', clientActionId, marketId, orderId: id }
+      : {
+          kind: 'cancelByClientOrderId',
+          clientActionId,
+          marketId,
+          clientOrderId: id,
+        }
+  }
+  if (tag === 0x04) {
+    const marketId = bytesToHex(reader.take(32, 'market id'))
+    const cancelTarget = decodeEnum(
+      reader.u8('cancel target'),
+      ['orderId', 'clientOrderId'] as const,
+      'cancel target',
+    )
+    const replacementSide = decodeEnum(
+      reader.u8('side'),
+      ['buy', 'sell'] as const,
+      'side',
+    )
+    const replacementOrderKind = decodeEnum(
+      reader.u8('order kind'),
+      ['limit', 'market'] as const,
+      'order kind',
+    )
+    const tif = reader.u8('time in force')
+    const flags = reader.u8('flags')
+    const options = reader.u8('options')
+    const replacementMarginType = decodeEnum(
+      reader.u8('margin type'),
+      ['cross', 'isolated', 'unified'] as const,
+      'margin type',
+    )
+    if (reader.u8('reserved') !== 0) throw new Error('nonzero reserved byte')
+    const targetId = bytesToHex(reader.take(32, 'target id'))
+    const rawClient = reader.take(32, 'new client order id')
+    const replacementPriceTicks = reader.u64('replacement price ticks')
+    const replacementQuantityLots = reader.u64('replacement quantity lots')
+    const expiry = reader.u64('expiry')
+    const maxFills = reader.u16('max fills')
+    const maxPriceLevels = reader.u16('max price levels')
+    const margin = reader.u256('margin contribution')
+    const synthetic = new Writer()
+    synthetic.u8(tif, 'time in force')
+    synthetic.u8(flags, 'flags')
+    synthetic.u8(options, 'options')
+    synthetic.u8(
+      enumValue(
+        replacementMarginType,
+        { cross: 0, isolated: 1, unified: 2 },
+        'margin type',
+      ),
+      'margin type',
+    )
+    synthetic.u16(0, 'reserved')
+    synthetic.u64(replacementPriceTicks, 'price')
+    synthetic.u64(replacementQuantityLots, 'quantity')
+    synthetic.u64(expiry, 'expiry')
+    synthetic.u16(maxFills, 'fills')
+    synthetic.u16(maxPriceLevels, 'levels')
+    synthetic.push(rawClient)
+    synthetic.u256(margin, 'margin')
+    const decoded = decodedOrderFields(
+      new Reader(synthetic.output()),
+      replacementOrderKind,
+    )
+    const {
+      options: _options,
+      timeInForce: replacementTimeInForce,
+      postOnly: replacementPostOnly,
+      reduceOnly: replacementReduceOnly,
+      pricingVersion: replacementPricingVersion,
+      marginType: _marginType,
+      priceTicks: _priceTicks,
+      quantityLots: _quantityLots,
+      clientOrderId: newClientOrderId,
+      marginContribution,
+    } = decoded
+    return {
+      kind: 'cancelReplace',
+      clientActionId,
+      marketId,
+      cancelTarget,
+      targetId,
+      replacementSide,
+      replacementOrderKind,
+      replacementTimeInForce,
+      replacementPostOnly,
+      replacementReduceOnly,
+      replacementPricingVersion,
+      replacementMarginType,
+      replacementPriceTicks,
+      replacementQuantityLots,
+      maxFills,
+      maxPriceLevels,
+      ...(newClientOrderId === undefined ? {} : { newClientOrderId }),
+      ...(marginContribution === undefined ? {} : { marginContribution }),
+    }
+  }
+  if (tag === 0x05) {
+    const marketId = bytesToHex(reader.take(32, 'market id'))
+    const maxOrders = reader.u16('max orders')
+    if (reader.u16('reserved') !== 0) throw new Error('nonzero reserved bytes')
+    return { kind: 'cancelMarketChunk', clientActionId, marketId, maxOrders }
+  }
+  if (tag === 0x0a) {
+    const marketId = bytesToHex(reader.take(32, 'market id'))
+    const raw = reader.u256('collateral delta')
+    const collateralDelta = raw >= 1n << 255n ? raw - (1n << 256n) : raw
+    if (collateralDelta === 0n)
+      throw new Error('collateral delta must be nonzero')
+    return {
+      kind: 'adjustPositionCollateral',
+      clientActionId,
+      marketId,
+      collateralDelta,
+    }
+  }
+  const scheduleId = bytesToHex(reader.take(32, 'schedule id'))
+  if (tag === 0x06) {
+    const authorizationExpiry = reader.u64('authorization expiry')
+    const cancellationDeadline = reader.u64('cancellation deadline')
+    const expectedRenewalCounter = reader.u64('renewal counter')
+    const maxOrdersPerTrigger = reader.u16('max orders')
+    const marketCount = reader.u16('market count')
+    const marketIds = Array.from({ length: marketCount }, () =>
+      bytesToHex(reader.take(32, 'market id')),
+    )
+    return {
+      kind: 'armCancelSchedule',
+      clientActionId,
+      scheduleId,
+      authorizationExpiry,
+      cancellationDeadline,
+      expectedRenewalCounter,
+      maxOrdersPerTrigger,
+      marketIds,
+    }
+  }
+  if (tag === 0x07)
+    return {
+      kind: 'renewCancelSchedule',
+      clientActionId,
+      scheduleId,
+      expectedRenewalCounter: reader.u64('renewal counter'),
+      newDeadline: reader.u64('new deadline'),
+    }
+  if (tag === 0x08)
+    return {
+      kind: 'disarmCancelSchedule',
+      clientActionId,
+      scheduleId,
+      expectedRenewalCounter: reader.u64('renewal counter'),
+    }
+  if (tag === 0x09)
+    return { kind: 'triggerCancelSchedule', clientActionId, scheduleId }
+  throw new Error(`unknown action tag ${tag}`)
+}
+
+function boundedHexBytes(encoded: Hex): Uint8Array {
+  if (typeof encoded !== 'string' || !encoded.startsWith('0x')) {
+    throw new Error('encoded batch must be 0x-prefixed hex')
+  }
+  const hexLength = encoded.length - 2
+  if (hexLength % 2 !== 0)
+    throw new Error('encoded batch must be even-length hex')
+  if (hexLength / 2 > EXCHANGE_ACTION_LIMITS.maxEncodedBytes) {
+    throw new Error('encoded batch exceeds 16384 bytes')
+  }
+  if (!/^[0-9a-fA-F]*$/.test(encoded.slice(2))) {
+    throw new Error('encoded batch contains invalid hex')
+  }
+  return hexToBytes(encoded)
+}
+
+/**
+ * Decode the remainder-cancel disposition of a place leg from wire bytes: a
+ * market order kind (`1`) or an IOC time-in-force tag (`2`) leaves a cancelled
+ * remainder. Mirrors Rust's `place_remainder_cancel_from_wire`.
+ */
+function wireRemainderCancel(orderKindByte: number, tifByte: number): boolean {
+  return orderKindByte === 1 || tifByte === 2
+}
+
+function readWireU16(bytes: Uint8Array, offset: number): number {
+  if (offset + 2 > bytes.length) throw new Error('truncated action record')
+  return bytes[offset]! * 0x100 + bytes[offset + 1]!
+}
+
+function exactWireRecordLength(
+  bytes: Uint8Array,
+  offset: number,
+  length: number,
+): ActionWorkV2 {
+  const tag = bytes[offset]!
+  const fixedLengths: Readonly<Record<number, number>> = {
+    1: 152,
+    2: 84,
+    3: 84,
+    4: 184,
+    5: 56,
+    7: 68,
+    8: 60,
+    9: 52,
+    10: 84,
+  }
+  if (tag === 6) {
+    if (length < 80) throw new Error('truncated arm schedule record')
+    const marketCount = readWireU16(bytes, offset + 78)
+    const expected = 80 + marketCount * 32
+    if (length !== expected) {
+      throw new Error(
+        `arm schedule record length ${length} does not match ${expected}`,
+      )
+    }
+    if (marketCount < 1 || marketCount > EXCHANGE_ACTION_LIMITS.maxMarkets) {
+      throw new Error('wire schedule market count must be between 1 and 16')
+    }
+    return scheduleActionWork(marketCount)
+  }
+  const expected = fixedLengths[tag]
+  if (expected === undefined) throw new Error(`unknown action tag ${tag}`)
+  if (length !== expected) {
+    throw new Error(
+      `action tag ${tag} record length ${length} does not match ${expected}`,
+    )
+  }
+  if (tag === 1) {
+    return placeActionWork(
+      readWireU16(bytes, offset + 84),
+      wireRemainderCancel(bytes[offset + 53]!, bytes[offset + 54]!),
+      (bytes[offset + 56]! & 0x04) !== 0,
+    )
+  }
+  if (tag === 2 || tag === 3) return cancelActionWork(1)
+  if (tag === 4) {
+    return addActionWork(
+      cancelActionWork(1),
+      placeActionWork(
+        readWireU16(bytes, offset + 148),
+        wireRemainderCancel(bytes[offset + 54]!, bytes[offset + 55]!),
+        (bytes[offset + 57]! & 0x04) !== 0,
+      ),
+    )
+  }
+  if (tag === 5) return cancelActionWork(readWireU16(bytes, offset + 52))
+  if (tag === 7) {
+    return { ...EMPTY_WORK, storageOperations: RENEW_SCHEDULE_STORAGE_OPS }
+  }
+  if (tag === 8) {
+    return scheduleActionWork(EXCHANGE_ACTION_LIMITS.maxMarkets)
+  }
+  if (tag === 10) {
+    return {
+      ...EMPTY_WORK,
+      storageOperations: POSITION_COLLATERAL_STORAGE_OPS,
+      economicLogs: 1,
+      economicLogBytes: 256,
+    }
+  }
+  return { ...EMPTY_WORK, statefulScheduleRefinements: 1 }
+}
+
+function preflightWireWork(bytes: Uint8Array, actionCount: number): void {
+  let offset = HEADER_BYTES
+  let work = EMPTY_WORK
+  enforceActionWork(work, actionCount)
+  for (let index = 0; index < actionCount; index += 1) {
+    if (offset + ACTION_PREFIX_BYTES > bytes.length) {
+      throw new Error('truncated action prefix')
+    }
+    const length = readWireU16(bytes, offset + 2)
+    if (length < ACTION_PREFIX_BYTES || offset + length > bytes.length) {
+      throw new Error('truncated action record')
+    }
+    work = addActionWork(work, exactWireRecordLength(bytes, offset, length))
+    enforceActionWork(work, actionCount)
+    offset += length
+  }
+  if (offset !== bytes.length) {
+    throw new Error('trailing bytes after action batch')
+  }
+}
+
+/** Strictly decode canonical DXA2 bytes and reject alternate encodings. */
+export function decodeExchangeActionBatch(encoded: Hex): ExchangeActionBatch {
+  const bytes = boundedHexBytes(encoded)
+  if (bytes.length < HEADER_BYTES) throw new Error('truncated batch header')
+  if (!MAGIC.every((byte, index) => bytes[index] === byte))
+    throw new Error('invalid DXA2 magic')
+  if (bytes[4] !== VERSION)
+    throw new Error(`unsupported action batch version ${bytes[4]}`)
+  const atomicity = decodeEnum(
+    bytes[5]!,
+    ['atomicAll', 'continueOnReject'] as const,
+    'atomicity',
+  )
+  const header = new Reader(bytes.slice(6, HEADER_BYTES))
+  if (header.u16('reserved') !== 0)
+    throw new Error('nonzero reserved header bytes')
+  const actionCount = header.u16('action count')
+  if (header.u16('reserved') !== 0)
+    throw new Error('nonzero reserved header bytes')
+  if (actionCount === 0) throw new Error('actions must be nonempty')
+  if (actionCount > EXCHANGE_ACTION_LIMITS.maxActions) {
+    throw new Error('batch supports at most 32 actions')
+  }
+  const minimumBytes = HEADER_BYTES + actionCount * ACTION_PREFIX_BYTES
+  if (bytes.length < minimumBytes) {
+    throw new Error(
+      `minimum record footprint ${minimumBytes} exceeds ${bytes.length} bytes`,
+    )
+  }
+  preflightWireWork(bytes, actionCount)
+  const actions: ExchangeAction[] = []
+  let offset = HEADER_BYTES
+  for (let index = 0; index < actionCount; index += 1) {
+    if (offset + 4 > bytes.length) throw new Error('truncated action prefix')
+    const length = bytes[offset + 2]! * 0x100 + bytes[offset + 3]!
+    if (length < 20 || offset + length > bytes.length)
+      throw new Error('truncated action record')
+    actions.push(decodeRecord(bytes.slice(offset, offset + length)))
+    offset += length
+  }
+  if (offset !== bytes.length)
+    throw new Error('trailing bytes after action batch')
+  const batch: ExchangeActionBatch = { atomicity, actions }
+  if (
+    encodeExchangeActionBatch(batch).toLowerCase() !== encoded.toLowerCase()
+  ) {
+    throw new Error('noncanonical action batch encoding')
+  }
+  return batch
+}
+
+/** ABI-encode the top-level precompile call without adding action signatures/nonces. */
+export function prepareExchangeActionsTransaction(parameters: {
+  book: ExchangeBook
+  batch: ExchangeActionBatch
+}): { to: Address; data: Hex; value: 0n } {
+  const encodedActions = encodeExchangeActionBatch(parameters.batch)
+  // The accepted native baseline rejects 0x04. Keep prospective codecs usable
+  // for fixtures while refusing wallet preparation/signing until native admission
+  // and cross-language vectors have been qualified together.
+  if (
+    parameters.batch.actions.some(
+      (action) =>
+        (action.kind === 'place' && action.pricingVersion === 1) ||
+        (action.kind === 'cancelReplace' &&
+          action.replacementPricingVersion === 1),
+    )
+  ) {
+    throw new Error('Pricing version 1 requires qualified native admission')
+  }
+  let to: Address
+  if (parameters.book === 'spot') to = DIESIS_SPOT_BOOK
+  else if (parameters.book === 'perpetual') to = DIESIS_PERPS_BOOK
+  else throw new Error(`unknown exchange book ${String(parameters.book)}`)
+  return {
+    to,
+    data: encodeFunctionData({
+      abi: IDiesisSpotBookAbi,
+      functionName: 'submitExchangeActions',
+      args: [encodedActions],
+    }),
+    value: 0n,
+  }
+}
+
+export type SignExchangeActionsParameters = {
+  book: ExchangeBook
+  batch: ExchangeActionBatch
+  transaction: Omit<TransactionSerializableEIP1559, 'to' | 'data' | 'value'> & {
+    chainId: number
+    nonce: number
+  }
+}
+
+/** Sign one ordinary EIP-1559 transaction; only its Ethereum nonce provides replay protection. */
+export function signExchangeActionsTransaction(
+  account: Pick<LocalAccount, 'signTransaction'>,
+  parameters: SignExchangeActionsParameters,
+): Promise<Hex> {
+  const prepared = prepareExchangeActionsTransaction(parameters)
+  return account.signTransaction({
+    ...parameters.transaction,
+    type: 'eip1559',
+    ...prepared,
+  })
+}
+
+export type SendExchangeActionsParameters = {
+  book: ExchangeBook
+  batch: ExchangeActionBatch
+  transaction: {
+    nonce: number
+    gas: bigint
+    maxFeePerGas: bigint
+    maxPriorityFeePerGas: bigint
+  }
+}
+
+/**
+ * Submit one ordinary transaction through the gated Diesis method
+ * `diesis_sendRawTransaction`, which applies the reserved-cancel admission gate
+ * and works on the strict trading endpoint. Nodes without the gated extension
+ * fall back to `eth_sendRawTransaction` only when the gated method is absent.
+ * Only the Ethereum nonce provides replay protection.
+ */
+export async function sendExchangeActionsTransaction(
+  client: Client<Transport, Chain, LocalAccount>,
+  parameters: SendExchangeActionsParameters,
+): Promise<Hash> {
+  const serializedTransaction = await signExchangeActionsTransaction(
+    client.account,
+    {
+      ...parameters,
+      transaction: {
+        ...parameters.transaction,
+        type: 'eip1559',
+        chainId: client.chain.id,
+      },
+    },
+  )
+
+  try {
+    return await client.request({
+      method: 'diesis_sendRawTransaction' as never,
+      params: [serializedTransaction] as never,
+    } as never)
+  } catch (error) {
+    if (
+      typeof error !== 'object' ||
+      error === null ||
+      !('code' in error) ||
+      error.code !== -32601
+    ) {
+      throw error
+    }
+  }
+
+  return sendRawTransaction(client, { serializedTransaction })
+}
+
+export * from './actions-v2-results.js'

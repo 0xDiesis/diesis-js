@@ -1,0 +1,3 @@
+src/abi/index.ts
+src/abi/generated/viem/
+src/abi/bindings/
