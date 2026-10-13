@@ -129,16 +129,15 @@ Other reads on `publicClient.exchange` include `getMarket`, `getTrades`,
 
 ## Trade without gas
 
-**In short.** You sign an order with your wallet, the same way you'd sign a
-login message. A relayer pays the fee and puts it on chain for you. Your
-account never needs DS for gas.
+A supported, configured route can sponsor a signed order intent. This is not
+an unconditional property of an account or of installing this SDK.
 
-**Details.** An order intent is EIP-712 typed data. Its `verifyingContract`
-must be the book the order is routed to, `DIESIS_SPOT_BOOK` or
-`DIESIS_PERPS_BOOK`. A mismatch fails signature checks on chain.
-`submitIntent` sends it to `diesis_submitIntent`, which is the sponsored retail
-path. An optional conductor can take a fee, capped by `conductorFeeBps` and
-`maxConductorFee`.
+An order intent is EIP-712 typed data. Its verifying contract must match the
+qualified route's target book; the example below uses `DIESIS_SPOT_BOOK`.
+`submitIntent` invokes `diesis_submitIntent`. A valid signature or a perpetual
+book ABI does not prove that the connected node admits that action through this
+method. Check the route's supported methods and configuration first. An optional
+conductor fee is bounded by `conductorFeeBps` and `maxConductorFee`.
 
 ```typescript
 import { addresses, OrderFlags, OrderType, Side } from '@diesis/sdk'
@@ -164,6 +163,47 @@ const signedIntent = await walletClient.signOrderIntent(
 
 const intentHash = await walletClient.submitIntent({ intent: signedIntent })
 ```
+
+### Check sponsorship before offering the action
+
+Use an explicitly configured RPC endpoint and verify its chain ID and deployment
+or genesis identity against the operator's supported tuple. Bind the account,
+market, action and signing domain to that tuple. SDK bindings do not establish
+that the connected node admits the operation.
+
+There are distinct submission routes:
+
+- Supported native DAG intent ingress uses its own admission contract. Do not
+  apply the relay's queue rule to it or infer support from an ABI.
+- The sponsored relayer requires `DIESIS_EXCHANGE_RELAY_SUBMISSION=enabled`
+  and an exclusively owned, funded relayer key. A default node has no such key
+  and can reject sponsorship with a configuration error. Only its supported
+  action set is admitted.
+- Patron grants and vouchers have their own eligibility, budgets and consent.
+  A grant balance is not an authoritative eligibility answer for this intent.
+
+Show the actual payer and supported limits before signing. If those facts or the
+route are unavailable, explain that sponsorship is unavailable. Do not silently
+fall back to sender-paid execution or reinterpret the signed economic action.
+
+For the sponsored relayer, persist the complete signed intent and its binding
+before submission. It admits at most one non-finalized sponsored action per
+verified principal. Keep the principal's queue blocked until the matching tracker
+reports `finalized` or `terminal_expired`; those states release relay admission
+capacity, not every form of financial authority. Direct EVM transactions and
+native DAG ingress have separate admission rules.
+
+If submission times out, retain the original. Obtain the exact action identity
+using the producer's supported admission/recovery contract, then use
+`getExchangeActionStatus({ actionHash })` for that identity. A transport error,
+`null` result, empty read or unknown state cannot establish non-admission:
+`null` can also mean a finalized tombstone aged out. Do not allocate a new intent,
+nonce, or payment merely because a response was lost. A tracker error remains
+unavailable. Keep relay action hashes distinct from EVM transaction hashes.
+
+The [Core public RPC policy](https://github.com/0xDiesis/diesis/blob/main/docs/public-rpc.md)
+defines the admitted methods, configuration and principal queue contract. Verify
+that contract against the node version you actually connect to.
 
 `signCancelIntent` and `buildSignedCancelIntent` cover gasless cancels.
 `registerTradingKey` lets a hot key sign on behalf of a main account, within an
@@ -563,6 +603,65 @@ EIP-7966 receipt directly. It records inclusion observed by that node, not
 certified finality, and that block may still be orphaned. It does not sign an unsigned object. An EVM transaction
 hash, exchange relay action hash, ERC-4337 UserOperation hash and bundle execution
 plan hash identify different objects: query the corresponding status surface.
+
+### Check ordinary native finalized inclusion
+
+This recipe is for an **ordinary EVM transaction on Diesis**, using a qualified,
+trusted RPC endpoint. It does not interpret a relay action hash, UserOperation,
+bundle plan or Ethereum L1 receipt as the same object. It does not independently
+verify a consensus proof. Configure the expected chain ID, genesis/deployment
+identity and endpoint from the operator's qualified tuple; a chain ID alone does
+not distinguish testnet resets.
+
+Keep the original transaction hash and network identity across reloads. Fetch
+these observations using the same configured client:
+
+```typescript
+const receipt = await publicClient.getTransactionReceipt({
+  hash: evmTransactionHash,
+})
+const receiptBlock = await publicClient.getBlock({
+  blockNumber: receipt.blockNumber,
+})
+const finalized = await publicClient.getBlock({ blockTag: 'finalized' })
+const finalizedByNumber = await publicClient.getBlock({
+  blockNumber: finalized.number,
+})
+const genesis = await publicClient.getBlock({ blockNumber: 0n })
+```
+
+These reads are inputs, not a settlement verifier. Apply the following checks:
+
+1. Verify RPC chain ID and genesis/deployment identity against the stored expected
+   network tuple. Refuse a mismatch or reset instead of adopting it automatically.
+2. Verify the receipt's transaction hash is the original, its block number/hash
+   agree with `receiptBlock`, and the full block contains that exact transaction.
+   A receipt's success field alone is execution evidence.
+3. Require a real `finalized` block number/hash and agreement with the numbered
+   endpoint. If the receipt is above that anchor, report not finalized yet.
+   Never use `latest - 1`, a publication height or confirmation count as a
+   replacement for unavailable finality.
+4. Bind inclusion to the captured finalized prefix. Verify the parent-hash chain
+   from that exact anchor to the receipt block, or use an already validated,
+   contiguous stored prefix with the same height/hash/network identity. Compare
+   full block bodies with captured headers. Use bounded batches; if a traversal
+   exceeds the configured budget, retain not-yet-verified state and continue
+   read-only reconciliation. A height comparison alone is insufficient.
+5. Recheck network identity before accepting the result. On mixed/malformed RPC
+   identities, conflicting stored history or regressed anchors, halt settlement
+   and preserve the original for operator reconciliation. Failed reads remain
+   unavailable, not failed payments or permission to resend.
+6. Only after exact finalized inclusion is verified, use receipt status to report
+   finalized success or finalized execution failure. No additional probabilistic
+   confirmation depth is required for native Diesis once that evidence exists.
+
+Before integration, exercise unavailable/stalled finality, wrong network/reset,
+receipt/block mismatch, changing bodies and restart/duplicate reconciliation.
+The [Explorer finalized-ingestion contract](https://github.com/0xDiesis/diesis-explorer/blob/main/docs/native-finality.md)
+is an existing application pattern for captured anchors, ancestry and conflicts.
+This SDK exposes the observations above; it does not export a shared finalized
+inclusion verifier. Implement and review the checks before releasing assets or
+labelling an operation settled. Source recipes do not qualify a live endpoint.
 
 The public `@diesis/sdk/exchange/results` subpath exports V2 result decoding,
 ordered outcome commitment hashing, reason codes and outcome types. A decoded
