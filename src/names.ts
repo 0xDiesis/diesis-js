@@ -371,3 +371,5 @@ export function reverseResolveGenesisPrecompile(
 export function diesisNamehash(input: string): `0x${string}` {
   return namehash(normalizeDiesisName(input))
 }
+
+export * from './names-read.js'

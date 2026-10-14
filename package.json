@@ -78,6 +78,10 @@
     "./exchange/results": {
       "import": "./dist/exchange/actions-v2-results.js",
       "types": "./dist/exchange/actions-v2-results.d.ts"
+    },
+    "./rpc-errors": {
+      "import": "./dist/rpc-errors.js",
+      "types": "./dist/rpc-errors.d.ts"
     }
   },
   "scripts": {
@@ -98,7 +102,8 @@
     "prepare": "pnpm run build",
     "prepublishOnly": "pnpm run clean && pnpm run build",
     "test:codegen": "node --test test/codegen-inputs.node.mjs test/test-discovery.node.mjs test/custody-reads.node.mjs test/read-consumers.node.mjs",
-    "test:consumer": "node scripts/check-read-consumers.mjs && node --test test/exchange-consumer.node.mjs test/patronage-read-consumer.node.mjs test/bound-session-consumer.node.mjs"
+    "test:consumer": "node scripts/check-read-consumers.mjs && node --test test/exchange-consumer.node.mjs test/patronage-read-consumer.node.mjs test/bound-session-consumer.node.mjs",
+    "test:packed": "node scripts/check-packed-consumer.mjs"
   },
   "packageManager": "pnpm@12.6.0+sha512.3ef68f951cb111ac204b4a5a16f0b2ddf0da56a96e0413e81d855d9f0b55ef926714709028e1cd00c405c2c5fb7b9e8ec4dc46777c805d0373c2f2ff00fd20ec",
   "engines": {
@@ -168,6 +173,7 @@
     "dist",
     "canonical.json",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/route-action-matrix.md"
   ]
 }

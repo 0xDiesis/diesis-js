@@ -173,3 +173,6 @@ export type {
 export * from './abi/index.js'
 
 export * from './exchange/actions-v2-results.js'
+
+export * from './names-read.js'
+export * from './rpc-errors.js'

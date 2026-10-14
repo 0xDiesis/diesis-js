@@ -41,15 +41,102 @@ addresses, and signing formats. This package wraps them so you call
 
 ## Install
 
-The package is not on the npm registry yet. Install it from GitHub with
-authenticated Git access, and pin a commit so builds stay reproducible:
+Use Node `>=24.16.0` and pnpm `12.6.0`. The package is not on the npm registry.
+The following immutable Git revision is an existing installed option and requires
+authenticated Git access. It does not contain the new local reader or decoder.
 
 ```bash
-pnpm add 'git+https://github.com/0xDiesis/diesis-js.git#<commit>' viem
+pnpm add 'git+https://github.com/0xDiesis/diesis-js.git#8549f0c72da8a49658dca6d8ad10b247bc53f1a3' viem
 ```
 
-The `prepare` script runs `tsc` on install, so the `dist/` output is built for
-you.
+Git installation runs `prepare` to compile TypeScript. Consume this source-only
+work through its prebuilt local package after the repository's build and review:
+
+```bash
+pnpm add /absolute/path/to/diesis-sdk-0.1.0.tgz viem
+```
+
+The tarball contains compiled JavaScript, declarations, ABIs and canonical chain
+data. Consumers do not need the contracts repository or ABI generator. For source
+maintainers, `pnpm build` compiles the vendored bindings; ABI regeneration is a
+separate `pnpm codegen` operation requiring the explicitly selected contracts
+artifacts. Pack once after the final build with `pnpm pack --ignore-scripts`.
+Run `node scripts/check-packed-consumer.mjs /absolute/path/to/diesis-sdk-0.1.0.tgz`
+to install the artifact into a fresh consumer and check declarations and an
+explicit deterministic HTTP RPC fixture. The delivery compatibility manifest
+records exact source revisions and the package SHA-256. Fixture success is
+package/request evidence, not running-node or financial-runtime qualification.
+No new unpublished Git revision is an install option.
+
+## Route and action authority
+
+Read the [route/action matrix](docs/route-action-matrix.md) before choosing an
+exchange submission path. It lists operation identities, method/version scope,
+authoritative reads, missing action-level authority and unavailable behavior.
+`getRuntimeCapabilities()` retains its execution/witness meaning.
+
+## Structured signed-action errors
+
+```typescript
+import { decodeSignedActionError } from '@diesis/sdk/rpc-errors'
+
+try {
+  await walletClient.submitIntent({ intent })
+} catch (cause) {
+  const failure = decodeSignedActionError(cause)
+  // Retain failure.original/code/message/data/cause for diagnostics.
+  // Reconcile the original deterministic action identity before new submission.
+  console.log(failure.status, failure.reason, failure.admission)
+}
+```
+
+Version 1 accepts only `kind: 'signed-action-error'`, known reasons, their assigned
+codes, `retryable: false` and `admission: 'unknown'`. Unknown versions, malformed
+data, legacy raw errors and transport loss remain unknown. Wrapped viem causes
+are preserved. English messages never grant retry/admission authority, and this
+helper never dispatches. A timeout can hide an admitted submission.
+
+## Ordinary on-chain Names observation
+
+```typescript
+import { readNativeName, type NativeNamesRpc } from '@diesis/sdk/names'
+
+// Supply an explicit configured RPC adapter. It must enforce signal/deadline,
+// bytes before buffering, redirect refusal and no provider fallback.
+const rpc: NativeNamesRpc = configuredBoundedRpc
+const observation = await readNativeName(
+  rpc,
+  {
+    chainId: 1980,
+    expectedGenesisHash: configuredGenesisHash,
+    expectedRpcIdentity: configuredRpcRevision,
+    current: () => requestGeneration === currentGeneration,
+  },
+  'alice.ds',
+)
+console.log(observation.owner, observation.recipient, observation.anchor)
+```
+
+This new local helper requires explicit ASCII `.ds` input, performs code and
+registry checks with `{blockHash, requireCanonical: true}` selectors, then confirms
+the same numbered hash/timestamp and chain/genesis/RPC identity. Unsupported
+canonical selectors fail without a latest fallback. The total deadline is at
+most 15 seconds and each response at most 262,144 bytes, with tighter caller bounds
+allowed. The adapter must enforce those transport limits before decoding.
+
+The version-1 wire uses decimal strings for block/timestamp/expiry/ownershipEpoch.
+Owner and recipient are separate; expiry equality remains active, and zero expiry
+is perpetual. Expired records can retain a stored recipient as observation data.
+Unregistered, zero-record, no-resolver and unsupported custom-resolver states are
+explicit. Missing code, wrong resolver registry, malformed replies and failed
+reads throw `NativeNamesReadError`. No resolver or foreign suffix is guessed.
+
+`verification: 'rpc-observation'` means a read observation. It is not certified
+finality, an anti-reset guarantee or send authorization. Genesis is always
+observed; an expected genesis/RPC identity is only verified when supplied. Wallets
+must configure their own expected identity, retire stale generations, recheck
+before review/approval and sign the exact reviewed address under existing policy.
+No registration-secret, account or signing behavior changes here.
 
 ## Connect
 
