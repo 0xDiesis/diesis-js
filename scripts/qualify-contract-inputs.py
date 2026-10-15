@@ -14,7 +14,7 @@ import tomllib
 import urllib.request
 import zipfile
 
-REVISION = '281dcae85f6c695c00323b359877630ae4857b2e'
+REVISION = 'ef995163891c0469a7fa09a89a6e66c1705a7fe4'
 FORGE_COMMIT = 'cae51ad458f6abb64852b7709eb784352429825d'
 GENERATOR_COMMIT = '66d6e86e8aa6ebc06b22ebf8355cbaea256f0502'
 SRI = 'sha512-Kcamsoy2aRv4R3NYl6moleJa8fWdApyAgtaxZjKci0kaU66WYMuzizf9HYnrvBmQvUBru8sNtAXMI0F++om4fg=='

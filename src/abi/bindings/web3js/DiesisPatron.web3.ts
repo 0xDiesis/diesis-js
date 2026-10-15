@@ -71,6 +71,7 @@ export interface DiesisPatronMethods {
   updateGasLimits(reserveGas: Numbers, settleGas: Numbers): DiesisPatronMethod<'nonpayable', void>;
   updateStakingAddress(staking_: string): DiesisPatronMethod<'nonpayable', void>;
   withdrawContribution(grantId: string, amount: Numbers): DiesisPatronMethod<'nonpayable', void>;
+  withdrawContributionStep(grantId: string): DiesisPatronMethod<'nonpayable', boolean>;
   withdrawReservationExit(reservationId: string): DiesisPatronMethod<'nonpayable', void>;
 }
 

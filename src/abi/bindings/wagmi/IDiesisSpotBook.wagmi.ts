@@ -160,25 +160,7 @@ export function useIDiesisSpotBookStartOpeningAuction(
   };
 }
 
-export function useIDiesisSpotBookSubmitBoundSessionActions(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { encodedWrapper: `0x${string}` }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { encodedWrapper: `0x${string}` }) =>
-      writeContract({
-        address,
-        abi: IDiesisSpotBookAbi,
-        functionName: 'submitBoundSessionActions',
-        args: [args.encodedWrapper],
-      }),
-  };
-}
-
-export function useIDiesisSpotBookSubmitExchangeActions(
+export function useIDiesisSpotBookSubmitExchangeActionsV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { encodedActions: `0x${string}` }) => void;
@@ -190,7 +172,7 @@ export function useIDiesisSpotBookSubmitExchangeActions(
       writeContract({
         address,
         abi: IDiesisSpotBookAbi,
-        functionName: 'submitExchangeActions',
+        functionName: 'submitExchangeActionsV2',
         args: [args.encodedActions],
       }),
   };
@@ -297,38 +279,38 @@ export function useIDiesisSpotBookBatchAuctionClearedEvent(address: Address, lis
   });
 }
 
-export function useIDiesisSpotBookExchangeActionAcceptedEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisSpotBookExchangeActionAcceptedV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisSpotBookAbi,
-    eventName: 'ExchangeActionAccepted',
+    eventName: 'ExchangeActionAcceptedV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
 
-export function useIDiesisSpotBookExchangeActionRejectedEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisSpotBookExchangeActionRejectedV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisSpotBookAbi,
-    eventName: 'ExchangeActionRejected',
+    eventName: 'ExchangeActionRejectedV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
 
-export function useIDiesisSpotBookExchangeL3MutationEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisSpotBookExchangeL3MutationV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisSpotBookAbi,
-    eventName: 'ExchangeL3Mutation',
+    eventName: 'ExchangeL3MutationV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
 
-export function useIDiesisSpotBookExchangeTradeFillEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisSpotBookExchangeTradeFillV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisSpotBookAbi,
-    eventName: 'ExchangeTradeFill',
+    eventName: 'ExchangeTradeFillV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

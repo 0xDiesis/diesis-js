@@ -88,7 +88,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "applyPerpAbandonment",
+      "name": "applyPerpAbandonmentV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -152,7 +152,7 @@ export const IDiesisPerpDeployAbi = [
     },
     {
       "inputs": [],
-      "name": "expireNextUnactivatedPerp",
+      "name": "expireNextUnactivatedPerpV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -165,7 +165,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "expireUnactivatedPerp",
+      "name": "expireUnactivatedPerpV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -201,7 +201,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "finalizePerpPolicy",
+      "name": "finalizePerpPolicyV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -315,7 +315,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "getPerpPolicy",
+      "name": "getPerpPolicyV1",
       "outputs": [
         {
           "components": [
@@ -347,12 +347,12 @@ export const IDiesisPerpDeployAbi = [
                   "type": "uint16"
                 }
               ],
-              "internalType": "struct IDiesisPerpDeploy.RiskTierInput[]",
+              "internalType": "struct IDiesisPerpDeploy.RiskTierInputV1[]",
               "name": "tiers",
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct IDiesisPerpDeploy.PerpPolicy",
+          "internalType": "struct IDiesisPerpDeploy.PerpPolicyV1",
           "name": "policy",
           "type": "tuple"
         },
@@ -374,7 +374,7 @@ export const IDiesisPerpDeployAbi = [
               "type": "address[]"
             }
           ],
-          "internalType": "struct IDiesisPerpDeploy.MetadataKeyset",
+          "internalType": "struct IDiesisPerpDeploy.MetadataKeysetV1",
           "name": "keyset",
           "type": "tuple"
         }
@@ -420,7 +420,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "uint8"
         }
       ],
-      "name": "initializeBasicPerpMarket",
+      "name": "initializePerpMarketV1",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -493,12 +493,12 @@ export const IDiesisPerpDeployAbi = [
                   "type": "uint16"
                 }
               ],
-              "internalType": "struct IDiesisPerpDeploy.RiskTierInput[]",
+              "internalType": "struct IDiesisPerpDeploy.RiskTierInputV1[]",
               "name": "tiers",
               "type": "tuple[]"
             }
           ],
-          "internalType": "struct IDiesisPerpDeploy.PerpPolicy",
+          "internalType": "struct IDiesisPerpDeploy.PerpPolicyV1",
           "name": "policy",
           "type": "tuple"
         },
@@ -520,122 +520,12 @@ export const IDiesisPerpDeployAbi = [
               "type": "address[]"
             }
           ],
-          "internalType": "struct IDiesisPerpDeploy.MetadataKeyset",
+          "internalType": "struct IDiesisPerpDeploy.MetadataKeysetV1",
           "name": "keyset",
           "type": "tuple"
         }
       ],
-      "name": "initializePolicyPerpMarket",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "baseToken",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "quoteToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint64",
-          "name": "tickSize",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "lotSize",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "priceDenominator",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint256",
-          "name": "maxOpenInterest",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "initialMark",
-          "type": "uint256"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint64",
-              "name": "revision",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint16",
-              "name": "backstopTopupBps",
-              "type": "uint16"
-            },
-            {
-              "components": [
-                {
-                  "internalType": "uint64",
-                  "name": "maxNotional",
-                  "type": "uint64"
-                },
-                {
-                  "internalType": "uint8",
-                  "name": "maxLeverage",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint16",
-                  "name": "maintenanceMarginBps",
-                  "type": "uint16"
-                }
-              ],
-              "internalType": "struct IDiesisPerpDeploy.RiskTierInput[]",
-              "name": "tiers",
-              "type": "tuple[]"
-            }
-          ],
-          "internalType": "struct IDiesisPerpDeploy.PerpPolicy",
-          "name": "policy",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint64",
-              "name": "epoch",
-              "type": "uint64"
-            },
-            {
-              "internalType": "uint8",
-              "name": "threshold",
-              "type": "uint8"
-            },
-            {
-              "internalType": "address[]",
-              "name": "signers",
-              "type": "address[]"
-            }
-          ],
-          "internalType": "struct IDiesisPerpDeploy.MetadataKeyset",
-          "name": "keyset",
-          "type": "tuple"
-        }
-      ],
-      "name": "initializePricedPerpMarket",
+      "name": "initializePerpMarketV2",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -667,39 +557,6 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         },
         {
-          "internalType": "uint8",
-          "name": "baseDecimals",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint8",
-          "name": "quoteDecimals",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint8",
-          "name": "roundingPolicy",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "sourceSetHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "installPricedOracleDescriptor",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        },
-        {
           "internalType": "uint16",
           "name": "maxOrders",
           "type": "uint16"
@@ -710,7 +567,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "uint16"
         }
       ],
-      "name": "preparePerpMarketClose",
+      "name": "preparePerpMarketCloseV1",
       "outputs": [
         {
           "internalType": "bool",
@@ -774,7 +631,7 @@ export const IDiesisPerpDeployAbi = [
               "type": "uint16"
             }
           ],
-          "internalType": "struct IDiesisPerpDeploy.RiskTierInput[]",
+          "internalType": "struct IDiesisPerpDeploy.RiskTierInputV1[]",
           "name": "tiers",
           "type": "tuple[]"
         },
@@ -811,12 +668,12 @@ export const IDiesisPerpDeployAbi = [
               "type": "uint8"
             }
           ],
-          "internalType": "struct IDiesisPerpDeploy.MetadataSignature[]",
+          "internalType": "struct IDiesisPerpDeploy.MetadataSignatureV1[]",
           "name": "signatures",
           "type": "tuple[]"
         }
       ],
-      "name": "proposePerpPolicy",
+      "name": "proposePerpPolicyV1",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -908,19 +765,6 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "BasicPerpMarketInitialized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        }
-      ],
       "name": "Closed",
       "type": "event"
     },
@@ -984,7 +828,20 @@ export const IDiesisPerpDeployAbi = [
           "type": "bool"
         }
       ],
-      "name": "PerpMarketClosePrepared",
+      "name": "PerpMarketClosePreparedV1",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "PerpMarketInitializedV1",
       "type": "event"
     },
     {
@@ -1009,7 +866,7 @@ export const IDiesisPerpDeployAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "PolicyPerpMarketInitialized",
+      "name": "PerpMarketInitializedV2",
       "type": "event"
     },
     {

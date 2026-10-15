@@ -27,7 +27,7 @@ const parameters = {
   limits,
 }
 
-test('built root and Exchange preserve DXS3 principal/generation and generated viem calldata', () => {
+test('built root and Exchange preserve offline DXS3 principal/generation and refuse unavailable submission', () => {
   for (const name of [
     'encodeBoundSessionBatch',
     'decodeBoundSessionBatch',
@@ -48,24 +48,17 @@ test('built root and Exchange preserve DXS3 principal/generation and generated v
     ['spot', viem.diesisContracts.spotBook],
     ['perpetual', viem.diesisContracts.perpsBook],
   ]) {
-    const prepared = exchange.prepareBoundSessionActionsTransaction({
-      ...parameters,
-      book,
-    })
-    assert.equal(prepared.to, contract.address)
-    assert.equal(prepared.value, 0n)
-    assert.deepEqual(
-      decodeFunctionData({ abi: contract.abi, data: prepared.data }),
-      { functionName: 'submitBoundSessionActions', args: [encoded] },
+    assert.equal(
+      contract.abi.some(
+        (item) =>
+          item.type === 'function' && item.name === 'submitBoundSessionActions',
+      ),
+      false,
     )
-    const method = contract.abi.find(
-      (item) =>
-        item.type === 'function' && item.name === 'submitBoundSessionActions',
-    )
-    assert.equal(method.stateMutability, 'nonpayable')
-    assert.deepEqual(
-      method.outputs.map(({ type }) => type),
-      ['bytes32', 'uint16', 'uint16'],
+    assert.throws(
+      () =>
+        exchange.prepareBoundSessionActionsTransaction({ ...parameters, book }),
+      /bound-session submission is unavailable/,
     )
   }
 })
@@ -113,4 +106,71 @@ test('built consumers refuse invalid binding and legacy wire without signing or 
       }),
     /distinct/,
   )
+})
+
+test('built root and Exchange expose the complete V2 consent lifecycle without retired selectors', () => {
+  const terms = {
+    actionScope: exchange.exchangeActionScopeV2(['cancelByOrderId']),
+    validUntil: 4_000n,
+    maxNotionalOrSpend: 0n,
+    allowedMarketsMask: `0x${'ff'.repeat(32)}`,
+  }
+  for (const [name, parameters, method, args, selector] of [
+    [
+      'prepareAcceptSessionKeyV2Transaction',
+      { principal, ...terms },
+      'acceptSessionKeyV2',
+      [principal, ...Object.values(terms)],
+      '0xca2bba63',
+    ],
+    [
+      'prepareAuthorizeSessionKeyV2Transaction',
+      { sessionKey, ...terms },
+      'authorizeSessionKeyV2',
+      [sessionKey, ...Object.values(terms)],
+      '0xd1df736a',
+    ],
+    [
+      'prepareRevokeSessionKeyV2Transaction',
+      { sessionKey },
+      'revokeSessionKeyV2',
+      [sessionKey],
+      '0xa8163070',
+    ],
+    [
+      'prepareCancelSessionKeyConsentV2Transaction',
+      { sessionKey },
+      'revokeSessionKeyV2',
+      [sessionKey],
+      '0xa8163070',
+    ],
+    [
+      'prepareAuthorizeSessionKeyTransaction',
+      { sessionKey, ...terms },
+      'authorizeSessionKeyV2',
+      [sessionKey, ...Object.values(terms)],
+      '0xd1df736a',
+    ],
+    [
+      'prepareRevokeSessionKeyTransaction',
+      { sessionKey },
+      'revokeSessionKeyV2',
+      [sessionKey],
+      '0xa8163070',
+    ],
+  ]) {
+    assert.equal(typeof root[name], 'function', name)
+    assert.equal(root[name], exchange[name])
+    const request = root[name](parameters)
+    assert.equal(request.to, viem.diesisContracts.settlement.address)
+    assert.equal(request.value, 0n)
+    assert.equal(request.data.slice(0, 10), selector)
+    assert.deepEqual(
+      decodeFunctionData({
+        abi: viem.diesisContracts.settlement.abi,
+        data: request.data,
+      }),
+      { functionName: method, args },
+    )
+  }
 })

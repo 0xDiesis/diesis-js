@@ -4,26 +4,23 @@ import { IDiesisPerpsBookAbi } from '../../generated/viem/IDiesisPerpsBook.abi.j
 
 export interface IDiesisPerpsBookContract extends ethers.Contract {
   adjustIsolatedMargin(marketId: BytesLike, marginDelta: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  advancePricedPerpRuntime(policyHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  amendPerpOrder(orderId: BytesLike, price: BigNumberish, amount: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  applyPerpFunding(marketId: BytesLike, fundingRateBps: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  cancelPerpOrder(orderId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  executePerpTrade(makerOrderId: BytesLike, takerOrderId: BytesLike, fillPrice: BigNumberish, fillQty: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  expirePerpOrder(orderId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  finalizePerpFeeEpoch(marketId: BytesLike, epoch: BigNumberish, snapshotHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  amendPerpOrderV1(orderId: BytesLike, price: BigNumberish, amount: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  applyPerpFundingV1(marketId: BytesLike, fundingRateBps: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  cancelPerpOrderV1(orderId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  executePerpTradeV1(makerOrderId: BytesLike, takerOrderId: BytesLike, fillPrice: BigNumberish, fillQty: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  expirePerpOrderV1(orderId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  finalizePerpFeeEpochV2(marketId: BytesLike, epoch: BigNumberish, snapshotHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   getIsolatedMargin(trader: string, marketId: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
   getPosition(trader: string, marketId: BytesLike, overrides?: CallOverrides): Promise<[string, BigNumber, BigNumber] & { header: string; size: BigNumber; entryPrice: BigNumber }>;
-  submitBoundSessionActions(encodedWrapper: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  submitExchangeActions(encodedActions: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  submitPerpOrder(marketId: BytesLike, side: BigNumberish, orderType: BigNumberish, price: BigNumberish, amount: BigNumberish, flags: BigNumberish, marginType: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  submitSponsoredPerpActions(signedEnvelope: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  updatePerpMark(marketId: BytesLike, markPrice: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  updatePerpOracle(marketId: BytesLike, indexPrice: BigNumberish, markPrice: BigNumberish, observedAt: BigNumberish, oracleRound: BigNumberish, sourceSetHash: BytesLike, evidenceHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  updatePricedOracle(payload: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  submitExchangeActionsV2(encodedActions: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  submitPerpOrderV1(marketId: BytesLike, side: BigNumberish, orderType: BigNumberish, price: BigNumberish, amount: BigNumberish, flags: BigNumberish, marginType: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  submitSignedPerpActionsV2(signedEnvelope: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  updatePerpMarkV1(marketId: BytesLike, markPrice: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  updatePerpOracleV1(marketId: BytesLike, indexPrice: BigNumberish, markPrice: BigNumberish, observedAt: BigNumberish, oracleRound: BigNumberish, sourceSetHash: BytesLike, evidenceHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
-    ExchangeActionAccepted(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
-    ExchangeActionRejected(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
-    ExchangeL3Mutation(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
+    ExchangeActionAcceptedV2(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
+    ExchangeActionRejectedV2(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
+    ExchangeL3MutationV2(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     FundingApplied(marketId?: BytesLike | null): ethers.EventFilter;
     IsolatedMarginAdjusted(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     MarkPriceUpdated(marketId?: BytesLike | null): ethers.EventFilter;

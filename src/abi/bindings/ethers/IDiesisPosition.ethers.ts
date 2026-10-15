@@ -6,6 +6,7 @@ export interface IDiesisPositionMethods {
   approve(to: AddressLike, tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   balanceOf(owner: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   claimRewards(tokenId: BigNumberish, recipient: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  createRedemptionPosition(validator: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   delegate(tokenId: BigNumberish, overrides?: Overrides): Promise<ContractTransactionResponse>;
   effectiveLockUntil(tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   freeCollateralOf(tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;

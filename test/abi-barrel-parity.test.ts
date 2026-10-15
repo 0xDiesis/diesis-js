@@ -97,29 +97,18 @@ describe('ABI provider entry-point parity', () => {
   )
 })
 
-describe('Launch bound-session ABI availability', () => {
+describe('canonical ef995163 bound-session ABI boundary', () => {
   it.each([
     ['spot', abiBarrel.IDiesisSpotBookAbi],
     ['perpetual', abiBarrel.IDiesisPerpsBookAbi],
   ] as const)(
-    '%s exposes exactly one canonical bound-session method',
+    '%s does not advertise unsupported bound-session submission',
     (_book, abi) => {
       const methods = abi.filter(
         (item) =>
           item.type === 'function' && item.name === 'submitBoundSessionActions',
       )
-      expect(methods).toHaveLength(1)
-      expect(methods[0]).toMatchObject({
-        type: 'function',
-        name: 'submitBoundSessionActions',
-        stateMutability: 'nonpayable',
-        inputs: [{ name: 'encodedWrapper', type: 'bytes' }],
-        outputs: [
-          { name: 'resultHash', type: 'bytes32' },
-          { name: 'acceptedCount', type: 'uint16' },
-          { name: 'rejectedCount', type: 'uint16' },
-        ],
-      })
+      expect(methods).toHaveLength(0)
     },
   )
 })

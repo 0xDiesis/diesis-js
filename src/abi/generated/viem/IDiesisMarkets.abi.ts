@@ -57,50 +57,6 @@ export const IDiesisMarketsAbi = [
           "type": "uint64"
         },
         {
-          "internalType": "uint64",
-          "name": "priceDenominator",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint256",
-          "name": "bond",
-          "type": "uint256"
-        }
-      ],
-      "name": "createPricedSpotMarket",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "baseToken",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "quoteToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint64",
-          "name": "tickSize",
-          "type": "uint64"
-        },
-        {
-          "internalType": "uint64",
-          "name": "lotSize",
-          "type": "uint64"
-        },
-        {
           "internalType": "uint256",
           "name": "bond",
           "type": "uint256"
@@ -192,30 +148,6 @@ export const IDiesisMarketsAbi = [
           "internalType": "struct IDiesisMarkets.PackedMarket",
           "name": "market",
           "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getMarketPricing",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "pricingVersion",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint64",
-          "name": "priceDenominator",
-          "type": "uint64"
         }
       ],
       "stateMutability": "view",

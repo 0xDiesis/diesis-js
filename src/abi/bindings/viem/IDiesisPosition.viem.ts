@@ -22,6 +22,14 @@ export type IDiesisPositionClaimRewardsParams = {
   recipient: `0x${string}`;
 };
 
+/**
+ * Create a zero-stake position to receive existing backing on a registered validator.
+ * @dev Nonpayable. Inactive validators are allowed; funded delegation remains subject to its active gate.      Creates the backing staking NFT before the public NFT. Adds no principal or debt.
+ */
+export type IDiesisPositionCreateRedemptionPositionParams = {
+  validator: number;
+};
+
 export type IDiesisPositionDelegateParams = {
   tokenId: bigint;
 };

@@ -51,6 +51,7 @@ export interface DiesisPatronContract extends ethers.Contract {
   updateGasLimits(reserveGas: BigNumberish, settleGas: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   updateStakingAddress(staking_: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   withdrawContribution(grantId: BytesLike, amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  withdrawContributionStep(grantId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   withdrawReservationExit(reservationId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     AccountGrantAssigned(account?: string | null, grantId?: BytesLike | null): ethers.EventFilter;

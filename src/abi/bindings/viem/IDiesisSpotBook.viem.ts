@@ -75,22 +75,10 @@ export type IDiesisSpotBookStartOpeningAuctionParams = {
 };
 
 /**
- * Proposed ordinary-caller bound-session V3 action wrapper.
- * @dev Inactive until a separately accepted resource policy and dispatch revision.      DXS3 contains the expected principal and current positive generation,      followed by unchanged DXA2 bytes. The result commits the full wrapper.      Sponsorship and relayer adapters are unsupported. Counts retain V2 types.
- * @param encodedWrapper Canonical complete DXS3 header and unchanged inner batch.
- * @returns resultHash Full-wrapper commitment using the inherited result framing.
- * @returns acceptedCount Accepted action count in inherited uint16 width.
- * @returns rejectedCount Rejected action count in inherited uint16 width.
- */
-export type IDiesisSpotBookSubmitBoundSessionActionsParams = {
-  encodedWrapper: `0x${string}`;
-};
-
-/**
  * Submit one strictly bounded canonical V2 action batch.
  * @dev The ordinary EVM caller authenticates the batch. The encoded bytes      contain no action-level signature or replay nonce. `resultHash`      commits to the original bytes and every ordered action outcome.
  */
-export type IDiesisSpotBookSubmitExchangeActionsParams = {
+export type IDiesisSpotBookSubmitExchangeActionsV2Params = {
   encodedActions: `0x${string}`;
 };
 

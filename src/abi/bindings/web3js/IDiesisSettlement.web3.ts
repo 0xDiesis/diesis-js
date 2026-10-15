@@ -23,18 +23,19 @@ type IDiesisSettlementMethod<Mutability extends 'payable' | 'nonpayable', Output
 };
 
 export interface IDiesisSettlementMethods {
-  authorizeSessionKey(sessionKey: string, actionScope: Numbers, validUntil: Numbers, maxNotionalOrSpend: Numbers, allowedMarketsMask: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  acceptSessionKeyV2(principal: string, actionScope: Numbers, validUntil: Numbers, maxNotionalOrSpend: Numbers, allowedMarketsMask: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  authorizeSessionKeyV2(sessionKey: string, actionScope: Numbers, validUntil: Numbers, maxNotionalOrSpend: Numbers, allowedMarketsMask: string): IDiesisSettlementMethod<'nonpayable', bigint>;
   availableBalance(user: string, token: string): IDiesisSettlementMethod<'nonpayable', bigint>;
   cancelNonceWord(wordPos: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
   cancelOrderNonce(nonce: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
   creditRouterDeposit(user: string, token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
   debitRouterWithdrawal(user: string, token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
   deposit(token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;
-  fundPerpBackstop(marketId: string, amount: Numbers, nonce: Numbers): IDiesisSettlementMethod<'nonpayable', string>;
+  fundPerpBackstopV1(marketId: string, amount: Numbers, nonce: Numbers): IDiesisSettlementMethod<'nonpayable', string>;
   getTradingKeyAuth(owner: string, tradingKey: string): IDiesisSettlementMethod<'nonpayable', { header: string; maxOrderNotional: bigint; allowedMarketsMask: string }>;
   isNonceUsed(user: string, nonce: Numbers): IDiesisSettlementMethod<'nonpayable', boolean>;
   registerTradingKey(tradingKey: string, validUntil: Numbers, maxOrderNotional: Numbers, allowedMarketsMask: string, canWithdraw: boolean): IDiesisSettlementMethod<'nonpayable', void>;
-  revokeSessionKey(sessionKey: string): IDiesisSettlementMethod<'nonpayable', bigint>;
+  revokeSessionKeyV2(sessionKey: string): IDiesisSettlementMethod<'nonpayable', bigint>;
   revokeTradingKey(tradingKey: string): IDiesisSettlementMethod<'nonpayable', void>;
   totalBalance(user: string, token: string): IDiesisSettlementMethod<'nonpayable', bigint>;
   withdraw(token: string, amount: Numbers): IDiesisSettlementMethod<'nonpayable', void>;

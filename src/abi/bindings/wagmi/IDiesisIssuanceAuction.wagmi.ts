@@ -5,52 +5,25 @@ import type { Address } from 'viem';
 
 // ── Read hooks ─────────────────────────────────────────────────────────
 
-export function useIDiesisIssuanceAuctionCurrentPerpListingPrice(address: Address) {
+export function useIDiesisIssuanceAuctionCurrentPerpListingPriceV1(address: Address) {
   return useReadContract({
     address,
     abi: IDiesisIssuanceAuctionAbi,
-    functionName: 'currentPerpListingPrice',
+    functionName: 'currentPerpListingPriceV1',
   });
 }
 
-export function useIDiesisIssuanceAuctionGetPerpListingSlot(address: Address) {
+export function useIDiesisIssuanceAuctionGetPerpListingSlotV1(address: Address) {
   return useReadContract({
     address,
     abi: IDiesisIssuanceAuctionAbi,
-    functionName: 'getPerpListingSlot',
-  });
-}
-
-export function useIDiesisIssuanceAuctionGetPerpRegistrationPricing(address: Address, args: { marketId: `0x${string}` }) {
-  return useReadContract({
-    address,
-    abi: IDiesisIssuanceAuctionAbi,
-    functionName: 'getPerpRegistrationPricing',
-    args: [args.marketId],
+    functionName: 'getPerpListingSlotV1',
   });
 }
 
 // ── Write hooks ────────────────────────────────────────────────────────
 
-export function useIDiesisIssuanceAuctionBidPricedPerpListing(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { registration: { marketId: `0x${string}`; baseAsset: `0x${string}`; quoteAsset: `0x${string}`; evidenceHash: `0x${string}`; pricingVersion: number; priceDenominator: bigint } }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { registration: { marketId: `0x${string}`; baseAsset: `0x${string}`; quoteAsset: `0x${string}`; evidenceHash: `0x${string}`; pricingVersion: number; priceDenominator: bigint } }) =>
-      writeContract({
-        address,
-        abi: IDiesisIssuanceAuctionAbi,
-        functionName: 'bidPricedPerpListing',
-        args: [args.registration],
-      }),
-  };
-}
-
-export function useIDiesisIssuanceAuctionBidUnpricedPerpListing(
+export function useIDiesisIssuanceAuctionBidPerpListingV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { registration: { marketId: `0x${string}`; baseAsset: `0x${string}`; quoteAsset: `0x${string}`; evidenceHash: `0x${string}` } }) => void;
@@ -62,13 +35,13 @@ export function useIDiesisIssuanceAuctionBidUnpricedPerpListing(
       writeContract({
         address,
         abi: IDiesisIssuanceAuctionAbi,
-        functionName: 'bidUnpricedPerpListing',
+        functionName: 'bidPerpListingV1',
         args: [args.registration],
       }),
   };
 }
 
-export function useIDiesisIssuanceAuctionSettlePerpListing(
+export function useIDiesisIssuanceAuctionSettlePerpListingV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: () => void;
@@ -80,7 +53,7 @@ export function useIDiesisIssuanceAuctionSettlePerpListing(
       writeContract({
         address,
         abi: IDiesisIssuanceAuctionAbi,
-        functionName: 'settlePerpListing',
+        functionName: 'settlePerpListingV1',
       }),
   };
 }

@@ -24,22 +24,19 @@ type IDiesisPerpsBookMethod<Mutability extends 'payable' | 'nonpayable', Output>
 
 export interface IDiesisPerpsBookMethods {
   adjustIsolatedMargin(marketId: string, marginDelta: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
-  advancePricedPerpRuntime(policyHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
-  amendPerpOrder(orderId: string, price: Numbers, amount: Numbers, expiry: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
-  applyPerpFunding(marketId: string, fundingRateBps: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
-  cancelPerpOrder(orderId: string): IDiesisPerpsBookMethod<'nonpayable', void>;
-  executePerpTrade(makerOrderId: string, takerOrderId: string, fillPrice: Numbers, fillQty: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
-  expirePerpOrder(orderId: string): IDiesisPerpsBookMethod<'nonpayable', void>;
-  finalizePerpFeeEpoch(marketId: string, epoch: Numbers, snapshotHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  amendPerpOrderV1(orderId: string, price: Numbers, amount: Numbers, expiry: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
+  applyPerpFundingV1(marketId: string, fundingRateBps: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
+  cancelPerpOrderV1(orderId: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  executePerpTradeV1(makerOrderId: string, takerOrderId: string, fillPrice: Numbers, fillQty: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
+  expirePerpOrderV1(orderId: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  finalizePerpFeeEpochV2(marketId: string, epoch: Numbers, snapshotHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
   getIsolatedMargin(trader: string, marketId: string): IDiesisPerpsBookMethod<'nonpayable', bigint>;
   getPosition(trader: string, marketId: string): IDiesisPerpsBookMethod<'nonpayable', { header: string; size: bigint; entryPrice: bigint }>;
-  submitBoundSessionActions(encodedWrapper: string): IDiesisPerpsBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
-  submitExchangeActions(encodedActions: string): IDiesisPerpsBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
-  submitPerpOrder(marketId: string, side: Numbers, orderType: Numbers, price: Numbers, amount: Numbers, flags: Numbers, marginType: Numbers, expiry: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
-  submitSponsoredPerpActions(signedEnvelope: string): IDiesisPerpsBookMethod<'nonpayable', string>;
-  updatePerpMark(marketId: string, markPrice: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
-  updatePerpOracle(marketId: string, indexPrice: Numbers, markPrice: Numbers, observedAt: Numbers, oracleRound: Numbers, sourceSetHash: string, evidenceHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
-  updatePricedOracle(payload: string): IDiesisPerpsBookMethod<'nonpayable', void>;
+  submitExchangeActionsV2(encodedActions: string): IDiesisPerpsBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
+  submitPerpOrderV1(marketId: string, side: Numbers, orderType: Numbers, price: Numbers, amount: Numbers, flags: Numbers, marginType: Numbers, expiry: Numbers): IDiesisPerpsBookMethod<'nonpayable', string>;
+  submitSignedPerpActionsV2(signedEnvelope: string): IDiesisPerpsBookMethod<'nonpayable', string>;
+  updatePerpMarkV1(marketId: string, markPrice: Numbers): IDiesisPerpsBookMethod<'nonpayable', void>;
+  updatePerpOracleV1(marketId: string, indexPrice: Numbers, markPrice: Numbers, observedAt: Numbers, oracleRound: Numbers, sourceSetHash: string, evidenceHash: string): IDiesisPerpsBookMethod<'nonpayable', void>;
 }
 
 export type IDiesisPerpsBookContract = Omit<Contract<typeof IDiesisPerpsBookAbi>, 'methods'> & {

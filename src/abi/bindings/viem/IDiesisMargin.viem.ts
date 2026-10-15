@@ -12,7 +12,7 @@ export function getIDiesisMarginContract<TClient extends Client>(
 /**
  * System-owned canonical frontier resolution. External callers are rejected.
  */
-export type IDiesisMarginResolvePerpProtectionParams = {
+export type IDiesisMarginResolvePerpProtectionV1Params = {
   marketId: `0x${string}`;
 };
 

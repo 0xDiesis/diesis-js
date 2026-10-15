@@ -23,66 +23,21 @@ export const IDiesisIssuanceAuctionAbi = [
               "internalType": "bytes32",
               "name": "evidenceHash",
               "type": "bytes32"
-            },
-            {
-              "internalType": "uint8",
-              "name": "pricingVersion",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint64",
-              "name": "priceDenominator",
-              "type": "uint64"
             }
           ],
-          "internalType": "struct IDiesisIssuanceAuction.PricedPerpRegistration",
+          "internalType": "struct IDiesisIssuanceAuction.PerpRegistrationV1",
           "name": "registration",
           "type": "tuple"
         }
       ],
-      "name": "bidPricedPerpListing",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "bytes32",
-              "name": "marketId",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "baseAsset",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "quoteAsset",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "evidenceHash",
-              "type": "bytes32"
-            }
-          ],
-          "internalType": "struct IDiesisIssuanceAuction.UnpricedPerpRegistration",
-          "name": "registration",
-          "type": "tuple"
-        }
-      ],
-      "name": "bidUnpricedPerpListing",
+      "name": "bidPerpListingV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "currentPerpListingPrice",
+      "name": "currentPerpListingPriceV1",
       "outputs": [
         {
           "internalType": "uint256",
@@ -95,7 +50,7 @@ export const IDiesisIssuanceAuctionAbi = [
     },
     {
       "inputs": [],
-      "name": "getPerpListingSlot",
+      "name": "getPerpListingSlotV1",
       "outputs": [
         {
           "components": [
@@ -130,7 +85,7 @@ export const IDiesisIssuanceAuctionAbi = [
               "type": "bytes32"
             }
           ],
-          "internalType": "struct IDiesisIssuanceAuction.PerpListingSlot",
+          "internalType": "struct IDiesisIssuanceAuction.PerpListingSlotV1",
           "name": "",
           "type": "tuple"
         }
@@ -139,32 +94,8 @@ export const IDiesisIssuanceAuctionAbi = [
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "marketId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getPerpRegistrationPricing",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "pricingVersion",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint64",
-          "name": "priceDenominator",
-          "type": "uint64"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "settlePerpListing",
+      "name": "settlePerpListingV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -238,7 +169,7 @@ export const IDiesisIssuanceAuctionAbi = [
     },
     {
       "inputs": [],
-      "name": "InvalidUnpricedPerpRegistration",
+      "name": "InvalidPerpRegistrationV1",
       "type": "error"
     },
     {

@@ -20,20 +20,7 @@ export type IDiesisMarketsCheckCircuitBreakerParams = {
 };
 
 /**
- * Create a spot market with immutable version-one price units.
- * @dev Public quantities are raw q; canonical size is q/priceDenominator.      Quote notional is p*(q/priceDenominator). The denominator is nonzero      and divides the nonzero lotSize. The market id commits to version      one and the denominator using the native address20 token identity.      Bond custody and the market ordinal bound match createSpotMarket.
- */
-export type IDiesisMarketsCreatePricedSpotMarketParams = {
-  baseToken: `0x${string}`;
-  quoteToken: `0x${string}`;
-  tickSize: bigint;
-  lotSize: bigint;
-  priceDenominator: bigint;
-  bond: bigint;
-};
-
-/**
- * @dev `bond`, when nonzero, is deducted from the creator's WDS settlement balance. Reverts after the append-only 256-market ordinal namespace is full.
+ * @dev Legacy provisioning requires the current Config owner. Public issuance uses `deployTokenAndSpotBook`. `bond`, when nonzero, is deducted from the creator's WDS settlement balance. Reverts after the append-only 256-market ordinal namespace is full.
  */
 export type IDiesisMarketsCreateSpotMarketParams = {
   baseToken: `0x${string}`;

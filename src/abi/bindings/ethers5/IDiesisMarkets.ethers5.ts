@@ -4,11 +4,9 @@ import { IDiesisMarketsAbi } from '../../generated/viem/IDiesisMarkets.abi.js';
 
 export interface IDiesisMarketsContract extends ethers.Contract {
   checkCircuitBreaker(marketId: BytesLike, currentPrice: BigNumberish, referencePrice: BigNumberish, thresholdBps: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  createPricedSpotMarket(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, priceDenominator: BigNumberish, bond: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   createSpotMarket(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, bond: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   deployTokenAndSpotBook(symbol: BytesLike, name: string, initialSupply: BigNumberish, dsBond: BigNumberish, usdcFee: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   getMarket(marketId: BytesLike, overrides?: CallOverrides): Promise<[string, string, BigNumber] & { slot0: string; slot1: string; maxOpenInterest: BigNumber }>;
-  getMarketPricing(marketId: BytesLike, overrides?: CallOverrides): Promise<[number, BigNumber] & { pricingVersion: number; priceDenominator: BigNumber }>;
   resumeMarket(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     CircuitBreakerTriggered(marketId?: BytesLike | null): ethers.EventFilter;

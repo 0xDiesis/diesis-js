@@ -34,8 +34,7 @@ export interface IDiesisSpotBookMethods {
   getOrderBookDepth(marketId: string, levels: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint[]; 1: bigint[]; 2: bigint[]; 3: bigint[]; bidPrices: bigint[]; bidAmounts: bigint[]; askPrices: bigint[]; askAmounts: bigint[]; __length__: number }>;
   getUserOrders(user: string, marketId: string): IDiesisSpotBookMethod<'nonpayable', string[]>;
   startOpeningAuction(marketId: string, startBlock: Numbers, endBlock: Numbers, referencePrice: Numbers): IDiesisSpotBookMethod<'nonpayable', void>;
-  submitBoundSessionActions(encodedWrapper: string): IDiesisSpotBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
-  submitExchangeActions(encodedActions: string): IDiesisSpotBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
+  submitExchangeActionsV2(encodedActions: string): IDiesisSpotBookMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; resultHash: string; acceptedCount: bigint; rejectedCount: bigint; __length__: number }>;
   submitLimitOrder(marketId: string, side: Numbers, priceTicks: Numbers, amountLots: Numbers, flags: Numbers): IDiesisSpotBookMethod<'nonpayable', string>;
   submitMarketOrder(marketId: string, side: Numbers, amountLots: Numbers): IDiesisSpotBookMethod<'nonpayable', { 0: bigint; 1: string; filledAmount: bigint; orderId: string; __length__: number }>;
   submitSignedCancelAllSpotIntent(signedCancelAllJson: string): IDiesisSpotBookMethod<'nonpayable', bigint>;

@@ -331,40 +331,11 @@ export const IDiesisSpotBookAbi = [
       "inputs": [
         {
           "internalType": "bytes",
-          "name": "encodedWrapper",
-          "type": "bytes"
-        }
-      ],
-      "name": "submitBoundSessionActions",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "resultHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint16",
-          "name": "acceptedCount",
-          "type": "uint16"
-        },
-        {
-          "internalType": "uint16",
-          "name": "rejectedCount",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
           "name": "encodedActions",
           "type": "bytes"
         }
       ],
-      "name": "submitExchangeActions",
+      "name": "submitExchangeActionsV2",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -590,7 +561,7 @@ export const IDiesisSpotBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "ExchangeActionAccepted",
+      "name": "ExchangeActionAcceptedV2",
       "type": "event"
     },
     {
@@ -639,7 +610,7 @@ export const IDiesisSpotBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "ExchangeActionRejected",
+      "name": "ExchangeActionRejectedV2",
       "type": "event"
     },
     {
@@ -694,7 +665,7 @@ export const IDiesisSpotBookAbi = [
           "type": "uint64"
         }
       ],
-      "name": "ExchangeL3Mutation",
+      "name": "ExchangeL3MutationV2",
       "type": "event"
     },
     {
@@ -749,7 +720,7 @@ export const IDiesisSpotBookAbi = [
           "type": "uint64"
         }
       ],
-      "name": "ExchangeTradeFill",
+      "name": "ExchangeTradeFillV2",
       "type": "event"
     },
     {

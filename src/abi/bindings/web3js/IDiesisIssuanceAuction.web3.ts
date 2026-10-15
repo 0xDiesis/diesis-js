@@ -23,12 +23,10 @@ type IDiesisIssuanceAuctionMethod<Mutability extends 'payable' | 'nonpayable', O
 };
 
 export interface IDiesisIssuanceAuctionMethods {
-  bidPricedPerpListing(registration: { marketId: string; baseAsset: string; quoteAsset: string; evidenceHash: string; pricingVersion: Numbers; priceDenominator: Numbers }): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
-  bidUnpricedPerpListing(registration: { marketId: string; baseAsset: string; quoteAsset: string; evidenceHash: string }): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
-  currentPerpListingPrice(): IDiesisIssuanceAuctionMethod<'nonpayable', bigint>;
-  getPerpListingSlot(): IDiesisIssuanceAuctionMethod<'nonpayable', { slotStartBlock: bigint; slotLengthBlocks: bigint; initialPriceUsdc: bigint; winningPriceUsdc: bigint; currentWinner: string; registrationDigest: string }>;
-  getPerpRegistrationPricing(marketId: string): IDiesisIssuanceAuctionMethod<'nonpayable', { 0: bigint; 1: bigint; pricingVersion: bigint; priceDenominator: bigint; __length__: number }>;
-  settlePerpListing(): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
+  bidPerpListingV1(registration: { marketId: string; baseAsset: string; quoteAsset: string; evidenceHash: string }): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
+  currentPerpListingPriceV1(): IDiesisIssuanceAuctionMethod<'nonpayable', bigint>;
+  getPerpListingSlotV1(): IDiesisIssuanceAuctionMethod<'nonpayable', { slotStartBlock: bigint; slotLengthBlocks: bigint; initialPriceUsdc: bigint; winningPriceUsdc: bigint; currentWinner: string; registrationDigest: string }>;
+  settlePerpListingV1(): IDiesisIssuanceAuctionMethod<'nonpayable', void>;
 }
 
 export type IDiesisIssuanceAuctionContract = Omit<Contract<typeof IDiesisIssuanceAuctionAbi>, 'methods'> & {

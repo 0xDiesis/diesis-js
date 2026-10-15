@@ -58,6 +58,25 @@ export const IDiesisPositionAbi = [
     {
       "inputs": [
         {
+          "internalType": "uint32",
+          "name": "validator",
+          "type": "uint32"
+        }
+      ],
+      "name": "createRedemptionPosition",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"

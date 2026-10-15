@@ -16,7 +16,7 @@ editing tracked outputs. It does not compile, read contracts/src/abi, invoke the
 contracts package, or default to an existing out directory.
 
 CI invokes `qualify-contract-inputs.py` against exact contracts
-281dcae85f6c695c00323b359877630ae4857b2e, on Linux
+ef995163891c0469a7fa09a89a6e66c1705a7fe4, on Linux
 x86_64 only. It installs locked checksum-verified dependency archives, verifies
 Forge 1.8.3/source cae51ad and official solc 0.8.35+47b9dedd, verifies the npm08
 registry integrity/signatures/provenance and platform archive checksum, and runs

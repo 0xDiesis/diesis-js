@@ -52,7 +52,7 @@ export type DiesisPatronContributeParams = {
 
 /**
  * Register a campaign, deriving an owner-bound id from `salt`.
- * @dev Permissionless and zero-value. The campaign id is `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Registration must precede funding: a jar that already holds contributions cannot be registered, so an incidental or malicious pre-funding cannot seize a campaign. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
+ * @dev Permissionless and zero-value. The campaign id is `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Existing funding retains its contributor ownership. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
  * @returns campaignId The owner-bound campaign id now owned by the caller.
  */
 export type DiesisPatronRegisterCampaignV1Params = {
@@ -161,6 +161,14 @@ export type DiesisPatronUpdateStakingAddressParams = {
 export type DiesisPatronWithdrawContributionParams = {
   grantId: `0x${string}`;
   amount: bigint;
+};
+
+/**
+ * Advance a contribution exit without traversing all held cohorts.
+ * @dev Repeat until complete. Each call either compacts idle roots, resolves one dormant alias, or snapshots and exits one live cohort. Detached reservation claims remain separately withdrawable.
+ */
+export type DiesisPatronWithdrawContributionStepParams = {
+  grantId: `0x${string}`;
 };
 
 /**

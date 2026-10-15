@@ -3,18 +3,19 @@ import { ethers, type BigNumber, type BigNumberish, type BytesLike, type CallOve
 import { IDiesisSettlementAbi } from '../../generated/viem/IDiesisSettlement.abi.js';
 
 export interface IDiesisSettlementContract extends ethers.Contract {
-  authorizeSessionKey(sessionKey: string, actionScope: BigNumberish, validUntil: BigNumberish, maxNotionalOrSpend: BigNumberish, allowedMarketsMask: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  acceptSessionKeyV2(principal: string, actionScope: BigNumberish, validUntil: BigNumberish, maxNotionalOrSpend: BigNumberish, allowedMarketsMask: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  authorizeSessionKeyV2(sessionKey: string, actionScope: BigNumberish, validUntil: BigNumberish, maxNotionalOrSpend: BigNumberish, allowedMarketsMask: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   availableBalance(user: string, token: string, overrides?: CallOverrides): Promise<BigNumber>;
   cancelNonceWord(wordPos: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   cancelOrderNonce(nonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   creditRouterDeposit(user: string, token: string, amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   debitRouterWithdrawal(user: string, token: string, amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   deposit(token: string, amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  fundPerpBackstop(marketId: BytesLike, amount: BigNumberish, nonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  fundPerpBackstopV1(marketId: BytesLike, amount: BigNumberish, nonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   getTradingKeyAuth(owner: string, tradingKey: string, overrides?: CallOverrides): Promise<[string, BigNumber, string] & { header: string; maxOrderNotional: BigNumber; allowedMarketsMask: string }>;
   isNonceUsed(user: string, nonce: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
   registerTradingKey(tradingKey: string, validUntil: BigNumberish, maxOrderNotional: BigNumberish, allowedMarketsMask: BytesLike, canWithdraw: boolean, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  revokeSessionKey(sessionKey: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  revokeSessionKeyV2(sessionKey: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   revokeTradingKey(tradingKey: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   totalBalance(user: string, token: string, overrides?: CallOverrides): Promise<BigNumber>;
   withdraw(token: string, amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;

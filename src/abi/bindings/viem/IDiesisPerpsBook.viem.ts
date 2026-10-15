@@ -21,18 +21,9 @@ export type IDiesisPerpsBookAdjustIsolatedMarginParams = {
 };
 
 /**
- * Request the system-owned canonical priced runtime tick.
- * @dev Inactive until qualified runtime activation. Every caller currently reverts.      Future execution requires authenticated selected authority and a matching policy hash.
- * @param policyHash Commitment of the authenticated execution policy.
- */
-export type IDiesisPerpsBookAdvancePricedPerpRuntimeParams = {
-  policyHash: `0x${string}`;
-};
-
-/**
  * Atomically cancel and replace an order with new price, amount,         expiry, canonical margin reservation, and priority identity.
  */
-export type IDiesisPerpsBookAmendPerpOrderParams = {
+export type IDiesisPerpsBookAmendPerpOrderV1Params = {
   orderId: `0x${string}`;
   price: bigint;
   amount: bigint;
@@ -43,7 +34,7 @@ export type IDiesisPerpsBookAmendPerpOrderParams = {
  * Advance canonical funding through solvency-frontier segments.
  * @dev System-only and bounded to the protocol funding-rate limit.
  */
-export type IDiesisPerpsBookApplyPerpFundingParams = {
+export type IDiesisPerpsBookApplyPerpFundingV1Params = {
   marketId: `0x${string}`;
   fundingRateBps: bigint;
 };
@@ -51,7 +42,7 @@ export type IDiesisPerpsBookApplyPerpFundingParams = {
 /**
  * Cancel an owned V1 order and return all unused canonical margin.
  */
-export type IDiesisPerpsBookCancelPerpOrderParams = {
+export type IDiesisPerpsBookCancelPerpOrderV1Params = {
   orderId: `0x${string}`;
 };
 
@@ -59,7 +50,7 @@ export type IDiesisPerpsBookCancelPerpOrderParams = {
  * Commit one system-owned opposite-side fill through canonical clearing.
  * @dev Reads and validates both stored V1 orders, derives deterministic      maker/taker fees and persistent frontier proofs, then commits the      PreparedClearingTransactionV1 and both order consumptions under one      outer EVM checkpoint. The lower order ID is the canonical maker.
  */
-export type IDiesisPerpsBookExecutePerpTradeParams = {
+export type IDiesisPerpsBookExecutePerpTradeV1Params = {
   makerOrderId: `0x${string}`;
   takerOrderId: `0x${string}`;
   fillPrice: bigint;
@@ -69,7 +60,7 @@ export type IDiesisPerpsBookExecutePerpTradeParams = {
 /**
  * Permissionlessly expire a GTD order after its canonical deadline.
  */
-export type IDiesisPerpsBookExpirePerpOrderParams = {
+export type IDiesisPerpsBookExpirePerpOrderV1Params = {
   orderId: `0x${string}`;
 };
 
@@ -77,29 +68,17 @@ export type IDiesisPerpsBookExpirePerpOrderParams = {
  * Finalize the exact stored snapshot of one closed fee epoch.
  * @dev Native queue/accounting behavior is introduced by X4b M3. This      declaration prevents public ABI drift before that implementation.
  */
-export type IDiesisPerpsBookFinalizePerpFeeEpochParams = {
+export type IDiesisPerpsBookFinalizePerpFeeEpochV2Params = {
   marketId: `0x${string}`;
   epoch: bigint;
   snapshotHash: `0x${string}`;
 };
 
 /**
- * Proposed ordinary-caller bound-session V3 action wrapper.
- * @dev Inactive until a separately accepted resource policy and dispatch revision.      DXS3 contains the expected principal and current positive generation,      followed by unchanged DXA2 bytes. The result commits the full wrapper.      Sponsorship and relayer adapters are unsupported. Counts retain V2 types.
- * @param encodedWrapper Canonical complete DXS3 header and unchanged inner batch.
- * @returns resultHash Full-wrapper commitment using the inherited result framing.
- * @returns acceptedCount Accepted action count in inherited uint16 width.
- * @returns rejectedCount Rejected action count in inherited uint16 width.
- */
-export type IDiesisPerpsBookSubmitBoundSessionActionsParams = {
-  encodedWrapper: `0x${string}`;
-};
-
-/**
  * Encode the shared bounded V2 action call for future Lane B use.
  * @dev The ABI is frozen for tooling parity, but perpetual V2 execution      remains protocol-gated until the Lane B activation revision.      `resultHash` commits to the original bytes and every ordered action outcome.
  */
-export type IDiesisPerpsBookSubmitExchangeActionsParams = {
+export type IDiesisPerpsBookSubmitExchangeActionsV2Params = {
   encodedActions: `0x${string}`;
 };
 
@@ -107,7 +86,7 @@ export type IDiesisPerpsBookSubmitExchangeActionsParams = {
  * Submit one versioned perpetual order funded from canonical settlement custody.
  * @dev The call atomically moves initial margin plus the deterministic fee      reserve from GlobalUserAvailable to the market's UserMargin ledger.      `price` is a nonzero integer tick and price-protected market orders      use it as their worst acceptable execution price. `expiry == 0`      selects GTC; otherwise expiry is a Unix timestamp in seconds.      V1 requires `flags == 0`; reduce-only and advanced time-in-force      semantics are reserved for the bounded V2 action surface.
  */
-export type IDiesisPerpsBookSubmitPerpOrderParams = {
+export type IDiesisPerpsBookSubmitPerpOrderV1Params = {
   marketId: `0x${string}`;
   side: number;
   orderType: number;
@@ -120,11 +99,11 @@ export type IDiesisPerpsBookSubmitPerpOrderParams = {
 
 /**
  * Execute a sponsored bounded V2 action batch on behalf of a signer.
- * @dev The relayer is the outer transaction sender and pays fees; the      recovered EIP-712 signer of `signedEnvelope` is the trading      principal. The precompile verifies the signature, consumes the      signer's canonical per-trader nonce-bitmap bit, and executes the      exact same canonical action bytes, admission policy, replay      protection, clearing journal, and logs as the direct      `submitExchangeActions` path. Later tasks implement verification      and execution; this freezes the release selector and wire shape.
+ * @dev The relayer is the outer transaction sender and pays fees; the      recovered EIP-712 signer of `signedEnvelope` is the trading      principal. The precompile verifies the signature, consumes the      signer's canonical per-trader nonce-bitmap bit, and executes the      exact same canonical action bytes, admission policy, replay      protection, clearing journal, and logs as the direct      `submitExchangeActionsV2` path. Later tasks implement verification      and execution; this freezes the release selector and wire shape.
  * @param signedEnvelope ABI `bytes` containing the canonical signed        perpetual-actions envelope.
  * @returns batchId Canonical identifier committing to the executed batch.
  */
-export type IDiesisPerpsBookSubmitSponsoredPerpActionsParams = {
+export type IDiesisPerpsBookSubmitSignedPerpActionsV2Params = {
   signedEnvelope: `0x${string}`;
 };
 
@@ -132,7 +111,7 @@ export type IDiesisPerpsBookSubmitSponsoredPerpActionsParams = {
  * Advance the canonical scaled mark through solvency-frontier segments.
  * @dev System-only. If a root is reached, the market enters Protection and      persists the original target until liquidation resolves the root.
  */
-export type IDiesisPerpsBookUpdatePerpMarkParams = {
+export type IDiesisPerpsBookUpdatePerpMarkV1Params = {
   marketId: `0x${string}`;
   markPrice: bigint;
 };
@@ -148,7 +127,7 @@ export type IDiesisPerpsBookUpdatePerpMarkParams = {
  * @param sourceSetHash Commitment to the active source set.
  * @param evidenceHash Commitment to the ordered aggregation evidence.
  */
-export type IDiesisPerpsBookUpdatePerpOracleParams = {
+export type IDiesisPerpsBookUpdatePerpOracleV1Params = {
   marketId: `0x${string}`;
   indexPrice: bigint;
   markPrice: bigint;
@@ -156,13 +135,5 @@ export type IDiesisPerpsBookUpdatePerpOracleParams = {
   oracleRound: bigint;
   sourceSetHash: `0x${string}`;
   evidenceHash: `0x${string}`;
-};
-
-/**
- * Persist one descriptor-authorized priced oracle observation.
- * @dev System-only, caller address zero. payload is exactly one canonical      DOR2 observation: a 128-byte V2 context/round header followed by a      144-byte observation. The native runtime verifies chain, genesis,      exact parent number/hash, immutable descriptor/source commitments,      tick alignment and canonical observation freshness before writes.      Canonical oracle prices use p; the clearing mirror uses p*PRICE_SCALE.      This distinct selector returns no data and leaves V1 encoding intact.
- */
-export type IDiesisPerpsBookUpdatePricedOracleParams = {
-  payload: `0x${string}`;
 };
 

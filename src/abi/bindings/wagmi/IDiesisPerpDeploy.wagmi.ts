@@ -32,18 +32,18 @@ export function useIDiesisPerpDeployGetOperatorBalance(address: Address, args: {
   });
 }
 
-export function useIDiesisPerpDeployGetPerpPolicy(address: Address, args: { marketId: `0x${string}` }) {
+export function useIDiesisPerpDeployGetPerpPolicyV1(address: Address, args: { marketId: `0x${string}` }) {
   return useReadContract({
     address,
     abi: IDiesisPerpDeployAbi,
-    functionName: 'getPerpPolicy',
+    functionName: 'getPerpPolicyV1',
     args: [args.marketId],
   });
 }
 
 // ── Write hooks ────────────────────────────────────────────────────────
 
-export function useIDiesisPerpDeployApplyPerpAbandonment(
+export function useIDiesisPerpDeployApplyPerpAbandonmentV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, parentHash: `0x${string}`, blockNumber: bigint, policyEpoch: bigint, policyHash: `0x${string}`, windowStart: bigint, windowEnd: bigint, filledVolume: bigint, operatorFees: bigint, lastMetadataUpdate: bigint, inputHash: `0x${string}`, committeeEpoch: bigint, committeeIdentity: `0x${string}`, quorumPower: bigint, attestingPower: bigint, voterCount: number, evidenceHash: `0x${string}` }) => void;
@@ -55,7 +55,7 @@ export function useIDiesisPerpDeployApplyPerpAbandonment(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'applyPerpAbandonment',
+        functionName: 'applyPerpAbandonmentV1',
         args: [args.marketId, args.parentHash, args.blockNumber, args.policyEpoch, args.policyHash, args.windowStart, args.windowEnd, args.filledVolume, args.operatorFees, args.lastMetadataUpdate, args.inputHash, args.committeeEpoch, args.committeeIdentity, args.quorumPower, args.attestingPower, args.voterCount, args.evidenceHash],
       }),
   };
@@ -97,7 +97,7 @@ export function useIDiesisPerpDeployDeployPerp(
   };
 }
 
-export function useIDiesisPerpDeployExpireNextUnactivatedPerp(
+export function useIDiesisPerpDeployExpireNextUnactivatedPerpV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: () => void;
@@ -109,12 +109,12 @@ export function useIDiesisPerpDeployExpireNextUnactivatedPerp(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'expireNextUnactivatedPerp',
+        functionName: 'expireNextUnactivatedPerpV1',
       }),
   };
 }
 
-export function useIDiesisPerpDeployExpireUnactivatedPerp(
+export function useIDiesisPerpDeployExpireUnactivatedPerpV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}` }) => void;
@@ -126,7 +126,7 @@ export function useIDiesisPerpDeployExpireUnactivatedPerp(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'expireUnactivatedPerp',
+        functionName: 'expireUnactivatedPerpV1',
         args: [args.marketId],
       }),
   };
@@ -150,7 +150,7 @@ export function useIDiesisPerpDeployFinalizeClose(
   };
 }
 
-export function useIDiesisPerpDeployFinalizePerpPolicy(
+export function useIDiesisPerpDeployFinalizePerpPolicyV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, revision: bigint, proposalId: `0x${string}` }) => void;
@@ -162,13 +162,13 @@ export function useIDiesisPerpDeployFinalizePerpPolicy(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'finalizePerpPolicy',
+        functionName: 'finalizePerpPolicyV1',
         args: [args.marketId, args.revision, args.proposalId],
       }),
   };
 }
 
-export function useIDiesisPerpDeployInitializeBasicPerpMarket(
+export function useIDiesisPerpDeployInitializePerpMarketV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, maxOpenInterest: bigint, initialMark: bigint, maxLeverage: number }) => void;
@@ -180,13 +180,13 @@ export function useIDiesisPerpDeployInitializeBasicPerpMarket(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'initializeBasicPerpMarket',
+        functionName: 'initializePerpMarketV1',
         args: [args.baseToken, args.quoteToken, args.tickSize, args.lotSize, args.maxOpenInterest, args.initialMark, args.maxLeverage],
       }),
   };
 }
 
-export function useIDiesisPerpDeployInitializePolicyPerpMarket(
+export function useIDiesisPerpDeployInitializePerpMarketV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, maxOpenInterest: bigint, initialMark: bigint, policy: { revision: bigint; backstopTopupBps: number; tiers: readonly { maxNotional: bigint; maxLeverage: number; maintenanceMarginBps: number }[] }, keyset: { epoch: bigint; threshold: number; signers: readonly `0x${string}`[] } }) => void;
@@ -198,26 +198,8 @@ export function useIDiesisPerpDeployInitializePolicyPerpMarket(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'initializePolicyPerpMarket',
+        functionName: 'initializePerpMarketV2',
         args: [args.baseToken, args.quoteToken, args.tickSize, args.lotSize, args.maxOpenInterest, args.initialMark, args.policy, args.keyset],
-      }),
-  };
-}
-
-export function useIDiesisPerpDeployInitializePricedPerpMarket(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, priceDenominator: bigint, maxOpenInterest: bigint, initialMark: bigint, policy: { revision: bigint; backstopTopupBps: number; tiers: readonly { maxNotional: bigint; maxLeverage: number; maintenanceMarginBps: number }[] }, keyset: { epoch: bigint; threshold: number; signers: readonly `0x${string}`[] } }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, priceDenominator: bigint, maxOpenInterest: bigint, initialMark: bigint, policy: { revision: bigint; backstopTopupBps: number; tiers: readonly { maxNotional: bigint; maxLeverage: number; maintenanceMarginBps: number }[] }, keyset: { epoch: bigint; threshold: number; signers: readonly `0x${string}`[] } }) =>
-      writeContract({
-        address,
-        abi: IDiesisPerpDeployAbi,
-        functionName: 'initializePricedPerpMarket',
-        args: [args.baseToken, args.quoteToken, args.tickSize, args.lotSize, args.priceDenominator, args.maxOpenInterest, args.initialMark, args.policy, args.keyset],
       }),
   };
 }
@@ -240,25 +222,7 @@ export function useIDiesisPerpDeployInitiateDelist(
   };
 }
 
-export function useIDiesisPerpDeployInstallPricedOracleDescriptor(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { marketId: `0x${string}`, baseDecimals: number, quoteDecimals: number, roundingPolicy: number, sourceSetHash: `0x${string}` }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { marketId: `0x${string}`, baseDecimals: number, quoteDecimals: number, roundingPolicy: number, sourceSetHash: `0x${string}` }) =>
-      writeContract({
-        address,
-        abi: IDiesisPerpDeployAbi,
-        functionName: 'installPricedOracleDescriptor',
-        args: [args.marketId, args.baseDecimals, args.quoteDecimals, args.roundingPolicy, args.sourceSetHash],
-      }),
-  };
-}
-
-export function useIDiesisPerpDeployPreparePerpMarketClose(
+export function useIDiesisPerpDeployPreparePerpMarketCloseV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, maxOrders: number, maxPositions: number }) => void;
@@ -270,7 +234,7 @@ export function useIDiesisPerpDeployPreparePerpMarketClose(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'preparePerpMarketClose',
+        functionName: 'preparePerpMarketCloseV1',
         args: [args.marketId, args.maxOrders, args.maxPositions],
       }),
   };
@@ -294,7 +258,7 @@ export function useIDiesisPerpDeployPromoteToLive(
   };
 }
 
-export function useIDiesisPerpDeployProposePerpPolicy(
+export function useIDiesisPerpDeployProposePerpPolicyV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, expectedRevision: bigint, expectedKeysetEpoch: bigint, backstopTopupBps: number, tiers: readonly { maxNotional: bigint; maxLeverage: number; maintenanceMarginBps: number }[], nextSigners: readonly `0x${string}`[], nextThreshold: number, signatures: readonly { signer: `0x${string}`; r: `0x${string}`; s: `0x${string}`; v: number }[] }) => void;
@@ -306,7 +270,7 @@ export function useIDiesisPerpDeployProposePerpPolicy(
       writeContract({
         address,
         abi: IDiesisPerpDeployAbi,
-        functionName: 'proposePerpPolicy',
+        functionName: 'proposePerpPolicyV1',
         args: [args.marketId, args.expectedRevision, args.expectedKeysetEpoch, args.backstopTopupBps, args.tiers, args.nextSigners, args.nextThreshold, args.signatures],
       }),
   };
@@ -350,15 +314,6 @@ export function useIDiesisPerpDeployAuctionWinRecordedEvent(address: Address, li
   });
 }
 
-export function useIDiesisPerpDeployBasicPerpMarketInitializedEvent(address: Address, listener: (log: any) => void) {
-  return useWatchContractEvent({
-    address,
-    abi: IDiesisPerpDeployAbi,
-    eventName: 'BasicPerpMarketInitialized',
-    onLogs: (logs) => logs.forEach(listener),
-  });
-}
-
 export function useIDiesisPerpDeployClosedEvent(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
@@ -386,20 +341,29 @@ export function useIDiesisPerpDeployLiveStartedEvent(address: Address, listener:
   });
 }
 
-export function useIDiesisPerpDeployPerpMarketClosePreparedEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisPerpDeployPerpMarketClosePreparedV1Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisPerpDeployAbi,
-    eventName: 'PerpMarketClosePrepared',
+    eventName: 'PerpMarketClosePreparedV1',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
 
-export function useIDiesisPerpDeployPolicyPerpMarketInitializedEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisPerpDeployPerpMarketInitializedV1Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisPerpDeployAbi,
-    eventName: 'PolicyPerpMarketInitialized',
+    eventName: 'PerpMarketInitializedV1',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useIDiesisPerpDeployPerpMarketInitializedV2Event(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisPerpDeployAbi,
+    eventName: 'PerpMarketInitializedV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

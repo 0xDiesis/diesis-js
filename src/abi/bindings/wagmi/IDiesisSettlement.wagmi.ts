@@ -43,7 +43,25 @@ export function useIDiesisSettlementTotalBalance(address: Address, args: { user:
 
 // ── Write hooks ────────────────────────────────────────────────────────
 
-export function useIDiesisSettlementAuthorizeSessionKey(
+export function useIDiesisSettlementAcceptSessionKeyV2(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { principal: `0x${string}`, actionScope: bigint, validUntil: bigint, maxNotionalOrSpend: bigint, allowedMarketsMask: `0x${string}` }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { principal: `0x${string}`, actionScope: bigint, validUntil: bigint, maxNotionalOrSpend: bigint, allowedMarketsMask: `0x${string}` }) =>
+      writeContract({
+        address,
+        abi: IDiesisSettlementAbi,
+        functionName: 'acceptSessionKeyV2',
+        args: [args.principal, args.actionScope, args.validUntil, args.maxNotionalOrSpend, args.allowedMarketsMask],
+      }),
+  };
+}
+
+export function useIDiesisSettlementAuthorizeSessionKeyV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { sessionKey: `0x${string}`, actionScope: bigint, validUntil: bigint, maxNotionalOrSpend: bigint, allowedMarketsMask: `0x${string}` }) => void;
@@ -55,7 +73,7 @@ export function useIDiesisSettlementAuthorizeSessionKey(
       writeContract({
         address,
         abi: IDiesisSettlementAbi,
-        functionName: 'authorizeSessionKey',
+        functionName: 'authorizeSessionKeyV2',
         args: [args.sessionKey, args.actionScope, args.validUntil, args.maxNotionalOrSpend, args.allowedMarketsMask],
       }),
   };
@@ -151,7 +169,7 @@ export function useIDiesisSettlementDeposit(
   };
 }
 
-export function useIDiesisSettlementFundPerpBackstop(
+export function useIDiesisSettlementFundPerpBackstopV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, amount: bigint, nonce: bigint }) => void;
@@ -163,7 +181,7 @@ export function useIDiesisSettlementFundPerpBackstop(
       writeContract({
         address,
         abi: IDiesisSettlementAbi,
-        functionName: 'fundPerpBackstop',
+        functionName: 'fundPerpBackstopV1',
         args: [args.marketId, args.amount, args.nonce],
       }),
   };
@@ -187,7 +205,7 @@ export function useIDiesisSettlementRegisterTradingKey(
   };
 }
 
-export function useIDiesisSettlementRevokeSessionKey(
+export function useIDiesisSettlementRevokeSessionKeyV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { sessionKey: `0x${string}` }) => void;
@@ -199,7 +217,7 @@ export function useIDiesisSettlementRevokeSessionKey(
       writeContract({
         address,
         abi: IDiesisSettlementAbi,
-        functionName: 'revokeSessionKey',
+        functionName: 'revokeSessionKeyV2',
         args: [args.sessionKey],
       }),
   };

@@ -10,10 +10,6 @@ import {
   encodeBoundSessionBatch as exchangeEncode,
   prepareBoundSessionActionsTransaction as exchangePrepare,
 } from '../../src/exchange/index.js'
-import type {
-  IDiesisSpotBookSubmitBoundSessionActionsParams,
-  IDiesisPerpsBookSubmitBoundSessionActionsParams,
-} from '../../src/abi/bindings/viem/index.js'
 
 export function inspectBoundSession(
   parameters: PrepareBoundSessionActionsParameters,
@@ -24,14 +20,13 @@ export function inspectBoundSession(
     parameters.limits,
   )
   const generation: bigint = decoded.authorizationGeneration
-  const spot: IDiesisSpotBookSubmitBoundSessionActionsParams = {
-    encodedWrapper: encoded,
-  }
-  const perpetual: IDiesisPerpsBookSubmitBoundSessionActionsParams = spot
+  // Offline wrapper inspection stays typed without inventing native ABI params.
+  const wrapper: { principal: Address; authorizationGeneration: bigint } =
+    decoded
   const prepared: { to: Address; data: Hex; value: 0n } =
     prepareBoundSessionActionsTransaction(parameters)
   const sameEncode: typeof encodeBoundSessionBatch = exchangeEncode
   const samePrepare: typeof prepareBoundSessionActionsTransaction =
     exchangePrepare
-  return { generation, spot, perpetual, prepared, sameEncode, samePrepare }
+  return { generation, wrapper, prepared, sameEncode, samePrepare }
 }

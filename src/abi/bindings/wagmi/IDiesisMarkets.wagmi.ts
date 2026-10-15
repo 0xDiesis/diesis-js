@@ -14,15 +14,6 @@ export function useIDiesisMarketsGetMarket(address: Address, args: { marketId: `
   });
 }
 
-export function useIDiesisMarketsGetMarketPricing(address: Address, args: { marketId: `0x${string}` }) {
-  return useReadContract({
-    address,
-    abi: IDiesisMarketsAbi,
-    functionName: 'getMarketPricing',
-    args: [args.marketId],
-  });
-}
-
 // ── Write hooks ────────────────────────────────────────────────────────
 
 export function useIDiesisMarketsCheckCircuitBreaker(
@@ -39,24 +30,6 @@ export function useIDiesisMarketsCheckCircuitBreaker(
         abi: IDiesisMarketsAbi,
         functionName: 'checkCircuitBreaker',
         args: [args.marketId, args.currentPrice, args.referencePrice, args.thresholdBps],
-      }),
-  };
-}
-
-export function useIDiesisMarketsCreatePricedSpotMarket(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, priceDenominator: bigint, bond: bigint }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, priceDenominator: bigint, bond: bigint }) =>
-      writeContract({
-        address,
-        abi: IDiesisMarketsAbi,
-        functionName: 'createPricedSpotMarket',
-        args: [args.baseToken, args.quoteToken, args.tickSize, args.lotSize, args.priceDenominator, args.bond],
       }),
   };
 }

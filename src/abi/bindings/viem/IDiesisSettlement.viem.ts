@@ -10,10 +10,22 @@ export function getIDiesisSettlementContract<TClient extends Client>(
 }
 
 /**
- * Authorize one ordinary Ethereum sender as a scoped V2 session key.
- * @dev A zero maximum is uncapped. Principal is always `msg.sender`.
+ * Accept exact authorization terms as the session key before principal activation.
+ * @dev One-use consent binds chain, endpoint, principal, key, terms and next generation.      This call changes neither sender identity nor the principal's active-session count.
  */
-export type IDiesisSettlementAuthorizeSessionKeyParams = {
+export type IDiesisSettlementAcceptSessionKeyV2Params = {
+  principal: `0x${string}`;
+  actionScope: bigint;
+  validUntil: bigint;
+  maxNotionalOrSpend: bigint;
+  allowedMarketsMask: `0x${string}`;
+};
+
+/**
+ * Activate one scoped V2 session after its key accepted these exact terms.
+ * @dev A zero maximum is uncapped. Principal is always `msg.sender`; consent is consumed.
+ */
+export type IDiesisSettlementAuthorizeSessionKeyV2Params = {
   sessionKey: `0x${string}`;
   actionScope: bigint;
   validUntil: bigint;
@@ -62,7 +74,7 @@ export type IDiesisSettlementDepositParams = {
  * Permanently contribute already-deposited quote collateral to a perpetual market's canonical liquidation backstop.
  * @dev `nonce` shares the settlement replay bitmap with other user-owned actions.
  */
-export type IDiesisSettlementFundPerpBackstopParams = {
+export type IDiesisSettlementFundPerpBackstopV1Params = {
   marketId: `0x${string}`;
   amount: bigint;
   nonce: bigint;
@@ -77,9 +89,10 @@ export type IDiesisSettlementRegisterTradingKeyParams = {
 };
 
 /**
- * Revoke a V2 session key and advance its invalidating generation.
+ * Principal or key may revoke an active session and advance its generation.
+ * @dev A key may also cancel its pending consent. Expiry restores direct sender      identity; explicit revocation releases the principal's retained capacity.
  */
-export type IDiesisSettlementRevokeSessionKeyParams = {
+export type IDiesisSettlementRevokeSessionKeyV2Params = {
   sessionKey: `0x${string}`;
 };
 

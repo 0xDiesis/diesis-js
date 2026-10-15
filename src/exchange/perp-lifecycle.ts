@@ -5,9 +5,9 @@ import {
 } from '../abi/index.js'
 import * as addresses from '../addresses.js'
 import type {
-  IDiesisIssuanceAuctionBidUnpricedPerpListingParams,
-  IDiesisPerpDeployInitializeBasicPerpMarketParams,
-  IDiesisPerpDeployInitializePolicyPerpMarketParams,
+  IDiesisIssuanceAuctionBidPerpListingV1Params,
+  IDiesisPerpDeployInitializePerpMarketV1Params,
+  IDiesisPerpDeployInitializePerpMarketV2Params,
 } from '../abi/bindings/viem/index.js'
 import {
   concatHex,
@@ -41,16 +41,16 @@ export interface UnpricedPerpDeploymentEvidence {
 
 // Contract shapes come from generated bindings; lifecycle policy remains handwritten.
 export type UnpricedPerpRegistration =
-  IDiesisIssuanceAuctionBidUnpricedPerpListingParams['registration']
+  IDiesisIssuanceAuctionBidPerpListingV1Params['registration']
 export type PerpListingSlot = ContractFunctionReturnType<
   typeof IDiesisIssuanceAuctionAbi,
   'view',
-  'getPerpListingSlot'
+  'getPerpListingSlotV1'
 >
 export type InitializeBasicPerpMarketParams =
-  IDiesisPerpDeployInitializeBasicPerpMarketParams
+  IDiesisPerpDeployInitializePerpMarketV1Params
 export type InitializePolicyPerpMarketParams =
-  IDiesisPerpDeployInitializePolicyPerpMarketParams
+  IDiesisPerpDeployInitializePerpMarketV2Params
 
 export type PerpLifecycleReader = Pick<
   PublicClient,
@@ -218,7 +218,7 @@ export async function getPerpListingSlot(
   return publicClient.readContract({
     address: addresses.DIESIS_ISSUANCE_AUCTION,
     abi: IDiesisIssuanceAuctionAbi,
-    functionName: 'getPerpListingSlot',
+    functionName: 'getPerpListingSlotV1',
     ...(blockNumber === undefined ? {} : { blockNumber }),
   })
 }
@@ -232,7 +232,7 @@ export async function currentPerpListingPrice(
   return publicClient.readContract({
     address: addresses.DIESIS_ISSUANCE_AUCTION,
     abi: IDiesisIssuanceAuctionAbi,
-    functionName: 'currentPerpListingPrice',
+    functionName: 'currentPerpListingPriceV1',
     ...(blockNumber === undefined ? {} : { blockNumber }),
   })
 }
@@ -405,7 +405,7 @@ export function createPerpLifecycle({
         addresses.DIESIS_ISSUANCE_AUCTION,
         encodeFunctionData({
           abi: IDiesisIssuanceAuctionAbi,
-          functionName: 'bidUnpricedPerpListing',
+          functionName: 'bidPerpListingV1',
           args: [registration],
         }),
       )
@@ -461,7 +461,7 @@ export function createPerpLifecycle({
         addresses.DIESIS_PERP_DEPLOY,
         encodeFunctionData({
           abi: IDiesisPerpDeployAbi,
-          functionName: 'initializeBasicPerpMarket',
+          functionName: 'initializePerpMarketV1',
           args: [
             params.baseToken,
             params.quoteToken,
@@ -482,7 +482,7 @@ export function createPerpLifecycle({
         addresses.DIESIS_PERP_DEPLOY,
         encodeFunctionData({
           abi: IDiesisPerpDeployAbi,
-          functionName: 'initializePolicyPerpMarket',
+          functionName: 'initializePerpMarketV2',
           args: [
             params.baseToken,
             params.quoteToken,

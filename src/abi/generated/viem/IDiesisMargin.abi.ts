@@ -8,7 +8,7 @@ export const IDiesisMarginAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "resolvePerpProtection",
+      "name": "resolvePerpProtectionV1",
       "outputs": [
         {
           "internalType": "bytes32",

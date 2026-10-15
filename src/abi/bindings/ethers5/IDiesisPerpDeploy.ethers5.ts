@@ -3,35 +3,33 @@ import { ethers, type BigNumber, type BigNumberish, type BytesLike, type CallOve
 import { IDiesisPerpDeployAbi } from '../../generated/viem/IDiesisPerpDeploy.abi.js';
 
 export interface IDiesisPerpDeployContract extends ethers.Contract {
-  applyPerpAbandonment(marketId: BytesLike, parentHash: BytesLike, blockNumber: BigNumberish, policyEpoch: BigNumberish, policyHash: BytesLike, windowStart: BigNumberish, windowEnd: BigNumberish, filledVolume: BigNumberish, operatorFees: BigNumberish, lastMetadataUpdate: BigNumberish, inputHash: BytesLike, committeeEpoch: BigNumberish, committeeIdentity: BytesLike, quorumPower: BigNumberish, attestingPower: BigNumberish, voterCount: BigNumberish, evidenceHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  applyPerpAbandonmentV1(marketId: BytesLike, parentHash: BytesLike, blockNumber: BigNumberish, policyEpoch: BigNumberish, policyHash: BytesLike, windowStart: BigNumberish, windowEnd: BigNumberish, filledVolume: BigNumberish, operatorFees: BigNumberish, lastMetadataUpdate: BigNumberish, inputHash: BytesLike, committeeEpoch: BigNumberish, committeeIdentity: BytesLike, quorumPower: BigNumberish, attestingPower: BigNumberish, voterCount: BigNumberish, evidenceHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   applySlash(marketId: BytesLike, reason: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   deployPerp(slotId: BytesLike, marketId: BytesLike, sourceList: BytesLike, metadata: BytesLike, signatures: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  expireNextUnactivatedPerp(overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  expireUnactivatedPerp(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  expireNextUnactivatedPerpV1(overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  expireUnactivatedPerpV1(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   finalizeClose(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  finalizePerpPolicy(marketId: BytesLike, revision: BigNumberish, proposalId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  finalizePerpPolicyV1(marketId: BytesLike, revision: BigNumberish, proposalId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   getDeploymentState(marketId: BytesLike, overrides?: CallOverrides): Promise<[number, BigNumber, BigNumber, number] & { stateTag: number; deadlineOrLiveBlock: BigNumber; windowCloseBlock: BigNumber; slashReason: number }>;
   getMarketDeploymentState(marketId: BytesLike, overrides?: CallOverrides): Promise<[number, BigNumber, BigNumber, number] & { stateTag: number; deadlineOrLiveBlock: BigNumber; windowCloseBlock: BigNumber; slashReason: number }>;
   getOperatorBalance(operator: string, overrides?: CallOverrides): Promise<BigNumber>;
-  getPerpPolicy(marketId: BytesLike, overrides?: CallOverrides): Promise<[[BigNumber, number, ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[]] & { revision: BigNumber; backstopTopupBps: number; tiers: ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[] }, [BigNumber, number, string[]] & { epoch: BigNumber; threshold: number; signers: string[] }] & { policy: [BigNumber, number, ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[]] & { revision: BigNumber; backstopTopupBps: number; tiers: ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[] }; keyset: [BigNumber, number, string[]] & { epoch: BigNumber; threshold: number; signers: string[] } }>;
-  initializeBasicPerpMarket(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, maxOpenInterest: BigNumberish, initialMark: BigNumberish, maxLeverage: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  initializePolicyPerpMarket(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, maxOpenInterest: BigNumberish, initialMark: BigNumberish, policy: { revision: BigNumberish; backstopTopupBps: BigNumberish; tiers: { maxNotional: BigNumberish; maxLeverage: BigNumberish; maintenanceMarginBps: BigNumberish }[] }, keyset: { epoch: BigNumberish; threshold: BigNumberish; signers: string[] }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  initializePricedPerpMarket(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, priceDenominator: BigNumberish, maxOpenInterest: BigNumberish, initialMark: BigNumberish, policy: { revision: BigNumberish; backstopTopupBps: BigNumberish; tiers: { maxNotional: BigNumberish; maxLeverage: BigNumberish; maintenanceMarginBps: BigNumberish }[] }, keyset: { epoch: BigNumberish; threshold: BigNumberish; signers: string[] }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  getPerpPolicyV1(marketId: BytesLike, overrides?: CallOverrides): Promise<[[BigNumber, number, ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[]] & { revision: BigNumber; backstopTopupBps: number; tiers: ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[] }, [BigNumber, number, string[]] & { epoch: BigNumber; threshold: number; signers: string[] }] & { policy: [BigNumber, number, ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[]] & { revision: BigNumber; backstopTopupBps: number; tiers: ([BigNumber, number, number] & { maxNotional: BigNumber; maxLeverage: number; maintenanceMarginBps: number })[] }; keyset: [BigNumber, number, string[]] & { epoch: BigNumber; threshold: number; signers: string[] } }>;
+  initializePerpMarketV1(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, maxOpenInterest: BigNumberish, initialMark: BigNumberish, maxLeverage: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  initializePerpMarketV2(baseToken: string, quoteToken: string, tickSize: BigNumberish, lotSize: BigNumberish, maxOpenInterest: BigNumberish, initialMark: BigNumberish, policy: { revision: BigNumberish; backstopTopupBps: BigNumberish; tiers: { maxNotional: BigNumberish; maxLeverage: BigNumberish; maintenanceMarginBps: BigNumberish }[] }, keyset: { epoch: BigNumberish; threshold: BigNumberish; signers: string[] }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   initiateDelist(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  installPricedOracleDescriptor(marketId: BytesLike, baseDecimals: BigNumberish, quoteDecimals: BigNumberish, roundingPolicy: BigNumberish, sourceSetHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  preparePerpMarketClose(marketId: BytesLike, maxOrders: BigNumberish, maxPositions: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  preparePerpMarketCloseV1(marketId: BytesLike, maxOrders: BigNumberish, maxPositions: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   promoteToLive(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  proposePerpPolicy(marketId: BytesLike, expectedRevision: BigNumberish, expectedKeysetEpoch: BigNumberish, backstopTopupBps: BigNumberish, tiers: { maxNotional: BigNumberish; maxLeverage: BigNumberish; maintenanceMarginBps: BigNumberish }[], nextSigners: string[], nextThreshold: BigNumberish, signatures: { signer: string; r: BytesLike; s: BytesLike; v: BigNumberish }[], overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  proposePerpPolicyV1(marketId: BytesLike, expectedRevision: BigNumberish, expectedKeysetEpoch: BigNumberish, backstopTopupBps: BigNumberish, tiers: { maxNotional: BigNumberish; maxLeverage: BigNumberish; maintenanceMarginBps: BigNumberish }[], nextSigners: string[], nextThreshold: BigNumberish, signatures: { signer: string; r: BytesLike; s: BytesLike; v: BigNumberish }[], overrides?: Overrides): Promise<ethers.ContractTransaction>;
   recordAuctionWin(marketId: BytesLike, operator: string, registrationDigest: BytesLike, evidenceHash: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     Activated(marketId?: BytesLike | null): ethers.EventFilter;
     AuctionWinRecorded(marketId?: BytesLike | null, operator?: string | null): ethers.EventFilter;
-    BasicPerpMarketInitialized(marketId?: BytesLike | null): ethers.EventFilter;
     Closed(marketId?: BytesLike | null): ethers.EventFilter;
     Delisting(marketId?: BytesLike | null): ethers.EventFilter;
     LiveStarted(marketId?: BytesLike | null): ethers.EventFilter;
-    PerpMarketClosePrepared(marketId?: BytesLike | null): ethers.EventFilter;
-    PolicyPerpMarketInitialized(marketId?: BytesLike | null): ethers.EventFilter;
+    PerpMarketClosePreparedV1(marketId?: BytesLike | null): ethers.EventFilter;
+    PerpMarketInitializedV1(marketId?: BytesLike | null): ethers.EventFilter;
+    PerpMarketInitializedV2(marketId?: BytesLike | null): ethers.EventFilter;
     Slashed(marketId?: BytesLike | null): ethers.EventFilter;
   };
 }

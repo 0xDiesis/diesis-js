@@ -43,25 +43,7 @@ export function useIDiesisPerpsBookAdjustIsolatedMargin(
   };
 }
 
-export function useIDiesisPerpsBookAdvancePricedPerpRuntime(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { policyHash: `0x${string}` }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { policyHash: `0x${string}` }) =>
-      writeContract({
-        address,
-        abi: IDiesisPerpsBookAbi,
-        functionName: 'advancePricedPerpRuntime',
-        args: [args.policyHash],
-      }),
-  };
-}
-
-export function useIDiesisPerpsBookAmendPerpOrder(
+export function useIDiesisPerpsBookAmendPerpOrderV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { orderId: `0x${string}`, price: bigint, amount: bigint, expiry: bigint }) => void;
@@ -73,13 +55,13 @@ export function useIDiesisPerpsBookAmendPerpOrder(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'amendPerpOrder',
+        functionName: 'amendPerpOrderV1',
         args: [args.orderId, args.price, args.amount, args.expiry],
       }),
   };
 }
 
-export function useIDiesisPerpsBookApplyPerpFunding(
+export function useIDiesisPerpsBookApplyPerpFundingV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, fundingRateBps: bigint }) => void;
@@ -91,13 +73,13 @@ export function useIDiesisPerpsBookApplyPerpFunding(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'applyPerpFunding',
+        functionName: 'applyPerpFundingV1',
         args: [args.marketId, args.fundingRateBps],
       }),
   };
 }
 
-export function useIDiesisPerpsBookCancelPerpOrder(
+export function useIDiesisPerpsBookCancelPerpOrderV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { orderId: `0x${string}` }) => void;
@@ -109,13 +91,13 @@ export function useIDiesisPerpsBookCancelPerpOrder(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'cancelPerpOrder',
+        functionName: 'cancelPerpOrderV1',
         args: [args.orderId],
       }),
   };
 }
 
-export function useIDiesisPerpsBookExecutePerpTrade(
+export function useIDiesisPerpsBookExecutePerpTradeV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { makerOrderId: `0x${string}`, takerOrderId: `0x${string}`, fillPrice: bigint, fillQty: bigint }) => void;
@@ -127,13 +109,13 @@ export function useIDiesisPerpsBookExecutePerpTrade(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'executePerpTrade',
+        functionName: 'executePerpTradeV1',
         args: [args.makerOrderId, args.takerOrderId, args.fillPrice, args.fillQty],
       }),
   };
 }
 
-export function useIDiesisPerpsBookExpirePerpOrder(
+export function useIDiesisPerpsBookExpirePerpOrderV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { orderId: `0x${string}` }) => void;
@@ -145,13 +127,13 @@ export function useIDiesisPerpsBookExpirePerpOrder(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'expirePerpOrder',
+        functionName: 'expirePerpOrderV1',
         args: [args.orderId],
       }),
   };
 }
 
-export function useIDiesisPerpsBookFinalizePerpFeeEpoch(
+export function useIDiesisPerpsBookFinalizePerpFeeEpochV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, epoch: bigint, snapshotHash: `0x${string}` }) => void;
@@ -163,31 +145,13 @@ export function useIDiesisPerpsBookFinalizePerpFeeEpoch(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'finalizePerpFeeEpoch',
+        functionName: 'finalizePerpFeeEpochV2',
         args: [args.marketId, args.epoch, args.snapshotHash],
       }),
   };
 }
 
-export function useIDiesisPerpsBookSubmitBoundSessionActions(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { encodedWrapper: `0x${string}` }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { encodedWrapper: `0x${string}` }) =>
-      writeContract({
-        address,
-        abi: IDiesisPerpsBookAbi,
-        functionName: 'submitBoundSessionActions',
-        args: [args.encodedWrapper],
-      }),
-  };
-}
-
-export function useIDiesisPerpsBookSubmitExchangeActions(
+export function useIDiesisPerpsBookSubmitExchangeActionsV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { encodedActions: `0x${string}` }) => void;
@@ -199,13 +163,13 @@ export function useIDiesisPerpsBookSubmitExchangeActions(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'submitExchangeActions',
+        functionName: 'submitExchangeActionsV2',
         args: [args.encodedActions],
       }),
   };
 }
 
-export function useIDiesisPerpsBookSubmitPerpOrder(
+export function useIDiesisPerpsBookSubmitPerpOrderV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, side: number, orderType: number, price: bigint, amount: bigint, flags: number, marginType: number, expiry: bigint }) => void;
@@ -217,13 +181,13 @@ export function useIDiesisPerpsBookSubmitPerpOrder(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'submitPerpOrder',
+        functionName: 'submitPerpOrderV1',
         args: [args.marketId, args.side, args.orderType, args.price, args.amount, args.flags, args.marginType, args.expiry],
       }),
   };
 }
 
-export function useIDiesisPerpsBookSubmitSponsoredPerpActions(
+export function useIDiesisPerpsBookSubmitSignedPerpActionsV2(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { signedEnvelope: `0x${string}` }) => void;
@@ -235,13 +199,13 @@ export function useIDiesisPerpsBookSubmitSponsoredPerpActions(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'submitSponsoredPerpActions',
+        functionName: 'submitSignedPerpActionsV2',
         args: [args.signedEnvelope],
       }),
   };
 }
 
-export function useIDiesisPerpsBookUpdatePerpMark(
+export function useIDiesisPerpsBookUpdatePerpMarkV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, markPrice: bigint }) => void;
@@ -253,13 +217,13 @@ export function useIDiesisPerpsBookUpdatePerpMark(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'updatePerpMark',
+        functionName: 'updatePerpMarkV1',
         args: [args.marketId, args.markPrice],
       }),
   };
 }
 
-export function useIDiesisPerpsBookUpdatePerpOracle(
+export function useIDiesisPerpsBookUpdatePerpOracleV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}`, indexPrice: bigint, markPrice: bigint, observedAt: bigint, oracleRound: bigint, sourceSetHash: `0x${string}`, evidenceHash: `0x${string}` }) => void;
@@ -271,55 +235,37 @@ export function useIDiesisPerpsBookUpdatePerpOracle(
       writeContract({
         address,
         abi: IDiesisPerpsBookAbi,
-        functionName: 'updatePerpOracle',
+        functionName: 'updatePerpOracleV1',
         args: [args.marketId, args.indexPrice, args.markPrice, args.observedAt, args.oracleRound, args.sourceSetHash, args.evidenceHash],
-      }),
-  };
-}
-
-export function useIDiesisPerpsBookUpdatePricedOracle(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { payload: `0x${string}` }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { payload: `0x${string}` }) =>
-      writeContract({
-        address,
-        abi: IDiesisPerpsBookAbi,
-        functionName: 'updatePricedOracle',
-        args: [args.payload],
       }),
   };
 }
 
 // ── Event hooks ────────────────────────────────────────────────────────
 
-export function useIDiesisPerpsBookExchangeActionAcceptedEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisPerpsBookExchangeActionAcceptedV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisPerpsBookAbi,
-    eventName: 'ExchangeActionAccepted',
+    eventName: 'ExchangeActionAcceptedV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
 
-export function useIDiesisPerpsBookExchangeActionRejectedEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisPerpsBookExchangeActionRejectedV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisPerpsBookAbi,
-    eventName: 'ExchangeActionRejected',
+    eventName: 'ExchangeActionRejectedV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
 
-export function useIDiesisPerpsBookExchangeL3MutationEvent(address: Address, listener: (log: any) => void) {
+export function useIDiesisPerpsBookExchangeL3MutationV2Event(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
     abi: IDiesisPerpsBookAbi,
-    eventName: 'ExchangeL3Mutation',
+    eventName: 'ExchangeL3MutationV2',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

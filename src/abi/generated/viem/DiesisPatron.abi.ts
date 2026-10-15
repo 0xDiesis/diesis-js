@@ -1157,6 +1157,25 @@ export const DiesisPatronAbi = [
       "inputs": [
         {
           "internalType": "bytes32",
+          "name": "grantId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "withdrawContributionStep",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "complete",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
           "name": "reservationId",
           "type": "bytes32"
         }

@@ -230,7 +230,7 @@ export type ExchangePublicActions = {
 
 export type ExchangeWalletActions = {
   exchange: {
-    /** Ordinary session-key signing only; requires selected bound V3 support. */
+    /** Unavailable on the current canonical runtime; rejects before signing or sending. */
     submitBoundSessionActions: (
       params: SendBoundSessionActionsParameters,
     ) => Promise<Hash>

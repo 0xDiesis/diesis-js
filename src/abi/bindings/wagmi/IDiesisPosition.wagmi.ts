@@ -205,6 +205,24 @@ export function useIDiesisPositionClaimRewards(
   };
 }
 
+export function useIDiesisPositionCreateRedemptionPosition(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { validator: number }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { validator: number }) =>
+      writeContract({
+        address,
+        abi: IDiesisPositionAbi,
+        functionName: 'createRedemptionPosition',
+        args: [args.validator],
+      }),
+  };
+}
+
 export function useIDiesisPositionDelegate(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {

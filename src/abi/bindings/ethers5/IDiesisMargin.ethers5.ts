@@ -3,7 +3,7 @@ import { ethers, type BigNumber, type BigNumberish, type BytesLike, type CallOve
 import { IDiesisMarginAbi } from '../../generated/viem/IDiesisMargin.abi.js';
 
 export interface IDiesisMarginContract extends ethers.Contract {
-  resolvePerpProtection(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  resolvePerpProtectionV1(marketId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     AutoDeleverage(marketId?: BytesLike | null, deleveraged?: string | null, counterparty?: string | null): ethers.EventFilter;
     Liquidation(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;

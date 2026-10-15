@@ -9,18 +9,22 @@ import {
 import { DIESIS_SETTLEMENT } from '../addresses.js'
 import { IDiesisSettlementAbi } from '../abi/index.js'
 import type {
-  IDiesisSettlementAuthorizeSessionKeyParams,
-  IDiesisSettlementRevokeSessionKeyParams,
+  IDiesisSettlementAcceptSessionKeyV2Params,
+  IDiesisSettlementAuthorizeSessionKeyV2Params,
+  IDiesisSettlementRevokeSessionKeyV2Params,
 } from '../abi/bindings/viem/index.js'
 import type { ExchangeAction } from './actions-v2.js'
 
 /** Settlement function definitions come from the generated contract ABI. */
 export const ExchangeSessionKeysAbi = [
   IDiesisSettlementAbi.find(
-    (item) => item.type === 'function' && item.name === 'authorizeSessionKey',
+    (item) => item.type === 'function' && item.name === 'acceptSessionKeyV2',
   )!,
   IDiesisSettlementAbi.find(
-    (item) => item.type === 'function' && item.name === 'revokeSessionKey',
+    (item) => item.type === 'function' && item.name === 'authorizeSessionKeyV2',
+  )!,
+  IDiesisSettlementAbi.find(
+    (item) => item.type === 'function' && item.name === 'revokeSessionKeyV2',
   )!,
 ] as const
 
@@ -42,10 +46,17 @@ const ALL_ACTION_SCOPE_V2 = 0x7fen
 const UINT64_MAX = (1n << 64n) - 1n
 const UINT256_MAX = (1n << 256n) - 1n
 
-export type AuthorizeSessionKeyParameters =
-  IDiesisSettlementAuthorizeSessionKeyParams
+export type AcceptSessionKeyV2Parameters =
+  IDiesisSettlementAcceptSessionKeyV2Params
+export type AuthorizeSessionKeyV2Parameters =
+  IDiesisSettlementAuthorizeSessionKeyV2Params
+export type RevokeSessionKeyV2Parameters =
+  IDiesisSettlementRevokeSessionKeyV2Params
 
-export type RevokeSessionKeyParameters = IDiesisSettlementRevokeSessionKeyParams
+/** @deprecated Use AuthorizeSessionKeyV2Parameters. */
+export type AuthorizeSessionKeyParameters = AuthorizeSessionKeyV2Parameters
+/** @deprecated Use RevokeSessionKeyV2Parameters. */
+export type RevokeSessionKeyParameters = RevokeSessionKeyV2Parameters
 
 /** Construct the canonical action-tag bitmap for one session authorization. */
 export function exchangeActionScope(
@@ -61,21 +72,23 @@ export function exchangeActionScope(
   return scope
 }
 
-function validateSessionKey(sessionKey: Address): void {
-  if (!isAddress(sessionKey, { strict: true })) {
-    throw new Error('sessionKey must be a canonical address')
+/** Explicit V2 name for the canonical action-tag bitmap. */
+export const exchangeActionScopeV2 = exchangeActionScope
+
+function validateAddress(address: Address, field: string): void {
+  if (!isAddress(address, { strict: true })) {
+    throw new Error(`${field} must be a canonical address`)
   }
-  if (sessionKey.toLowerCase() === zeroAddress) {
-    throw new Error('sessionKey must be nonzero')
+  if (address.toLowerCase() === zeroAddress) {
+    throw new Error(`${field} must be nonzero`)
   }
 }
 
-/** Build the exact principal-called settlement authorization transaction. */
-export function prepareAuthorizeSessionKeyTransaction(
-  parameters: AuthorizeSessionKeyParameters,
-): { to: Address; data: Hex; value: 0n } {
-  validateSessionKey(parameters.sessionKey)
+function validateTerms(
+  parameters: Omit<AcceptSessionKeyV2Parameters, 'principal'>,
+): void {
   if (
+    typeof parameters.actionScope !== 'bigint' ||
     parameters.actionScope <= 0n ||
     parameters.actionScope > UINT256_MAX ||
     (parameters.actionScope & ~ALL_ACTION_SCOPE_V2) !== 0n
@@ -84,10 +97,15 @@ export function prepareAuthorizeSessionKeyTransaction(
       'actionScope must be nonzero and contain only V2 action bits',
     )
   }
-  if (parameters.validUntil <= 0n || parameters.validUntil > UINT64_MAX) {
+  if (
+    typeof parameters.validUntil !== 'bigint' ||
+    parameters.validUntil <= 0n ||
+    parameters.validUntil > UINT64_MAX
+  ) {
     throw new Error('validUntil must be a nonzero uint64')
   }
   if (
+    typeof parameters.maxNotionalOrSpend !== 'bigint' ||
     parameters.maxNotionalOrSpend < 0n ||
     parameters.maxNotionalOrSpend > UINT256_MAX
   ) {
@@ -96,12 +114,49 @@ export function prepareAuthorizeSessionKeyTransaction(
   if (!/^0x[0-9a-fA-F]{64}$/.test(parameters.allowedMarketsMask)) {
     throw new Error('allowedMarketsMask must be 32 bytes')
   }
+}
+
+/**
+ * Prepare key-called one-use consent. Send from the intended session key.
+ * This does not activate a binding or consume the principal's capacity.
+ */
+export function prepareAcceptSessionKeyV2Transaction(
+  parameters: AcceptSessionKeyV2Parameters,
+): { to: Address; data: Hex; value: 0n } {
+  validateAddress(parameters.principal, 'principal')
+  validateTerms(parameters)
   return {
     to: DIESIS_SETTLEMENT,
     value: 0n,
     data: encodeFunctionData({
       abi: ExchangeSessionKeysAbi,
-      functionName: 'authorizeSessionKey',
+      functionName: 'acceptSessionKeyV2',
+      args: [
+        parameters.principal,
+        parameters.actionScope,
+        parameters.validUntil,
+        parameters.maxNotionalOrSpend,
+        parameters.allowedMarketsMask,
+      ],
+    }),
+  }
+}
+
+/**
+ * Prepare principal-called activation after the key accepted identical terms.
+ * Native execution checks consent, expiry, market ordinals and capacity.
+ */
+export function prepareAuthorizeSessionKeyV2Transaction(
+  parameters: AuthorizeSessionKeyV2Parameters,
+): { to: Address; data: Hex; value: 0n } {
+  validateAddress(parameters.sessionKey, 'sessionKey')
+  validateTerms(parameters)
+  return {
+    to: DIESIS_SETTLEMENT,
+    value: 0n,
+    data: encodeFunctionData({
+      abi: ExchangeSessionKeysAbi,
+      functionName: 'authorizeSessionKeyV2',
       args: [
         parameters.sessionKey,
         parameters.actionScope,
@@ -113,18 +168,37 @@ export function prepareAuthorizeSessionKeyTransaction(
   }
 }
 
-/** Build the exact principal-called settlement revocation transaction. */
-export function prepareRevokeSessionKeyTransaction(
-  parameters: RevokeSessionKeyParameters,
+/**
+ * Prepare revocation from the bound principal or the session key. It also clears
+ * pending consent and advances the generation. A key can cancel pending consent
+ * before activation by calling this same method with its own address.
+ */
+export function prepareRevokeSessionKeyV2Transaction(
+  parameters: RevokeSessionKeyV2Parameters,
 ): { to: Address; data: Hex; value: 0n } {
-  validateSessionKey(parameters.sessionKey)
+  validateAddress(parameters.sessionKey, 'sessionKey')
   return {
     to: DIESIS_SETTLEMENT,
     value: 0n,
     data: encodeFunctionData({
       abi: ExchangeSessionKeysAbi,
-      functionName: 'revokeSessionKey',
+      functionName: 'revokeSessionKeyV2',
       args: [parameters.sessionKey],
     }),
   }
 }
+
+/**
+ * Prepare key-called cancellation using revokeSessionKeyV2(sessionKey).
+ * Send from that key. If a binding is active, this also revokes it.
+ */
+export const prepareCancelSessionKeyConsentV2Transaction =
+  prepareRevokeSessionKeyV2Transaction
+
+/** @deprecated Use prepareAuthorizeSessionKeyV2Transaction after key consent. */
+export const prepareAuthorizeSessionKeyTransaction =
+  prepareAuthorizeSessionKeyV2Transaction
+
+/** @deprecated Use prepareRevokeSessionKeyV2Transaction. */
+export const prepareRevokeSessionKeyTransaction =
+  prepareRevokeSessionKeyV2Transaction

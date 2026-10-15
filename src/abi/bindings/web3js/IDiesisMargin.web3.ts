@@ -23,7 +23,7 @@ type IDiesisMarginMethod<Mutability extends 'payable' | 'nonpayable', Output> = 
 };
 
 export interface IDiesisMarginMethods {
-  resolvePerpProtection(marketId: string): IDiesisMarginMethod<'nonpayable', string>;
+  resolvePerpProtectionV1(marketId: string): IDiesisMarginMethod<'nonpayable', string>;
 }
 
 export type IDiesisMarginContract = Omit<Contract<typeof IDiesisMarginAbi>, 'methods'> & {

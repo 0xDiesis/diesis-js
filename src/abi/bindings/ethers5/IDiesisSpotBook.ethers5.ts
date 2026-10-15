@@ -14,8 +14,7 @@ export interface IDiesisSpotBookContract extends ethers.Contract {
   getOrderBookDepth(marketId: BytesLike, levels: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber[], BigNumber[], BigNumber[], BigNumber[]] & { bidPrices: BigNumber[]; bidAmounts: BigNumber[]; askPrices: BigNumber[]; askAmounts: BigNumber[] }>;
   getUserOrders(user: string, marketId: BytesLike, overrides?: CallOverrides): Promise<string[]>;
   startOpeningAuction(marketId: BytesLike, startBlock: BigNumberish, endBlock: BigNumberish, referencePrice: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  submitBoundSessionActions(encodedWrapper: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  submitExchangeActions(encodedActions: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  submitExchangeActionsV2(encodedActions: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   submitLimitOrder(marketId: BytesLike, side: BigNumberish, priceTicks: BigNumberish, amountLots: BigNumberish, flags: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   submitMarketOrder(marketId: BytesLike, side: BigNumberish, amountLots: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   submitSignedCancelAllSpotIntent(signedCancelAllJson: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
@@ -23,10 +22,10 @@ export interface IDiesisSpotBookContract extends ethers.Contract {
   triggerSpotStops(marketId: BytesLike, maxOrders: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     BatchAuctionCleared(marketId?: BytesLike | null): ethers.EventFilter;
-    ExchangeActionAccepted(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
-    ExchangeActionRejected(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
-    ExchangeL3Mutation(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
-    ExchangeTradeFill(marketId?: BytesLike | null, makerOrderId?: BytesLike | null, takerOrderId?: BytesLike | null): ethers.EventFilter;
+    ExchangeActionAcceptedV2(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
+    ExchangeActionRejectedV2(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): ethers.EventFilter;
+    ExchangeL3MutationV2(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
+    ExchangeTradeFillV2(marketId?: BytesLike | null, makerOrderId?: BytesLike | null, takerOrderId?: BytesLike | null): ethers.EventFilter;
     OrderCancelled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderFilled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderPlaced(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;

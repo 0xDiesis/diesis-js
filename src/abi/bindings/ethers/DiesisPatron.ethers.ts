@@ -51,6 +51,7 @@ export interface DiesisPatronMethods {
   updateGasLimits(reserveGas: BigNumberish, settleGas: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   updateStakingAddress(staking_: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   withdrawContribution(grantId: BytesLike, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  withdrawContributionStep(grantId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   withdrawReservationExit(reservationId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   filters: {
     AccountGrantAssigned(account?: AddressLike | null, grantId?: BytesLike | null): DeferredTopicFilter;

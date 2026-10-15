@@ -616,6 +616,24 @@ export function useDiesisPatronWithdrawContribution(
   };
 }
 
+export function useDiesisPatronWithdrawContributionStep(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { grantId: `0x${string}` }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { grantId: `0x${string}` }) =>
+      writeContract({
+        address,
+        abi: DiesisPatronAbi,
+        functionName: 'withdrawContributionStep',
+        args: [args.grantId],
+      }),
+  };
+}
+
 export function useDiesisPatronWithdrawReservationExit(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {

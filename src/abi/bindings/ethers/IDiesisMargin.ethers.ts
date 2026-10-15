@@ -3,7 +3,7 @@ import { Contract, type AddressLike, type BaseContract, type BigNumberish, type 
 import { IDiesisMarginAbi } from '../../generated/viem/IDiesisMargin.abi.js';
 
 export interface IDiesisMarginMethods {
-  resolvePerpProtection(marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  resolvePerpProtectionV1(marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   filters: {
     AutoDeleverage(marketId?: BytesLike | null, deleveraged?: AddressLike | null, counterparty?: AddressLike | null): DeferredTopicFilter;
     Liquidation(marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;

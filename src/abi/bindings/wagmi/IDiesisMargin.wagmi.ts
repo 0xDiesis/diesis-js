@@ -5,7 +5,7 @@ import type { Address } from 'viem';
 
 // ── Write hooks ────────────────────────────────────────────────────────
 
-export function useIDiesisMarginResolvePerpProtection(
+export function useIDiesisMarginResolvePerpProtectionV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
   write: (args: { marketId: `0x${string}` }) => void;
@@ -17,7 +17,7 @@ export function useIDiesisMarginResolvePerpProtection(
       writeContract({
         address,
         abi: IDiesisMarginAbi,
-        functionName: 'resolvePerpProtection',
+        functionName: 'resolvePerpProtectionV1',
         args: [args.marketId],
       }),
   };

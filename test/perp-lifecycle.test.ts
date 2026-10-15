@@ -197,7 +197,7 @@ describe('ordinary operator lifecycle transactions', () => {
         send: () => lifecycle.bidUnpricedPerpListing({ registration }),
         to: addresses.DIESIS_ISSUANCE_AUCTION,
         abi: IDiesisIssuanceAuctionAbi,
-        name: 'bidUnpricedPerpListing',
+        name: 'bidPerpListingV1',
         args: [
           { ...registration, quoteAsset: getAddress(PERP_CANONICAL_USDC) },
         ],
@@ -243,7 +243,7 @@ describe('ordinary operator lifecycle transactions', () => {
         send: () => lifecycle.initializeBasicPerpMarket(initialV1),
         to: addresses.DIESIS_PERP_DEPLOY,
         abi: IDiesisPerpDeployAbi,
-        name: 'initializeBasicPerpMarket',
+        name: 'initializePerpMarketV1',
         args: [base, getAddress(PERP_CANONICAL_USDC), 5n, 1n, 1_000n, 100n, 10],
         value: 0n,
       },
@@ -251,7 +251,7 @@ describe('ordinary operator lifecycle transactions', () => {
         send: () => lifecycle.initializePolicyPerpMarket(initialV2),
         to: addresses.DIESIS_PERP_DEPLOY,
         abi: IDiesisPerpDeployAbi,
-        name: 'initializePolicyPerpMarket',
+        name: 'initializePerpMarketV2',
         args: [
           base,
           getAddress(PERP_CANONICAL_USDC),
@@ -583,7 +583,7 @@ describe('perpetual lifecycle reads', () => {
     await getPerpListingSlot(context.publicClient, context.chain, 55n)
     expect(reader.readContract.mock.lastCall![0]).toMatchObject({
       address: addresses.DIESIS_ISSUANCE_AUCTION,
-      functionName: 'getPerpListingSlot',
+      functionName: 'getPerpListingSlotV1',
       blockNumber: 55n,
     })
     await currentPerpListingPrice(context.publicClient, context.chain)

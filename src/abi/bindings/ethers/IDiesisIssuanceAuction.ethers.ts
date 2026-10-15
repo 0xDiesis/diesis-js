@@ -3,12 +3,10 @@ import { Contract, type AddressLike, type BaseContract, type BigNumberish, type 
 import { IDiesisIssuanceAuctionAbi } from '../../generated/viem/IDiesisIssuanceAuction.abi.js';
 
 export interface IDiesisIssuanceAuctionMethods {
-  bidPricedPerpListing(registration: { marketId: BytesLike; baseAsset: AddressLike; quoteAsset: AddressLike; evidenceHash: BytesLike; pricingVersion: BigNumberish; priceDenominator: BigNumberish }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  bidUnpricedPerpListing(registration: { marketId: BytesLike; baseAsset: AddressLike; quoteAsset: AddressLike; evidenceHash: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  currentPerpListingPrice(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
-  getPerpListingSlot(overrides?: Omit<Overrides, 'value'>): Promise<[bigint, bigint, bigint, bigint, string, string] & { slotStartBlock: bigint; slotLengthBlocks: bigint; initialPriceUsdc: bigint; winningPriceUsdc: bigint; currentWinner: string; registrationDigest: string }>;
-  getPerpRegistrationPricing(marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[bigint, bigint] & { pricingVersion: bigint; priceDenominator: bigint }>;
-  settlePerpListing(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  bidPerpListingV1(registration: { marketId: BytesLike; baseAsset: AddressLike; quoteAsset: AddressLike; evidenceHash: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  currentPerpListingPriceV1(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
+  getPerpListingSlotV1(overrides?: Omit<Overrides, 'value'>): Promise<[bigint, bigint, bigint, bigint, string, string] & { slotStartBlock: bigint; slotLengthBlocks: bigint; initialPriceUsdc: bigint; winningPriceUsdc: bigint; currentWinner: string; registrationDigest: string }>;
+  settlePerpListingV1(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   filters: {
     BidAccepted(bidder?: AddressLike | null, marketId?: BytesLike | null): DeferredTopicFilter;
     SlotSettled(marketId?: BytesLike | null, winner?: AddressLike | null): DeferredTopicFilter;

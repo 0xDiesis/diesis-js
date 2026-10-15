@@ -1398,7 +1398,7 @@ export function prepareExchangeActionsTransaction(parameters: {
     to,
     data: encodeFunctionData({
       abi: IDiesisSpotBookAbi,
-      functionName: 'submitExchangeActions',
+      functionName: 'submitExchangeActionsV2',
       args: [encodedActions],
     }),
     value: 0n,

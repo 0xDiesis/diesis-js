@@ -359,13 +359,79 @@ response can't pass as a result.
 The wire codec and ABI do not prove that a runtime supports every perpetual
 action. Check the operation's capability read before offering it to a user.
 
-Session keys let a trading bot act for a main account within limits. Build the
-permitted-action bitmap with `exchangeActionScopeV2`, then call
-`prepareAuthorizeSessionKeyV2Transaction` or
-`prepareRevokeSessionKeyV2Transaction`. A zero spend cap means no cap. A zero
-market mask allows no markets, and an all-ones mask allows all of them. Cancel
-schedules are regular V2 actions with a bounded market list, an expected
-renewal counter, and bounded trigger chunks.
+Session keys let a trading bot act for a principal within limits. V2 requires
+two ordinary transactions, each sent on the same chain to the canonical
+Settlement endpoint:
+
+1. The key sends `prepareAcceptSessionKeyV2Transaction({ principal, ...terms })`.
+2. After acceptance succeeds, the principal sends
+   `prepareAuthorizeSessionKeyV2Transaction({ sessionKey, ...terms })` with the
+   exact same terms.
+
+```typescript
+import {
+  exchangeActionScopeV2,
+  prepareAcceptSessionKeyV2Transaction,
+  prepareAuthorizeSessionKeyV2Transaction,
+} from '@diesis/sdk/exchange'
+
+const terms = {
+  actionScope: exchangeActionScopeV2(['cancelByOrderId']),
+  validUntil: BigInt(Math.floor(Date.now() / 1000) + 3600),
+  maxNotionalOrSpend: 0n,
+  allowedMarketsMask: `0x${'ff'.repeat(32)}` as const,
+}
+const acceptance = prepareAcceptSessionKeyV2Transaction({ principal, ...terms })
+// Submit acceptance from sessionKey and confirm successful inclusion.
+const activation = prepareAuthorizeSessionKeyV2Transaction({
+  sessionKey,
+  ...terms,
+})
+// Submit activation from principal and confirm successful inclusion.
+```
+
+The principal and key must be distinct. The preparation helpers validate ABI
+bounds; native execution checks current expiry, assigned market ordinals,
+capacity and exact consent. Acceptance leaves identity and capacity unchanged.
+It replaces earlier pending consent and binds the chain, Settlement endpoint,
+principal, key, all terms and next authorization generation. Activation consumes
+it once. Replacing active terms requires fresh consent; moving to another
+principal requires detaching the current binding first. Ordinary caller
+authentication supports both account and contract keys.
+
+A key cancels pending consent by sending
+`prepareCancelSessionKeyConsentV2Transaction({ sessionKey })` from itself. This
+uses `revokeSessionKeyV2(sessionKey)` and also revokes any active binding. Either
+the bound principal or key can send
+`prepareRevokeSessionKeyV2Transaction({ sessionKey })`. Revocation clears consent
+and the binding, advances the generation and releases retained capacity. Expiry
+restores the key's direct identity, but capacity remains retained until explicit
+revocation. Revocation also invalidates old generation-bound schedules.
+
+Canonical contract revision `ef995163891c0469a7fa09a89a6e66c1705a7fe4` has
+no bound-session V3 method or native DXS3 execution route.
+`prepareBoundSessionActionsTransaction`, `signBoundSessionActionsTransaction`
+and `sendBoundSessionActionsTransaction` stop with an explicit unavailable error
+before signing or submission. They never fall back to unbound V2 calls. The
+DXS3 encoding, decoding and result-hash helpers remain available for offline
+work; their output does not establish runtime support.
+
+For offline bound batches, `authorizationGeneration` means the active
+`getSessionAuthorization({ principal, sessionKey })` record's
+`value.authorizationGeneration` after activation. Acceptance's returned next
+generation does not establish an active binding. Keep this separate from
+`indexGeneration`, which identifies the local read publication. A future bound
+submission route still needs qualified native support and signed resource
+limits, in addition to a matching principal and generation at execution.
+
+A zero spend cap means no cap. A zero market mask allows no markets. The
+all-ones sentinel explicitly allows every assigned and future market ordinal;
+other masks may only select currently assigned ordinals, with ordinal zero at
+bit 255. Expiry is inclusive at the native block timestamp. Cancel schedules
+are regular V2 actions with a bounded market list, an expected renewal counter,
+and bounded trigger chunks. The existing unversioned authorization and
+revocation helper names remain deprecated aliases that emit the current V2
+selectors; the retired selectors are never substituted.
 
 ### Add or release position collateral
 
@@ -860,7 +926,7 @@ pnpm quality       # ABI drift check, lint, typecheck, format
 ```
 
 `pnpm codegen` uses independently qualified artifacts from accepted contracts
-revision `e905d65c6a52df39f1d73906e9f5e91bd69011e9`. Set absolute paths before
+revision `ef995163891c0469a7fa09a89a6e66c1705a7fe4`. Set absolute paths before
 running code generation or quality checks:
 
 ```bash

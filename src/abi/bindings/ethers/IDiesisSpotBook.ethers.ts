@@ -14,8 +14,7 @@ export interface IDiesisSpotBookMethods {
   getOrderBookDepth(marketId: BytesLike, levels: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<[bigint[], bigint[], bigint[], bigint[]] & { bidPrices: bigint[]; bidAmounts: bigint[]; askPrices: bigint[]; askAmounts: bigint[] }>;
   getUserOrders(user: AddressLike, marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<string[]>;
   startOpeningAuction(marketId: BytesLike, startBlock: BigNumberish, endBlock: BigNumberish, referencePrice: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  submitBoundSessionActions(encodedWrapper: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  submitExchangeActions(encodedActions: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  submitExchangeActionsV2(encodedActions: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   submitLimitOrder(marketId: BytesLike, side: BigNumberish, priceTicks: BigNumberish, amountLots: BigNumberish, flags: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   submitMarketOrder(marketId: BytesLike, side: BigNumberish, amountLots: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   submitSignedCancelAllSpotIntent(signedCancelAllJson: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
@@ -23,10 +22,10 @@ export interface IDiesisSpotBookMethods {
   triggerSpotStops(marketId: BytesLike, maxOrders: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   filters: {
     BatchAuctionCleared(marketId?: BytesLike | null): DeferredTopicFilter;
-    ExchangeActionAccepted(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): DeferredTopicFilter;
-    ExchangeActionRejected(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): DeferredTopicFilter;
-    ExchangeL3Mutation(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
-    ExchangeTradeFill(marketId?: BytesLike | null, makerOrderId?: BytesLike | null, takerOrderId?: BytesLike | null): DeferredTopicFilter;
+    ExchangeActionAcceptedV2(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): DeferredTopicFilter;
+    ExchangeActionRejectedV2(clientActionId?: BytesLike | null, actionIndex?: BigNumberish | null, actionTag?: null, marketId?: BytesLike | null): DeferredTopicFilter;
+    ExchangeL3MutationV2(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
+    ExchangeTradeFillV2(marketId?: BytesLike | null, makerOrderId?: BytesLike | null, takerOrderId?: BytesLike | null): DeferredTopicFilter;
     OrderCancelled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
     OrderFilled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;
     OrderPlaced(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: AddressLike | null): DeferredTopicFilter;

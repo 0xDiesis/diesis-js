@@ -1,6 +1,5 @@
 import {
   bytesToHex,
-  encodeFunctionData,
   hexToBytes,
   keccak256,
   type Address,
@@ -12,12 +11,6 @@ import {
   type Transport,
 } from 'viem'
 
-import { IDiesisPerpsBookAbi, IDiesisSpotBookAbi } from '../abi/index.js'
-import type {
-  IDiesisPerpsBookSubmitBoundSessionActionsParams,
-  IDiesisSpotBookSubmitBoundSessionActionsParams,
-} from '../abi/bindings/viem/index.js'
-import { DIESIS_PERPS_BOOK, DIESIS_SPOT_BOOK } from '../addresses.js'
 import {
   decodeExchangeActionBatch,
   encodeExchangeActionBatch,
@@ -37,14 +30,18 @@ import {
   Writer,
 } from './wire-bytes.js'
 
-/** Explicit bounds from the separately accepted signed V3 resource policy. */
+/** Offline wrapper bounds; this contract revision supplies no native V3 policy. */
 export type BoundSessionLimits = {
   version: 3
   maxEncodedBytes: bigint
   bindingCheckGas: bigint
 }
 
-/** Expectations authenticated by the ordinary transaction's session-key caller. */
+/**
+ * Expectations authenticated by the ordinary transaction's session-key caller.
+ * Read the active authorization generation after V2 acceptance and activation.
+ * Pending consent and a control read's indexGeneration do not establish it.
+ */
 export type BoundSessionBatch = {
   principal: Address
   authorizationGeneration: bigint
@@ -164,15 +161,14 @@ function validateSessionKey(
 }
 
 /**
- * Prepare the separately generated V3 method. The caller must select an accepted
- * signed resource policy and runtime boundary; authorization reads do not activate
- * V3. Priced actions retain their separate native qualification gate.
+ * Validate the offline wrapper and fail closed. Canonical contracts at ef995163
+ * expose no bound-session V3 method. This never substitutes unbound V2 calldata.
  */
 export function prepareBoundSessionActionsTransaction(
   parameters: PrepareBoundSessionActionsParameters,
 ): { to: Address; data: Hex; value: 0n } {
   validateSessionKey(parameters)
-  const encodedWrapper = encodeBoundSessionBatch(parameters, parameters.limits)
+  encodeBoundSessionBatch(parameters, parameters.limits)
   if (
     parameters.batch.actions.some(
       (action) =>
@@ -182,32 +178,12 @@ export function prepareBoundSessionActionsTransaction(
     )
   )
     throw new Error('Pricing version 1 requires qualified native admission')
-  const generated:
-    | IDiesisSpotBookSubmitBoundSessionActionsParams
-    | IDiesisPerpsBookSubmitBoundSessionActionsParams = { encodedWrapper }
-  if (parameters.book === 'spot') {
-    return {
-      to: DIESIS_SPOT_BOOK,
-      value: 0n,
-      data: encodeFunctionData({
-        abi: IDiesisSpotBookAbi,
-        functionName: 'submitBoundSessionActions',
-        args: [generated.encodedWrapper],
-      }),
-    }
+  if (parameters.book !== 'spot' && parameters.book !== 'perpetual') {
+    throw new Error(`unknown exchange book ${String(parameters.book)}`)
   }
-  if (parameters.book === 'perpetual') {
-    return {
-      to: DIESIS_PERPS_BOOK,
-      value: 0n,
-      data: encodeFunctionData({
-        abi: IDiesisPerpsBookAbi,
-        functionName: 'submitBoundSessionActions',
-        args: [generated.encodedWrapper],
-      }),
-    }
-  }
-  throw new Error(`unknown exchange book ${String(parameters.book)}`)
+  throw new Error(
+    'bound-session submission is unavailable in canonical contract revision ef995163891c0469a7fa09a89a6e66c1705a7fe4',
+  )
 }
 
 function parametersFingerprint(

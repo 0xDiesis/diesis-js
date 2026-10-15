@@ -1,12 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import { decodeFunctionData, type Hex } from 'viem'
+import { describe, expect, it, vi } from 'vitest'
+import { type Hex } from 'viem'
 import {
   encodeBoundSessionBatch,
   decodeBoundSessionBatch,
   prepareBoundSessionActionsTransaction,
+  signBoundSessionActionsTransaction,
+  sendBoundSessionActionsTransaction,
   type PrepareBoundSessionActionsParameters,
 } from '../src/index.js'
-import { IDiesisSpotBookAbi } from '../src/abi/bindings/viem/index.js'
 
 const parameters: PrepareBoundSessionActionsParameters = {
   principal: `0x${'11'.repeat(20)}`,
@@ -38,10 +39,6 @@ describe('bound-session source consumers', () => {
       authorizationGeneration: 7n,
       batch: parameters.batch,
     })
-    const prepared = prepareBoundSessionActionsTransaction(parameters)
-    expect(
-      decodeFunctionData({ abi: IDiesisSpotBookAbi, data: prepared.data }),
-    ).toEqual({ functionName: 'submitBoundSessionActions', args: [encoded] })
   })
 
   it('refuses oversized wrappers and malformed or unbound headers', () => {
@@ -98,5 +95,51 @@ describe('bound-session source consumers', () => {
     expect(() => prepareBoundSessionActionsTransaction(priced)).toThrow(
       /qualified native admission/,
     )
+  })
+})
+
+describe('canonical contract boundary for bound-session submission', () => {
+  it.each(['spot', 'perpetual'] as const)(
+    'refuses unsupported %s V3 submission explicitly',
+    (book) => {
+      expect(() =>
+        prepareBoundSessionActionsTransaction({ ...parameters, book }),
+      ).toThrow(
+        /bound-session submission is unavailable in canonical contract revision ef995163/,
+      )
+    },
+  )
+
+  it('does not invoke the signer or transport when the canonical API is unavailable', async () => {
+    const signTransaction = vi.fn(async () => '0x01' as Hex)
+    const request = vi.fn(async () => '0x02' as Hex)
+    const account = {
+      address: parameters.sessionKey,
+      type: 'local',
+      signTransaction,
+    }
+    const input = {
+      ...parameters,
+      transaction: {
+        nonce: 1,
+        gas: 100_000n,
+        maxFeePerGas: 100n,
+        maxPriorityFeePerGas: 1n,
+      },
+    }
+    await expect(async () =>
+      signBoundSessionActionsTransaction(account as never, {
+        ...input,
+        chainId: 31337,
+      }),
+    ).rejects.toThrow(/bound-session submission is unavailable/)
+    await expect(
+      sendBoundSessionActionsTransaction(
+        { account, chain: { id: 31337 }, request } as never,
+        input,
+      ),
+    ).rejects.toThrow(/bound-session submission is unavailable/)
+    expect(signTransaction).not.toHaveBeenCalled()
+    expect(request).not.toHaveBeenCalled()
   })
 })

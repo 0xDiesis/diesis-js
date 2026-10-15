@@ -22,19 +22,6 @@ export const IDiesisPerpsBookAbi = [
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "policyHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "advancePricedPerpRuntime",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
           "name": "orderId",
           "type": "bytes32"
         },
@@ -54,7 +41,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "uint64"
         }
       ],
-      "name": "amendPerpOrder",
+      "name": "amendPerpOrderV1",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -78,7 +65,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "int256"
         }
       ],
-      "name": "applyPerpFunding",
+      "name": "applyPerpFundingV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -91,7 +78,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "cancelPerpOrder",
+      "name": "cancelPerpOrderV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -119,7 +106,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "uint256"
         }
       ],
-      "name": "executePerpTrade",
+      "name": "executePerpTradeV1",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -138,7 +125,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "expirePerpOrder",
+      "name": "expirePerpOrderV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -161,7 +148,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "finalizePerpFeeEpoch",
+      "name": "finalizePerpFeeEpochV2",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -235,40 +222,11 @@ export const IDiesisPerpsBookAbi = [
       "inputs": [
         {
           "internalType": "bytes",
-          "name": "encodedWrapper",
-          "type": "bytes"
-        }
-      ],
-      "name": "submitBoundSessionActions",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "resultHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "uint16",
-          "name": "acceptedCount",
-          "type": "uint16"
-        },
-        {
-          "internalType": "uint16",
-          "name": "rejectedCount",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
           "name": "encodedActions",
           "type": "bytes"
         }
       ],
-      "name": "submitExchangeActions",
+      "name": "submitExchangeActionsV2",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -332,7 +290,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "uint64"
         }
       ],
-      "name": "submitPerpOrder",
+      "name": "submitPerpOrderV1",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -351,7 +309,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes"
         }
       ],
-      "name": "submitSponsoredPerpActions",
+      "name": "submitSignedPerpActionsV2",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -375,7 +333,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "uint256"
         }
       ],
-      "name": "updatePerpMark",
+      "name": "updatePerpMarkV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -418,20 +376,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "updatePerpOracle",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes",
-          "name": "payload",
-          "type": "bytes"
-        }
-      ],
-      "name": "updatePricedOracle",
+      "name": "updatePerpOracleV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -476,7 +421,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "ExchangeActionAccepted",
+      "name": "ExchangeActionAcceptedV2",
       "type": "event"
     },
     {
@@ -525,7 +470,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "ExchangeActionRejected",
+      "name": "ExchangeActionRejectedV2",
       "type": "event"
     },
     {
@@ -580,7 +525,7 @@ export const IDiesisPerpsBookAbi = [
           "type": "uint64"
         }
       ],
-      "name": "ExchangeL3Mutation",
+      "name": "ExchangeL3MutationV2",
       "type": "event"
     },
     {

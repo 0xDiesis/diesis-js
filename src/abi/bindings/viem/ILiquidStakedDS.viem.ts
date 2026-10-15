@@ -18,6 +18,10 @@ export type ILiquidStakedDSBurnParams = {
   amount: bigint;
 };
 
+/**
+ * Burn holder tokens. Callers other than `from` must have allowance, including DiesisPosition.
+ * @dev Finite allowance decreases by the burn; maximum allowance is unchanged. Failed burns preserve allowance.
+ */
 export type ILiquidStakedDSBurnFromParams = {
   from: `0x${string}`;
   amount: bigint;

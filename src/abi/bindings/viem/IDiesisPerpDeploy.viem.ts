@@ -13,7 +13,7 @@ export function getIDiesisPerpDeployContract<TClient extends Client>(
  * Apply one consensus-attested perpetual-market abandonment transition.
  * @dev Native-runtime only: the dispatcher accepts this fixed-width selector      only from the system caller (`address(0)`).
  */
-export type IDiesisPerpDeployApplyPerpAbandonmentParams = {
+export type IDiesisPerpDeployApplyPerpAbandonmentV1Params = {
   marketId: `0x${string}`;
   parentHash: `0x${string}`;
   blockNumber: bigint;
@@ -44,7 +44,7 @@ export type IDiesisPerpDeployApplySlashParams = {
 
 /**
  * Sole production deployment path for a settled slot.
- * @dev Caller must be the recorded operator. The runtime validates all      dynamic fields before ABI allocation and requires their canonical      combined commitment to equal the auction registration evidence.      For a priced registration, sourceList is exactly ASCII      "diesis.exchange.oracle-source-configuration.v2" followed by the      32-byte descriptor commitment and the 32-byte source-set hash.      Legacy sourceList bytes stay opaque. Metadata and signatures stay      opaque; signature bytes are not validated as attestations here.
+ * @dev Caller must be the recorded operator. The runtime validates all      dynamic fields before ABI allocation and requires their canonical      combined commitment to equal the auction registration evidence.      The fields are opaque bytes: this version does not parse them or      validate the signature bytes as attestations.
  */
 export type IDiesisPerpDeployDeployPerpParams = {
   slotId: `0x${string}`;
@@ -58,7 +58,7 @@ export type IDiesisPerpDeployDeployPerpParams = {
  * Expire one incomplete auction deployment after its deadline.
  * @dev Native-runtime only. This covers both an untouched winner and a      cooling/live deployment that never completed canonical market      initialization. Missing bonds close without slashing; a posted bond      is atomically slashed before the deployment record closes.
  */
-export type IDiesisPerpDeployExpireUnactivatedPerpParams = {
+export type IDiesisPerpDeployExpireUnactivatedPerpV1Params = {
   marketId: `0x${string}`;
 };
 
@@ -73,7 +73,7 @@ export type IDiesisPerpDeployFinalizeCloseParams = {
 /**
  * Apply one due, system-owned perpetual policy proposal.
  */
-export type IDiesisPerpDeployFinalizePerpPolicyParams = {
+export type IDiesisPerpDeployFinalizePerpPolicyV1Params = {
   marketId: `0x${string}`;
   revision: bigint;
   proposalId: `0x${string}`;
@@ -82,7 +82,7 @@ export type IDiesisPerpDeployFinalizePerpPolicyParams = {
 /**
  * Materialize a live auction deployment into the canonical market         and clearing registries. `initialMark` is an unscaled tick price.
  */
-export type IDiesisPerpDeployInitializeBasicPerpMarketParams = {
+export type IDiesisPerpDeployInitializePerpMarketV1Params = {
   baseToken: `0x${string}`;
   quoteToken: `0x${string}`;
   tickSize: bigint;
@@ -96,27 +96,11 @@ export type IDiesisPerpDeployInitializeBasicPerpMarketParams = {
  * Atomically initialize the market and its first policy/keyset.
  * @dev This freezes the public V2 wire contract only. Native validation,      registry writes, and idempotence are introduced by X4b M2.
  */
-export type IDiesisPerpDeployInitializePolicyPerpMarketParams = {
+export type IDiesisPerpDeployInitializePerpMarketV2Params = {
   baseToken: `0x${string}`;
   quoteToken: `0x${string}`;
   tickSize: bigint;
   lotSize: bigint;
-  maxOpenInterest: bigint;
-  initialMark: bigint;
-  policy: { revision: bigint; backstopTopupBps: number; tiers: readonly { maxNotional: bigint; maxLeverage: number; maintenanceMarginBps: number }[] };
-  keyset: { epoch: bigint; threshold: number; signers: readonly `0x${string}`[] };
-};
-
-/**
- * Initialize a priced market and its first policy/keyset atomically.
- * @dev Requires the retained accepted version-one listing identity and      matching nonzero denominator. The denominator divides lotSize.      maxOpenInterest is full-width canonical q/priceDenominator size;      initialMark is p in immutable market price units. Clearing stores      its scaled p*PRICE_SCALE mirror. This returns one bytes32 market id.
- */
-export type IDiesisPerpDeployInitializePricedPerpMarketParams = {
-  baseToken: `0x${string}`;
-  quoteToken: `0x${string}`;
-  tickSize: bigint;
-  lotSize: bigint;
-  priceDenominator: bigint;
   maxOpenInterest: bigint;
   initialMark: bigint;
   policy: { revision: bigint; backstopTopupBps: number; tiers: readonly { maxNotional: bigint; maxLeverage: number; maintenanceMarginBps: number }[] };
@@ -132,18 +116,6 @@ export type IDiesisPerpDeployInitiateDelistParams = {
 };
 
 /**
- * Install the immutable authenticated priced oracle descriptor.
- * @dev Caller must be the accepted operator of an initialized Live priced      deployment. Decimals are explicit and at most 77. roundingPolicy      must be one, nearest tick with ties toward the lower tick.      sourceSetHash must be nonzero. Its descriptor-bound configuration      commitment must equal accepted deployment evidence.sourceListHash.      Identical retries return no data; conflicting metadata reverts.
- */
-export type IDiesisPerpDeployInstallPricedOracleDescriptorParams = {
-  marketId: `0x${string}`;
-  baseDecimals: number;
-  quoteDecimals: number;
-  roundingPolicy: number;
-  sourceSetHash: `0x${string}`;
-};
-
-/**
  * Advance one bounded step of market-close preparation.
  * @dev Cancels open orders with exact reserve release, settles funding,      and closes or transfers residual positions in restart-safe chunks,      charging a hard bound before mutation. Progress is persisted to the      canonical close cursor so repeated calls resume deterministically.      A `Slashed` market may be progressed permissionlessly because no      caller-controlled economic transition remains after slashing.      `finalizeClose` may only succeed once this returns `true`. Later      tasks implement the continuation; this freezes the release selector      and bounded argument layout.
  * @param marketId The market being wound down.
@@ -151,7 +123,7 @@ export type IDiesisPerpDeployInstallPricedOracleDescriptorParams = {
  * @param maxPositions Maximum positions to process this call.
  * @returns readyToFinalize True once no dependent state remains and the         market may be finalized.
  */
-export type IDiesisPerpDeployPreparePerpMarketCloseParams = {
+export type IDiesisPerpDeployPreparePerpMarketCloseV1Params = {
   marketId: `0x${string}`;
   maxOrders: number;
   maxPositions: number;
@@ -169,7 +141,7 @@ export type IDiesisPerpDeployPromoteToLiveParams = {
  * Propose a timelocked, current-keyset-attested policy update.
  * @dev Signature validation and timelock persistence are introduced by      X4b M2; this packet intentionally freezes only the ABI.
  */
-export type IDiesisPerpDeployProposePerpPolicyParams = {
+export type IDiesisPerpDeployProposePerpPolicyV1Params = {
   marketId: `0x${string}`;
   expectedRevision: bigint;
   expectedKeysetEpoch: bigint;

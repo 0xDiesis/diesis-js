@@ -26,6 +26,7 @@ export interface IDiesisPositionMethods {
   approve(to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
   balanceOf(owner: string): IDiesisPositionMethod<'nonpayable', bigint>;
   claimRewards(tokenId: Numbers, recipient: string): IDiesisPositionMethod<'nonpayable', void>;
+  createRedemptionPosition(validator: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
   delegate(tokenId: Numbers): IDiesisPositionMethod<'payable', void>;
   effectiveLockUntil(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;
   freeCollateralOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;

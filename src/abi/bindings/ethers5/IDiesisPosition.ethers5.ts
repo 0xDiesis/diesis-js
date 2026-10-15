@@ -6,6 +6,7 @@ export interface IDiesisPositionContract extends ethers.Contract {
   approve(to: string, tokenId: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
   claimRewards(tokenId: BigNumberish, recipient: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  createRedemptionPosition(validator: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   delegate(tokenId: BigNumberish, overrides?: PayableOverrides): Promise<ethers.ContractTransaction>;
   effectiveLockUntil(tokenId: BigNumberish, overrides?: CallOverrides): Promise<number>;
   freeCollateralOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;

@@ -3,12 +3,10 @@ import { ethers, type BigNumber, type BigNumberish, type BytesLike, type CallOve
 import { IDiesisIssuanceAuctionAbi } from '../../generated/viem/IDiesisIssuanceAuction.abi.js';
 
 export interface IDiesisIssuanceAuctionContract extends ethers.Contract {
-  bidPricedPerpListing(registration: { marketId: BytesLike; baseAsset: string; quoteAsset: string; evidenceHash: BytesLike; pricingVersion: BigNumberish; priceDenominator: BigNumberish }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  bidUnpricedPerpListing(registration: { marketId: BytesLike; baseAsset: string; quoteAsset: string; evidenceHash: BytesLike }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  currentPerpListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
-  getPerpListingSlot(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, string, string] & { slotStartBlock: BigNumber; slotLengthBlocks: BigNumber; initialPriceUsdc: BigNumber; winningPriceUsdc: BigNumber; currentWinner: string; registrationDigest: string }>;
-  getPerpRegistrationPricing(marketId: BytesLike, overrides?: CallOverrides): Promise<[number, BigNumber] & { pricingVersion: number; priceDenominator: BigNumber }>;
-  settlePerpListing(overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  bidPerpListingV1(registration: { marketId: BytesLike; baseAsset: string; quoteAsset: string; evidenceHash: BytesLike }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  currentPerpListingPriceV1(overrides?: CallOverrides): Promise<BigNumber>;
+  getPerpListingSlotV1(overrides?: CallOverrides): Promise<[BigNumber, BigNumber, BigNumber, BigNumber, string, string] & { slotStartBlock: BigNumber; slotLengthBlocks: BigNumber; initialPriceUsdc: BigNumber; winningPriceUsdc: BigNumber; currentWinner: string; registrationDigest: string }>;
+  settlePerpListingV1(overrides?: Overrides): Promise<ethers.ContractTransaction>;
   filters: {
     BidAccepted(bidder?: string | null, marketId?: BytesLike | null): ethers.EventFilter;
     SlotSettled(marketId?: BytesLike | null, winner?: string | null): ethers.EventFilter;

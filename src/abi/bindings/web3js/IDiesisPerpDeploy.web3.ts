@@ -23,25 +23,23 @@ type IDiesisPerpDeployMethod<Mutability extends 'payable' | 'nonpayable', Output
 };
 
 export interface IDiesisPerpDeployMethods {
-  applyPerpAbandonment(marketId: string, parentHash: string, blockNumber: Numbers, policyEpoch: Numbers, policyHash: string, windowStart: Numbers, windowEnd: Numbers, filledVolume: Numbers, operatorFees: Numbers, lastMetadataUpdate: Numbers, inputHash: string, committeeEpoch: Numbers, committeeIdentity: string, quorumPower: Numbers, attestingPower: Numbers, voterCount: Numbers, evidenceHash: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  applyPerpAbandonmentV1(marketId: string, parentHash: string, blockNumber: Numbers, policyEpoch: Numbers, policyHash: string, windowStart: Numbers, windowEnd: Numbers, filledVolume: Numbers, operatorFees: Numbers, lastMetadataUpdate: Numbers, inputHash: string, committeeEpoch: Numbers, committeeIdentity: string, quorumPower: Numbers, attestingPower: Numbers, voterCount: Numbers, evidenceHash: string): IDiesisPerpDeployMethod<'nonpayable', void>;
   applySlash(marketId: string, reason: Numbers): IDiesisPerpDeployMethod<'nonpayable', void>;
   deployPerp(slotId: string, marketId: string, sourceList: string, metadata: string, signatures: string): IDiesisPerpDeployMethod<'nonpayable', string>;
-  expireNextUnactivatedPerp(): IDiesisPerpDeployMethod<'nonpayable', void>;
-  expireUnactivatedPerp(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  expireNextUnactivatedPerpV1(): IDiesisPerpDeployMethod<'nonpayable', void>;
+  expireUnactivatedPerpV1(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
   finalizeClose(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
-  finalizePerpPolicy(marketId: string, revision: Numbers, proposalId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
+  finalizePerpPolicyV1(marketId: string, revision: Numbers, proposalId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
   getDeploymentState(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { stateTag: bigint; deadlineOrLiveBlock: bigint; windowCloseBlock: bigint; slashReason: bigint }>;
   getMarketDeploymentState(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { stateTag: bigint; deadlineOrLiveBlock: bigint; windowCloseBlock: bigint; slashReason: bigint }>;
   getOperatorBalance(operator: string): IDiesisPerpDeployMethod<'nonpayable', bigint>;
-  getPerpPolicy(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { 0: { revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }; 1: { epoch: bigint; threshold: bigint; signers: string[] }; policy: { revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }; keyset: { epoch: bigint; threshold: bigint; signers: string[] }; __length__: number }>;
-  initializeBasicPerpMarket(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, maxLeverage: Numbers): IDiesisPerpDeployMethod<'nonpayable', string>;
-  initializePolicyPerpMarket(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, policy: { revision: Numbers; backstopTopupBps: Numbers; tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[] }, keyset: { epoch: Numbers; threshold: Numbers; signers: string[] }): IDiesisPerpDeployMethod<'nonpayable', string>;
-  initializePricedPerpMarket(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, priceDenominator: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, policy: { revision: Numbers; backstopTopupBps: Numbers; tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[] }, keyset: { epoch: Numbers; threshold: Numbers; signers: string[] }): IDiesisPerpDeployMethod<'nonpayable', string>;
+  getPerpPolicyV1(marketId: string): IDiesisPerpDeployMethod<'nonpayable', { 0: { revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }; 1: { epoch: bigint; threshold: bigint; signers: string[] }; policy: { revision: bigint; backstopTopupBps: bigint; tiers: { maxNotional: bigint; maxLeverage: bigint; maintenanceMarginBps: bigint }[] }; keyset: { epoch: bigint; threshold: bigint; signers: string[] }; __length__: number }>;
+  initializePerpMarketV1(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, maxLeverage: Numbers): IDiesisPerpDeployMethod<'nonpayable', string>;
+  initializePerpMarketV2(baseToken: string, quoteToken: string, tickSize: Numbers, lotSize: Numbers, maxOpenInterest: Numbers, initialMark: Numbers, policy: { revision: Numbers; backstopTopupBps: Numbers; tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[] }, keyset: { epoch: Numbers; threshold: Numbers; signers: string[] }): IDiesisPerpDeployMethod<'nonpayable', string>;
   initiateDelist(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
-  installPricedOracleDescriptor(marketId: string, baseDecimals: Numbers, quoteDecimals: Numbers, roundingPolicy: Numbers, sourceSetHash: string): IDiesisPerpDeployMethod<'nonpayable', void>;
-  preparePerpMarketClose(marketId: string, maxOrders: Numbers, maxPositions: Numbers): IDiesisPerpDeployMethod<'nonpayable', boolean>;
+  preparePerpMarketCloseV1(marketId: string, maxOrders: Numbers, maxPositions: Numbers): IDiesisPerpDeployMethod<'nonpayable', boolean>;
   promoteToLive(marketId: string): IDiesisPerpDeployMethod<'nonpayable', void>;
-  proposePerpPolicy(marketId: string, expectedRevision: Numbers, expectedKeysetEpoch: Numbers, backstopTopupBps: Numbers, tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[], nextSigners: string[], nextThreshold: Numbers, signatures: { signer: string; r: string; s: string; v: Numbers }[]): IDiesisPerpDeployMethod<'nonpayable', { 0: string; 1: bigint; proposalId: string; executeAfter: bigint; __length__: number }>;
+  proposePerpPolicyV1(marketId: string, expectedRevision: Numbers, expectedKeysetEpoch: Numbers, backstopTopupBps: Numbers, tiers: { maxNotional: Numbers; maxLeverage: Numbers; maintenanceMarginBps: Numbers }[], nextSigners: string[], nextThreshold: Numbers, signatures: { signer: string; r: string; s: string; v: Numbers }[]): IDiesisPerpDeployMethod<'nonpayable', { 0: string; 1: bigint; proposalId: string; executeAfter: bigint; __length__: number }>;
   recordAuctionWin(marketId: string, operator: string, registrationDigest: string, evidenceHash: string): IDiesisPerpDeployMethod<'nonpayable', void>;
 }
 

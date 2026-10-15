@@ -4,6 +4,45 @@ export const IDiesisSettlementAbi = [
       "inputs": [
         {
           "internalType": "address",
+          "name": "principal",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "actionScope",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "validUntil",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxNotionalOrSpend",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "allowedMarketsMask",
+          "type": "bytes32"
+        }
+      ],
+      "name": "acceptSessionKeyV2",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "generation",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "sessionKey",
           "type": "address"
         },
@@ -28,7 +67,7 @@ export const IDiesisSettlementAbi = [
           "type": "bytes32"
         }
       ],
-      "name": "authorizeSessionKey",
+      "name": "authorizeSessionKeyV2",
       "outputs": [
         {
           "internalType": "uint64",
@@ -171,7 +210,7 @@ export const IDiesisSettlementAbi = [
           "type": "uint256"
         }
       ],
-      "name": "fundPerpBackstop",
+      "name": "fundPerpBackstopV1",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -288,7 +327,7 @@ export const IDiesisSettlementAbi = [
           "type": "address"
         }
       ],
-      "name": "revokeSessionKey",
+      "name": "revokeSessionKeyV2",
       "outputs": [
         {
           "internalType": "uint64",

@@ -3,18 +3,19 @@ import { Contract, type AddressLike, type BaseContract, type BigNumberish, type 
 import { IDiesisSettlementAbi } from '../../generated/viem/IDiesisSettlement.abi.js';
 
 export interface IDiesisSettlementMethods {
-  authorizeSessionKey(sessionKey: AddressLike, actionScope: BigNumberish, validUntil: BigNumberish, maxNotionalOrSpend: BigNumberish, allowedMarketsMask: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  acceptSessionKeyV2(principal: AddressLike, actionScope: BigNumberish, validUntil: BigNumberish, maxNotionalOrSpend: BigNumberish, allowedMarketsMask: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  authorizeSessionKeyV2(sessionKey: AddressLike, actionScope: BigNumberish, validUntil: BigNumberish, maxNotionalOrSpend: BigNumberish, allowedMarketsMask: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   availableBalance(user: AddressLike, token: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   cancelNonceWord(wordPos: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   cancelOrderNonce(nonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   creditRouterDeposit(user: AddressLike, token: AddressLike, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   debitRouterWithdrawal(user: AddressLike, token: AddressLike, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   deposit(token: AddressLike, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  fundPerpBackstop(marketId: BytesLike, amount: BigNumberish, nonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  fundPerpBackstopV1(marketId: BytesLike, amount: BigNumberish, nonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   getTradingKeyAuth(owner: AddressLike, tradingKey: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, bigint, string] & { header: string; maxOrderNotional: bigint; allowedMarketsMask: string }>;
   isNonceUsed(user: AddressLike, nonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
   registerTradingKey(tradingKey: AddressLike, validUntil: BigNumberish, maxOrderNotional: BigNumberish, allowedMarketsMask: BytesLike, canWithdraw: boolean, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  revokeSessionKey(sessionKey: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  revokeSessionKeyV2(sessionKey: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   revokeTradingKey(tradingKey: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   totalBalance(user: AddressLike, token: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   withdraw(token: AddressLike, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
