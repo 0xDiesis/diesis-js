@@ -41,7 +41,7 @@ addresses, and signing formats. This package wraps them so you call
 
 ## Install
 
-Use Node `>=24.16.0` and pnpm `12.6.0`. The package is not on the npm registry.
+Use Node `>=26.12.1` and pnpm `12.6.0`. The package is not on the npm registry.
 The following immutable Git revision is an existing installed option and requires
 authenticated Git access. It does not contain the new local reader or decoder.
 
