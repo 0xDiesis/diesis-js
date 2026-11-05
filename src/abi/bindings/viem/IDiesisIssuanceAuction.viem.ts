@@ -10,8 +10,8 @@ export function getIDiesisIssuanceAuctionContract<TClient extends Client>(
 }
 
 /**
- * Place a canonical-USDC bid bound to one perpetual registration.
- * @dev The native runtime debits USDC; this selector is intentionally not      payable and accepts no caller-supplied winner.
+ * Place a canonical-USDC bid bound to one perpetual registration.      payable and accepts no caller-supplied winner.
+ * @dev The native runtime debits USDC; this selector is intentionally not
  */
 export type IDiesisIssuanceAuctionBidPerpListingV1Params = {
   registration: { marketId: `0x${string}`; baseAsset: `0x${string}`; quoteAsset: `0x${string}`; evidenceHash: `0x${string}` };

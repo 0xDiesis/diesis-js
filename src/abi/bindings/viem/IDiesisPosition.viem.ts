@@ -10,7 +10,18 @@ export function getIDiesisPositionContract<TClient extends Client>(
 }
 
 /**
- * @dev Gives permission to `to` to transfer `tokenId` token to another account. The approval is cleared when the token is transferred. Only a single account can be approved at a time, so approving the zero address clears previous approvals. Requirements: - The caller must own the token or be an approved operator. - `tokenId` must exist. Emits an {Approval} event.
+ * @dev Gives permission to `to` to transfer `tokenId` token to another account.
+     * The approval is cleared when the token is transferred.
+     *
+     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
+     *
+     * Requirements:
+     *
+     * - The caller must own the token or be an approved operator.
+     * - `tokenId` must exist.
+     *
+     * Emits an {Approval} event.
+
  */
 export type IDiesisPositionApproveParams = {
   to: `0x${string}`;
@@ -23,8 +34,8 @@ export type IDiesisPositionClaimRewardsParams = {
 };
 
 /**
- * Create a zero-stake position to receive existing backing on a registered validator.
- * @dev Nonpayable. Inactive validators are allowed; funded delegation remains subject to its active gate.      Creates the backing staking NFT before the public NFT. Adds no principal or debt.
+ * Create a zero-stake position to receive existing backing on a registered validator.      Creates the backing staking NFT before the public NFT. Adds no principal or debt.
+ * @dev Nonpayable. Inactive validators are allowed; funded delegation remains subject to its active gate.
  */
 export type IDiesisPositionCreateRedemptionPositionParams = {
   validator: number;
@@ -44,8 +55,8 @@ export type IDiesisPositionLockPositionParams = {
 };
 
 /**
- * Lock a position on behalf of its owner.
- * @dev Callable by authorized lock managers. Outstanding records remain enumerable after expiry      until their manager removes them; at most `MAX_LOCK_RECORDS` may exist per position.      A zero duration or a deadline that does not strictly extend the same record reverts.
+ * Lock a position on behalf of its owner.      until their manager removes them; at most `MAX_LOCK_RECORDS` may exist per position.      A zero duration or a deadline that does not strictly extend the same record reverts.
+ * @dev Callable by authorized lock managers. Outstanding records remain enumerable after expiry
  */
 export type IDiesisPositionLockPositionForParams = {
   tokenId: bigint;
@@ -54,8 +65,8 @@ export type IDiesisPositionLockPositionForParams = {
 };
 
 /**
- * Atomically merge two positions on the same validator.
- * @dev Source must have no debt and not be locked. Uses swapDelegate for atomic re-delegation.      Burns the source NFT.
+ * Atomically merge two positions on the same validator.      Burns the source NFT.
+ * @dev Source must have no debt and not be locked. Uses swapDelegate for atomic re-delegation.
  * @param fromTokenId The source position (will be burned).
  * @param intoTokenId The target position (receives the merged stake).
  */
@@ -104,16 +115,19 @@ export type IDiesisPositionRevokeFunctionApprovalParams = {
 };
 
 /**
- * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients are aware of the ERC-721 protocol to prevent tokens from being forever locked. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must have been allowed to move this token by either {approve} or   {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
- */
-export type IDiesisPositionSafeTransferFromAddressAddressUint256Params = {
-  from: `0x${string}`;
-  to: `0x${string}`;
-  tokenId: bigint;
-};
+ * @dev Safely transfers `tokenId` token from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+     *   a safe transfer.
+     *
+     * Emits a {Transfer} event.
 
-/**
- * @dev Safely transfers `tokenId` token from `from` to `to`. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
  */
 export type IDiesisPositionSafeTransferFromAddressAddressUint256BytesParams = {
   from: `0x${string}`;
@@ -123,7 +137,38 @@ export type IDiesisPositionSafeTransferFromAddressAddressUint256BytesParams = {
 };
 
 /**
- * @dev Approve or remove `operator` as an operator for the caller. Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller. Requirements: - The `operator` cannot be the address zero. Emits an {ApprovalForAll} event.
+ * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+     * are aware of the ERC-721 protocol to prevent tokens from being forever locked.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must have been allowed to move this token by either {approve} or
+     *   {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+     *   a safe transfer.
+     *
+     * Emits a {Transfer} event.
+
+ */
+export type IDiesisPositionSafeTransferFromAddressAddressUint256Params = {
+  from: `0x${string}`;
+  to: `0x${string}`;
+  tokenId: bigint;
+};
+
+/**
+ * @dev Approve or remove `operator` as an operator for the caller.
+     * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.
+     *
+     * Requirements:
+     *
+     * - The `operator` cannot be the address zero.
+     *
+     * Emits an {ApprovalForAll} event.
+
  */
 export type IDiesisPositionSetApprovalForAllParams = {
   operator: `0x${string}`;
@@ -139,10 +184,10 @@ export type IDiesisPositionSetFunctionApprovalParams = {
 };
 
 /**
- * Atomically split a position into two on the same validator (no unbonding delay).
+ * Atomically split a position into two on the same validator (no unbonding delay).        source remainder must be 0 or ≥ MIN_STAKE).
  * @dev Uses swapDelegate for instant re-delegation between positions.
  * @param fromTokenId The source position to split from.
- * @param splitAmount Wei to move to the new position (must be ≥ MIN_STAKE and ≤ free collateral;        source remainder must be 0 or ≥ MIN_STAKE).
+ * @param splitAmount Wei to move to the new position (must be ≥ MIN_STAKE and ≤ free collateral;
  * @returns newTokenId The newly minted position NFT.
  */
 export type IDiesisPositionSplitPositionParams = {
@@ -164,7 +209,21 @@ export type IDiesisPositionSwapDelegateParams = {
 };
 
 /**
- * @dev Transfers `tokenId` token from `from` to `to`. WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC-721 or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must understand this adds an external call which potentially creates a reentrancy vulnerability. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. Emits a {Transfer} event.
+ * @dev Transfers `tokenId` token from `from` to `to`.
+     *
+     * WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC-721
+     * or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must
+     * understand this adds an external call which potentially creates a reentrancy vulnerability.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     *
+     * Emits a {Transfer} event.
+
  */
 export type IDiesisPositionTransferFromParams = {
   from: `0x${string}`;
@@ -195,8 +254,8 @@ export type IDiesisPositionWithdrawParams = {
 };
 
 /**
- * Complete a matured withdrawal and forward the native tokens directly to `recipient`.
- * @dev The amount is determined by DiesisStaking's stored unstake request; callers cannot         supply a partial amount. `recipient` must be non-zero.
+ * Complete a matured withdrawal and forward the native tokens directly to `recipient`.         supply a partial amount. `recipient` must be non-zero.
+ * @dev The amount is determined by DiesisStaking's stored unstake request; callers cannot
  */
 export type IDiesisPositionWithdrawToParams = {
   tokenId: bigint;

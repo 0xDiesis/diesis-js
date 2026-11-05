@@ -53,6 +53,13 @@ sys.exit(7 if '--fail' in sys.argv else 0)
         self.assertEqual((p.returncode,p.stdout,p.stderr),(0,b'OUT\x00abc',b'ERR\xff'))
         self.assertEqual(list(self.captures.iterdir()), [])
 
+    def test_solar_version_reports_declared_solc_compatibility(self):
+        self.compiler.write_text("#!/usr/bin/env python3\nprint('solar 0.3.0+commit.e7a91fc7\\nSolc-Compatible Version: 0.8.38+commit.e7a91fc7.solar.0.3.0\\nBuild Profile: dist')\n")
+        result = self.run_wrapper(['--version'])
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, b'solc, the solidity compiler commandline interface\nVersion: 0.8.38+commit.e7a91fc7.solar.0.3.0\n')
+        self.assertEqual(list(self.captures.iterdir()), [])
+
     def test_exact_bytes_argv_hashes_and_failure(self):
         data=b'{"sources":{}}\n\x00\xff'
         p=self.run_wrapper(['--standard-json','--fail'],data)

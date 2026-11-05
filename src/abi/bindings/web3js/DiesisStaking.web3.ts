@@ -72,6 +72,7 @@ export interface DiesisStakingMethods {
   epochIdentityDigest(epoch: Numbers): DiesisStakingMethod<'nonpayable', string>;
   epochIdentityPage(epoch: Numbers, cursor: Numbers, limit: Numbers): DiesisStakingMethod<'nonpayable', { validatorId: bigint; consensusAddress: string; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: bigint }[]>;
   executeKeyRecovery(oldAddress: string): DiesisStakingMethod<'nonpayable', void>;
+  exitSequence(): DiesisStakingMethod<'nonpayable', bigint>;
   exitTickets(arg0: Numbers, arg1: Numbers): DiesisStakingMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; 3: bigint; amount: bigint; validatorId: bigint; checkpoint: bigint; timestamp: bigint; __length__: number }>;
   expirePendingValidatorEpoch(): DiesisStakingMethod<'nonpayable', void>;
   finalizeCheckpoint(metrics: { offlineDurations: Numbers[]; missedBlocks: Numbers[]; uptimeDurations: Numbers[]; txFeesOriginated: Numbers[]; slotFillRates: Numbers[]; inclusionRates: Numbers[]; leaderPerformances: Numbers[] }): DiesisStakingMethod<'nonpayable', void>;
@@ -89,6 +90,7 @@ export interface DiesisStakingMethods {
   isSlashable(validatorId: Numbers): DiesisStakingMethod<'nonpayable', boolean>;
   lastFeeAccrualBlock(): DiesisStakingMethod<'nonpayable', bigint>;
   latestFinalizedCheckpoint(): DiesisStakingMethod<'nonpayable', bigint>;
+  mergeStakeForPosition(fromTokenId: Numbers, toTokenId: Numbers): DiesisStakingMethod<'nonpayable', void>;
   mintEmptyPositionForSplit(validatorId: Numbers): DiesisStakingMethod<'nonpayable', bigint>;
   mintTokens(amount: Numbers): DiesisStakingMethod<'nonpayable', void>;
   name(): DiesisStakingMethod<'nonpayable', string>;
@@ -111,8 +113,10 @@ export interface DiesisStakingMethods {
   recordCheckpointFees(checkpoint: Numbers, blockNumber: Numbers, fee: Numbers): DiesisStakingMethod<'nonpayable', void>;
   recordEpochCertificationBoundary(boundaryNumber: Numbers, boundaryParentHash: string, checkpointDigest: string): DiesisStakingMethod<'nonpayable', boolean>;
   recoveryAuthorizer(): DiesisStakingMethod<'nonpayable', string>;
+  recoveryAuthorizerGeneration(): DiesisStakingMethod<'nonpayable', bigint>;
   registerValidator(pubkey: string): DiesisStakingMethod<'payable', { 0: bigint; 1: bigint; validatorId: bigint; tokenId: bigint; __length__: number }>;
   registerValidatorRoleKeys(validatorId: Numbers, targetEpoch: Numbers, keys: { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }, proofs: { consensusSignature: string; blsContextSignature: string; vrfX: Numbers; vrfY: Numbers; vrfSignature: string; quicSignature: string; relayerSignature: string }): DiesisStakingMethod<'nonpayable', string>;
+  registeredValidatorIds(): DiesisStakingMethod<'nonpayable', bigint[]>;
   renounceOwnership(): DiesisStakingMethod<'nonpayable', void>;
   requestKeyRecovery(newAddress: string): DiesisStakingMethod<'nonpayable', void>;
   requestUnstake(tokenId: Numbers, requestId: Numbers, amount: Numbers): DiesisStakingMethod<'nonpayable', void>;

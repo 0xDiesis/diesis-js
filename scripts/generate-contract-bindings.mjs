@@ -220,7 +220,9 @@ function rewireAbiImport(source, contract) {
   if (!source.includes(local)) {
     throw new Error(`${contract} wrapper does not import its ABI as expected`)
   }
-  return source.replace(local, `from '../../generated/viem/${contract}.abi.js'`)
+  return source
+    .replace(local, `from '../../generated/viem/${contract}.abi.js'`)
+    .replace(/[ \t]+$/gm, '')
 }
 
 function bindingIndex(wrapperModules) {

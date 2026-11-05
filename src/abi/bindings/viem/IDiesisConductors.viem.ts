@@ -10,8 +10,8 @@ export function getIDiesisConductorsContract<TClient extends Client>(
 }
 
 /**
- * Signal intent to decrease bond by `amount`.
- * @dev Tier is recomputed against the post-decrease bond immediately (spec §5.6).      The refund is redeemable via `finalizeDecrease` after a 7-day timelock.
+ * Signal intent to decrease bond by `amount`.      The refund is redeemable via `finalizeDecrease` after a 7-day timelock.
+ * @dev Tier is recomputed against the post-decrease bond immediately (spec §5.6).
  */
 export type IDiesisConductorsRequestDecreaseParams = {
   amount: bigint;

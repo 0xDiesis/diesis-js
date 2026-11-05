@@ -10,8 +10,8 @@ export function getIDiesisErc20FactoryContract<TClient extends Client>(
 }
 
 /**
- * Deploy a new ERC-20 at the deterministic address.
- * @dev Reverts with `DuplicateDeployment` if the `(deployer, symbol)` pair      has already been used, with `InvalidSymbolLength` or `InvalidSupply`      on parameter validation, and with `FactoryCallFailed` for any other      precompile-side failure.External callers must equal `params.deployer`.
+ * Deploy a new ERC-20 at the deterministic address.      has already been used, with `InvalidSymbolLength` or `InvalidSupply`      on parameter validation, and with `FactoryCallFailed` for any other      precompile-side failure.
+ * @dev Reverts with `DuplicateDeployment` if the `(deployer, symbol)` pairExternal callers must equal `params.deployer`.
  * @param params Deployment parameters.
  * @returns tokenAddress The deterministically derived token address.
  */
@@ -20,8 +20,8 @@ export type IDiesisErc20FactoryDeployParams = {
 };
 
 /**
- * Propose a new template bytecode hash. Subject to a 604,800-block delay.
- * @dev The current Config owner must propose a runtime embedded in this node build. Multiple proposals overwrite the pending hash and reset the block delay.
+ * Propose a new template bytecode hash. Subject to a 604,800-block delay. Multiple proposals overwrite the pending hash and reset the block delay.
+ * @dev The current Config owner must propose a runtime embedded in this node build.
  */
 export type IDiesisErc20FactoryProposeTemplateUpdateParams = {
   newHash: `0x${string}`;

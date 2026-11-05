@@ -52,6 +52,7 @@ export interface DiesisStakingContract extends ethers.Contract {
   epochIdentityDigest(epoch: BigNumberish, overrides?: CallOverrides): Promise<string>;
   epochIdentityPage(epoch: BigNumberish, cursor: BigNumberish, limit: BigNumberish, overrides?: CallOverrides): Promise<([BigNumber, string, BigNumber, BigNumber, string, string, string, string, string, number] & { validatorId: BigNumber; consensusAddress: string; bondedStakeWei: BigNumber; votingPower: BigNumber; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: number })[]>;
   executeKeyRecovery(oldAddress: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  exitSequence(overrides?: CallOverrides): Promise<BigNumber>;
   exitTickets(arg0: BigNumberish, arg1: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber, number, number, number] & { amount: BigNumber; validatorId: number; checkpoint: number; timestamp: number }>;
   expirePendingValidatorEpoch(overrides?: Overrides): Promise<ethers.ContractTransaction>;
   finalizeCheckpoint(metrics: { offlineDurations: BigNumberish[]; missedBlocks: BigNumberish[]; uptimeDurations: BigNumberish[]; txFeesOriginated: BigNumberish[]; slotFillRates: BigNumberish[]; inclusionRates: BigNumberish[]; leaderPerformances: BigNumberish[] }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
@@ -69,6 +70,7 @@ export interface DiesisStakingContract extends ethers.Contract {
   isSlashable(validatorId: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
   lastFeeAccrualBlock(overrides?: CallOverrides): Promise<BigNumber>;
   latestFinalizedCheckpoint(overrides?: CallOverrides): Promise<BigNumber>;
+  mergeStakeForPosition(fromTokenId: BigNumberish, toTokenId: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   mintEmptyPositionForSplit(validatorId: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   mintTokens(amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   name(overrides?: CallOverrides): Promise<string>;
@@ -91,8 +93,10 @@ export interface DiesisStakingContract extends ethers.Contract {
   recordCheckpointFees(checkpoint: BigNumberish, blockNumber: BigNumberish, fee: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   recordEpochCertificationBoundary(boundaryNumber: BigNumberish, boundaryParentHash: BytesLike, checkpointDigest: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   recoveryAuthorizer(overrides?: CallOverrides): Promise<string>;
+  recoveryAuthorizerGeneration(overrides?: CallOverrides): Promise<BigNumber>;
   registerValidator(pubkey: BytesLike, overrides?: PayableOverrides): Promise<ethers.ContractTransaction>;
   registerValidatorRoleKeys(validatorId: BigNumberish, targetEpoch: BigNumberish, keys: { consensusAddress: string; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: string; relayerAddress: string }, proofs: { consensusSignature: BytesLike; blsContextSignature: BytesLike; vrfX: BigNumberish; vrfY: BigNumberish; vrfSignature: BytesLike; quicSignature: BytesLike; relayerSignature: BytesLike }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  registeredValidatorIds(overrides?: CallOverrides): Promise<BigNumber[]>;
   renounceOwnership(overrides?: Overrides): Promise<ethers.ContractTransaction>;
   requestKeyRecovery(newAddress: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   requestUnstake(tokenId: BigNumberish, requestId: BigNumberish, amount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;

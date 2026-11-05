@@ -580,6 +580,11 @@ export const IDiesisPositionAbi = [
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
         }
       ],
       "name": "safeTransferFrom",
@@ -603,11 +608,6 @@ export const IDiesisPositionAbi = [
           "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
-          "name": "data",
-          "type": "bytes"
         }
       ],
       "name": "safeTransferFrom",

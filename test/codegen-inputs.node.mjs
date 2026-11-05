@@ -108,7 +108,7 @@ test('rejects wrong generator digest before running executable after fake verifi
         await readFile('scripts/abi-contracts.json', 'utf8'),
       ).map((contract) => ({ contract })),
       artifactRoot: root,
-      contractsRevision: 'ef995163891c0469a7fa09a89a6e66c1705a7fe4',
+      contractsRevision: '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d',
       generator: {
         version: 'abi-typegen 0.8.0',
         sourceCommit: '66d6e86e8aa6ebc06b22ebf8355cbaea256f0502',
@@ -214,7 +214,7 @@ test('whole sync --check uses direct single-target viem output and ABI-only inve
       JSON.stringify({
         selectedArtifacts: contracts.map((contract) => ({ contract })),
         artifactRoot: root,
-        contractsRevision: 'ef995163891c0469a7fa09a89a6e66c1705a7fe4',
+        contractsRevision: '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d',
         generator: {
           version: 'abi-typegen 0.8.0',
           sourceCommit: '66d6e86e8aa6ebc06b22ebf8355cbaea256f0502',

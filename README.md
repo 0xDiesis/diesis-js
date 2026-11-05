@@ -408,7 +408,7 @@ and the binding, advances the generation and releases retained capacity. Expiry
 restores the key's direct identity, but capacity remains retained until explicit
 revocation. Revocation also invalidates old generation-bound schedules.
 
-Canonical contract revision `ef995163891c0469a7fa09a89a6e66c1705a7fe4` has
+Canonical contract revision `17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d` has
 no bound-session V3 method or native DXS3 execution route.
 `prepareBoundSessionActionsTransaction`, `signBoundSessionActionsTransaction`
 and `sendBoundSessionActionsTransaction` stop with an explicit unavailable error
@@ -926,7 +926,7 @@ pnpm quality       # ABI drift check, lint, typecheck, format
 ```
 
 `pnpm codegen` uses independently qualified artifacts from accepted contracts
-revision `ef995163891c0469a7fa09a89a6e66c1705a7fe4`. Set absolute paths before
+revision `17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d`. Set absolute paths before
 running code generation or quality checks:
 
 ```bash

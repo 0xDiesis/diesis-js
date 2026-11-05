@@ -10,8 +10,8 @@ export function getIDiesisSpotBookContract<TClient extends Client>(
 }
 
 /**
- * Amend an active order owned by the caller.
- * @dev Cancel-and-replace preserving the original `orderId`. Preserving the      id keeps user/market indexes and signed-intent nonce mappings stable.      Requires the original market to still be active and new price/amount      to be nonzero.
+ * Amend an active order owned by the caller.      id keeps user/market indexes and signed-intent nonce mappings stable.      Requires the original market to still be active and new price/amount      to be nonzero.
+ * @dev Cancel-and-replace preserving the original `orderId`. Preserving the
  * @param orderId Existing order id.
  * @param newPrice New limit price in ticks.
  * @param newAmount New base quantity in lots.
@@ -26,8 +26,8 @@ export type IDiesisSpotBookAmendOrderParams = {
 };
 
 /**
- * Cancel an active order owned by the caller.
- * @dev Releases the order's locked collateral and clears the order storage.      Historical user and market order lists may still contain the order id;      clients should filter by order existence. Cancelling a dormant signed      stop removes its bounded stop-index membership and releases its lock.
+ * Cancel an active order owned by the caller.      Historical user and market order lists may still contain the order id;      clients should filter by order existence. Cancelling a dormant signed      stop removes its bounded stop-index membership and releases its lock.
+ * @dev Releases the order's locked collateral and clears the order storage.
  * @param orderId Canonical order identifier.
  */
 export type IDiesisSpotBookCancelOrderParams = {
@@ -56,16 +56,16 @@ export type IDiesisSpotBookExecuteSpotTradeParams = {
 };
 
 /**
- * Finalize an ended opening auction and return the market to active trading.
- * @dev System-only. Runs the batch auction, settles crossing orders, restores      residual live orders into the continuous BBO cache, emits      `BatchAuctionCleared`, and stores final auction totals.
+ * Finalize an ended opening auction and return the market to active trading.      residual live orders into the continuous BBO cache, emits      `BatchAuctionCleared`, and stores final auction totals.
+ * @dev System-only. Runs the batch auction, settles crossing orders, restores
  */
 export type IDiesisSpotBookFinalizeOpeningAuctionParams = {
   marketId: `0x${string}`;
 };
 
 /**
- * Start an opening auction for an active empty market.
- * @dev System-only. The market must be active and have no live open orders.      Historical cleared order ids do not block auction start, but the call      charges gas for scanning those historical ids.
+ * Start an opening auction for an active empty market.      Historical cleared order ids do not block auction start, but the call      charges gas for scanning those historical ids.
+ * @dev System-only. The market must be active and have no live open orders.
  */
 export type IDiesisSpotBookStartOpeningAuctionParams = {
   marketId: `0x${string}`;
@@ -75,16 +75,16 @@ export type IDiesisSpotBookStartOpeningAuctionParams = {
 };
 
 /**
- * Submit one strictly bounded canonical V2 action batch.
- * @dev The ordinary EVM caller authenticates the batch. The encoded bytes      contain no action-level signature or replay nonce. `resultHash`      commits to the original bytes and every ordered action outcome.
+ * Submit one strictly bounded canonical V2 action batch.      contain no action-level signature or replay nonce. `resultHash`      commits to the original bytes and every ordered action outcome.
+ * @dev The ordinary EVM caller authenticates the batch. The encoded bytes
  */
 export type IDiesisSpotBookSubmitExchangeActionsV2Params = {
   encodedActions: `0x${string}`;
 };
 
 /**
- * Place a limit order in an active spot market.
- * @dev Requires an active market, `priceTicks > 0`, `amountLots > 0`, a prior      settlement deposit flag, and enough available collateral. Buy orders      lock quote collateral equal to `priceTicks * amountLots`; sell orders      lock base collateral equal to `amountLots`.
+ * Place a limit order in an active spot market.      settlement deposit flag, and enough available collateral. Buy orders      lock quote collateral equal to `priceTicks * amountLots`; sell orders      lock base collateral equal to `amountLots`.
+ * @dev Requires an active market, `priceTicks > 0`, `amountLots > 0`, a prior
  * @param marketId Canonical market identifier.
  * @param side Order side: 0 = Buy, 1 = Sell.
  * @param priceTicks Limit price in market ticks.
@@ -101,8 +101,8 @@ export type IDiesisSpotBookSubmitLimitOrderParams = {
 };
 
 /**
- * Submit a market order intent against the active continuous book.
- * @dev Requires an active market and `amountLots > 0`. The returned      `filledAmount` is currently zero; economic fills are emitted as      canonical `OrderFilled` events when matching settles.
+ * Submit a market order intent against the active continuous book.      `filledAmount` is currently zero; economic fills are emitted as      canonical `OrderFilled` events when matching settles.
+ * @dev Requires an active market and `amountLots > 0`. The returned
  * @param marketId Canonical market identifier.
  * @param side Order side: 0 = Buy, 1 = Sell.
  * @param amountLots Base quantity in market lots.
@@ -116,8 +116,8 @@ export type IDiesisSpotBookSubmitMarketOrderParams = {
 };
 
 /**
- * Submit a signed request to cancel all active orders in one market.
- * @dev The payload is a JSON-encoded signed cancel-all spot intent. The      signature binds trader, market, expiry, and replay nonce. The call      scans the trader's historical user-order list for `marketId`, charges      per scanned order, cancels currently active matching orders, and rolls      back nonce consumption if cancellation fails.
+ * Submit a signed request to cancel all active orders in one market.      signature binds trader, market, expiry, and replay nonce. The call      scans the trader's historical user-order list for `marketId`, charges      per scanned order, cancels currently active matching orders, and rolls      back nonce consumption if cancellation fails.
+ * @dev The payload is a JSON-encoded signed cancel-all spot intent. The
  * @param signedCancelAllJson ABI `bytes` containing UTF-8 JSON for the signed cancel-all payload.
  * @returns cancelled Number of active orders cancelled.
  */
@@ -126,8 +126,8 @@ export type IDiesisSpotBookSubmitSignedCancelAllSpotIntentParams = {
 };
 
 /**
- * Submit a signed order or cancel intent.
- * @dev The payload is a JSON-encoded `SignedIntent`. Order intents may be      submitted by any relayer; the precompile verifies the signature and      uses the signed trader as the effective caller. Trading-key signed      order and cancel intents are constrained by the key's market mask and      notional limit. This ABI intentionally declares no return value because      order and cancel variants have different raw return data. Clients that      need the returned order id should either call direct order methods or      use a low-level call and decode the variant-specific bytes.
+ * Submit a signed order or cancel intent.      submitted by any relayer; the precompile verifies the signature and      uses the signed trader as the effective caller. Trading-key signed      order and cancel intents are constrained by the key's market mask and      notional limit. This ABI intentionally declares no return value because      order and cancel variants have different raw return data. Clients that      need the returned order id should either call direct order methods or      use a low-level call and decode the variant-specific bytes.
+ * @dev The payload is a JSON-encoded `SignedIntent`. Order intents may be
  * @param signedIntentJson ABI `bytes` containing UTF-8 JSON for the signed intent.
  */
 export type IDiesisSpotBookSubmitSignedSpotIntentParams = {
@@ -135,8 +135,8 @@ export type IDiesisSpotBookSubmitSignedSpotIntentParams = {
 };
 
 /**
- * Activate dormant stops triggered by the market's last settled trade.
- * @dev Permissionless bounded continuation. A buy stop triggers when the      canonical last-trade price rises to or above its trigger price; a sell      stop triggers when it falls to or below. `maxOrders` is clamped to the      protocol activation limit and to the call's gas headroom; the call      never triggers from an oracle, RPC quote, or user-supplied      observation. Each activated stop inserts into the live book and matches      at its limit/protection price (a stop-market executes as an IOC      protected limit) and emits a `StopOrderTriggered` event. A paused      market or a market with no settled trade activates nothing.
+ * Activate dormant stops triggered by the market's last settled trade.      canonical last-trade price rises to or above its trigger price; a sell      stop triggers when it falls to or below. `maxOrders` is clamped to the      protocol activation limit and to the call's gas headroom; the call      never triggers from an oracle, RPC quote, or user-supplied      observation. Each activated stop inserts into the live book and matches      at its limit/protection price (a stop-market executes as an IOC      protected limit) and emits a `StopOrderTriggered` event. A paused      market or a market with no settled trade activates nothing.
+ * @dev Permissionless bounded continuation. A buy stop triggers when the
  * @param marketId Canonical market identifier.
  * @param maxOrders Requested maximum activations this call.
  * @returns activated Number of stops activated.

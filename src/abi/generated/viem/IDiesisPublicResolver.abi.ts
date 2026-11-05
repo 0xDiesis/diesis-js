@@ -295,14 +295,9 @@ export const IDiesisPublicResolverAbi = [
           "type": "bytes32"
         },
         {
-          "internalType": "uint256",
-          "name": "coinType",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bytes",
+          "internalType": "address",
           "name": "value",
-          "type": "bytes"
+          "type": "address"
         }
       ],
       "name": "setAddr",
@@ -318,9 +313,14 @@ export const IDiesisPublicResolverAbi = [
           "type": "bytes32"
         },
         {
-          "internalType": "address",
+          "internalType": "uint256",
+          "name": "coinType",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
           "name": "value",
-          "type": "address"
+          "type": "bytes"
         }
       ],
       "name": "setAddr",

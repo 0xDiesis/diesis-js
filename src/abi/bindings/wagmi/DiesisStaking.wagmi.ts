@@ -278,6 +278,14 @@ export function useDiesisStakingEpochIdentityPage(address: Address, args: { epoc
   });
 }
 
+export function useDiesisStakingExitSequence(address: Address) {
+  return useReadContract({
+    address,
+    abi: DiesisStakingAbi,
+    functionName: 'exitSequence',
+  });
+}
+
 export function useDiesisStakingExitTickets(address: Address, args: { arg0: bigint, arg1: bigint }) {
   return useReadContract({
     address,
@@ -480,6 +488,22 @@ export function useDiesisStakingRecoveryAuthorizer(address: Address) {
     address,
     abi: DiesisStakingAbi,
     functionName: 'recoveryAuthorizer',
+  });
+}
+
+export function useDiesisStakingRecoveryAuthorizerGeneration(address: Address) {
+  return useReadContract({
+    address,
+    abi: DiesisStakingAbi,
+    functionName: 'recoveryAuthorizerGeneration',
+  });
+}
+
+export function useDiesisStakingRegisteredValidatorIds(address: Address) {
+  return useReadContract({
+    address,
+    abi: DiesisStakingAbi,
+    functionName: 'registeredValidatorIds',
   });
 }
 
@@ -1051,6 +1075,24 @@ export function useDiesisStakingInstantUnstakeForPosition(
         abi: DiesisStakingAbi,
         functionName: 'instantUnstakeForPosition',
         args: [args.tokenId, args.amount, args.fee, args.recipient],
+      }),
+  };
+}
+
+export function useDiesisStakingMergeStakeForPosition(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { fromTokenId: bigint, toTokenId: bigint }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { fromTokenId: bigint, toTokenId: bigint }) =>
+      writeContract({
+        address,
+        abi: DiesisStakingAbi,
+        functionName: 'mergeStakeForPosition',
+        args: [args.fromTokenId, args.toTokenId],
       }),
   };
 }

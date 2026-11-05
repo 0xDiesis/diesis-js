@@ -18,16 +18,16 @@ export type IDiesisOperatorBondFinalizeReleaseParams = {
 };
 
 /**
- * Post the operator bond for `marketId` with `msg.value` DS.
- * @dev `msg.value` must equal exactly 50,000 DS. Reverts if a bond already      exists for `marketId`.
+ * Post the operator bond for `marketId` with `msg.value` DS.      exists for `marketId`.
+ * @dev `msg.value` must equal exactly 50,000 DS. Reverts if a bond already
  */
 export type IDiesisOperatorBondPostBondParams = {
   marketId: `0x${string}`;
 };
 
 /**
- * Request voluntary release of the bond.
- * @dev Subject to a 30-day timelock. Pending claims against the backstop      must be resolved before the operator can finalize.
+ * Request voluntary release of the bond.      must be resolved before the operator can finalize.
+ * @dev Subject to a 30-day timelock. Pending claims against the backstop
  */
 export type IDiesisOperatorBondRequestReleaseParams = {
   marketId: `0x${string}`;

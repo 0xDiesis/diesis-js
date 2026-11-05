@@ -423,24 +423,6 @@ export function useIDiesisPositionRevokeFunctionApproval(
   };
 }
 
-export function useIDiesisPositionSafeTransferFromAddressAddressUint256(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { from: `0x${string}`, to: `0x${string}`, tokenId: bigint }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { from: `0x${string}`, to: `0x${string}`, tokenId: bigint }) =>
-      writeContract({
-        address,
-        abi: IDiesisPositionAbi,
-        functionName: 'safeTransferFrom',
-        args: [args.from, args.to, args.tokenId],
-      }),
-  };
-}
-
 export function useIDiesisPositionSafeTransferFromAddressAddressUint256Bytes(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
@@ -455,6 +437,24 @@ export function useIDiesisPositionSafeTransferFromAddressAddressUint256Bytes(
         abi: IDiesisPositionAbi,
         functionName: 'safeTransferFrom',
         args: [args.from, args.to, args.tokenId, args.data],
+      }),
+  };
+}
+
+export function useIDiesisPositionSafeTransferFromAddressAddressUint256(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { from: `0x${string}`, to: `0x${string}`, tokenId: bigint }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { from: `0x${string}`, to: `0x${string}`, tokenId: bigint }) =>
+      writeContract({
+        address,
+        abi: IDiesisPositionAbi,
+        functionName: 'safeTransferFrom',
+        args: [args.from, args.to, args.tokenId],
       }),
   };
 }

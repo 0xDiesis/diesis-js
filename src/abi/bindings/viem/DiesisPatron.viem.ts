@@ -10,8 +10,8 @@ export function getDiesisPatronContract<TClient extends Client>(
 }
 
 /**
- * Accrue the block's total settled Patron fees into the burn accumulator exactly once, before block finalization.
- * @dev The Rust executor sums the actual fees it settled in this block and dispatches one system call. Requiring `blockNumber == block.number` and `blockNumber > lastAccruedBlock` makes double accrual unrepresentable, while canonical reorg rollback restores the prior latch and accumulator.
+ * Accrue the block's total settled Patron fees into the burn accumulator exactly once, before block finalization. dispatches one system call. Requiring `blockNumber == block.number` and `blockNumber > lastAccruedBlock` makes double accrual unrepresentable, while canonical reorg rollback restores the prior latch and accumulator.
+ * @dev The Rust executor sums the actual fees it settled in this block and
  */
 export type DiesisPatronAccrueSettledBurnV2Params = {
   blockNumber: bigint;
@@ -35,8 +35,8 @@ export type DiesisPatronCancelGrantV2Params = {
 };
 
 /**
- * Claim a signed campaign voucher, atomically assigning the campaign jar to the beneficiary and installing the exact bounded authorization.
- * @dev Callable only by the voucher's beneficiary. A bootstrap reserve for this same claim transaction may already have consumed the fresh authorization's first transaction and provisional spend, so the voucher bounds are held to at least what is already consumed and the counters are preserved: the claim transaction itself is the first sponsored draw.
+ * Claim a signed campaign voucher, atomically assigning the campaign jar to the beneficiary and installing the exact bounded authorization. this same claim transaction may already have consumed the fresh authorization's first transaction and provisional spend, so the voucher bounds are held to at least what is already consumed and the counters are preserved: the claim transaction itself is the first sponsored draw.
+ * @dev Callable only by the voucher's beneficiary. A bootstrap reserve for
  */
 export type DiesisPatronClaimCampaignVoucherV1Params = {
   voucher: { campaignId: `0x${string}`; beneficiary: `0x${string}`; target: `0x${string}`; selector: `0x${string}`; maxTransactions: number; maxLifetimeSpend: bigint; expiry: bigint; nonce: bigint };
@@ -51,8 +51,8 @@ export type DiesisPatronContributeParams = {
 };
 
 /**
- * Register a campaign, deriving an owner-bound id from `salt`.
- * @dev Permissionless and zero-value. The campaign id is `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Existing funding retains its contributor ownership. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
+ * Register a campaign, deriving an owner-bound id from `salt`. `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Existing funding retains its contributor ownership. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
+ * @dev Permissionless and zero-value. The campaign id is
  * @returns campaignId The owner-bound campaign id now owned by the caller.
  */
 export type DiesisPatronRegisterCampaignV1Params = {
@@ -60,8 +60,8 @@ export type DiesisPatronRegisterCampaignV1Params = {
 };
 
 /**
- * Reserve a grant's maximum transaction fee before user execution. Only callable by the Rust node (msg.sender == address(0)).
- * @param reservationId Canonical transaction-derived reservation id. Reserve, settle, and cancel write only the selected grant, beneficiary authorization, and this unique reservation slot, so disjoint transactions never contend for a shared reservation cell.
+ * Reserve a grant's maximum transaction fee before user execution. Only callable by the Rust node (msg.sender == address(0)). settle, and cancel write only the selected grant, beneficiary authorization, and this unique reservation slot, so disjoint transactions never contend for a shared reservation cell.
+ * @param reservationId Canonical transaction-derived reservation id. Reserve,
  */
 export type DiesisPatronReserveGrantV2Params = {
   reservationId: `0x${string}`;
@@ -130,8 +130,8 @@ export type DiesisPatronSetReferralParams = {
 };
 
 /**
- * Finalize one reservation at its actual transaction fee.
- * @dev Settlement updates jar and authorization accounting only. It does not return a value and never touches the shared burn accumulator; block-final `accrueSettledBurnV2` reduces settled fees into `accruedBurn` exactly once. This path performs no external calls and is total for every `actualFee <= maximumFee`.
+ * Finalize one reservation at its actual transaction fee. return a value and never touches the shared burn accumulator; block-final `accrueSettledBurnV2` reduces settled fees into `accruedBurn` exactly once. This path performs no external calls and is total for every `actualFee <= maximumFee`.
+ * @dev Settlement updates jar and authorization accounting only. It does not
  */
 export type DiesisPatronSettleGrantV2Params = {
   reservationId: `0x${string}`;
@@ -139,7 +139,9 @@ export type DiesisPatronSettleGrantV2Params = {
 };
 
 /**
- * @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
+ * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+
  */
 export type DiesisPatronTransferOwnershipParams = {
   newOwner: `0x${string}`;
@@ -155,8 +157,8 @@ export type DiesisPatronUpdateStakingAddressParams = {
 };
 
 /**
- * Reclaim a proportional share of a grant's remaining balance.
- * @dev A withdrawal during an active reservation is a complete contributor exit: it records every live reservation-time claim before removing the caller's live share. This prevents a later refund from moving to a contributor who was never exposed to that reservation.
+ * Reclaim a proportional share of a grant's remaining balance. exit: it records every live reservation-time claim before removing the caller's live share. This prevents a later refund from moving to a contributor who was never exposed to that reservation.
+ * @dev A withdrawal during an active reservation is a complete contributor
  */
 export type DiesisPatronWithdrawContributionParams = {
   grantId: `0x${string}`;
@@ -164,8 +166,8 @@ export type DiesisPatronWithdrawContributionParams = {
 };
 
 /**
- * Advance a contribution exit without traversing all held cohorts.
- * @dev Repeat until complete. Each call either compacts idle roots, resolves one dormant alias, or snapshots and exits one live cohort. Detached reservation claims remain separately withdrawable.
+ * Advance a contribution exit without traversing all held cohorts. resolves one dormant alias, or snapshots and exits one live cohort. Detached reservation claims remain separately withdrawable.
+ * @dev Repeat until complete. Each call either compacts idle roots,
  */
 export type DiesisPatronWithdrawContributionStepParams = {
   grantId: `0x${string}`;

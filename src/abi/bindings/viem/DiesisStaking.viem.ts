@@ -17,8 +17,8 @@ export type DiesisStakingAccrueRewardsParams = {
 };
 
 /**
- * Fund additional rewards for the currently open checkpoint.
- * @dev The active validator set for the open checkpoint must already be committed.      The full contribution leaves logical supply immediately; claims      re-add only the distributable portion, so `burned` is the net burn.
+ * Fund additional rewards for the currently open checkpoint.      The full contribution leaves logical supply immediately; claims      re-add only the distributable portion, so `burned` is the net burn.
+ * @dev The active validator set for the open checkpoint must already be committed.
  */
 export type DiesisStakingAllocateExtraRewardParams = {
   checkpoint: bigint;
@@ -26,17 +26,24 @@ export type DiesisStakingAllocateExtraRewardParams = {
 };
 
 /**
- * @dev Gives permission to `to` to transfer `tokenId` token to another account. The approval is cleared when the token is transferred. Only a single account can be approved at a time, so approving the zero address clears previous approvals. Requirements: - The caller must own the token or be an approved operator. - `tokenId` must exist. Emits an {Approval} event.
+ * @dev Gives permission to `to` to transfer `tokenId` token to another account.
+     * The approval is cleared when the token is transferred.
+     *
+     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
+     *
+     * Requirements:
+     *
+     * - The caller must own the token or be an approved operator.
+     * - `tokenId` must exist.
+     *
+     * Emits an {Approval} event.
+
  */
 export type DiesisStakingApproveParams = {
   to: `0x${string}`;
   tokenId: bigint;
 };
 
-/**
- * Approve the exact recovery pair previously configured by `oldAddress`.
- * @dev Callable only by the configured, non-zero independent recovery authorizer.
- */
 export type DiesisStakingApproveKeyRecoveryParams = {
   oldAddress: `0x${string}`;
   newAddress: `0x${string}`;
@@ -79,7 +86,7 @@ export type DiesisStakingCompleteUnstakeParams = {
  * @param tokenId The staking position NFT (owned by DiesisPosition).
  * @param requestId The request identifier used in `requestUnstakeForPosition`.
  * @param recipient The address to receive the payout.
- * @returns payout   The amount of native tokens paid out.
+ * @returns payout The amount of native tokens paid out.
  */
 export type DiesisStakingCompleteUnstakeForPositionParams = {
   tokenId: bigint;
@@ -103,10 +110,6 @@ export type DiesisStakingCompoundRewardsForPositionParams = {
   tokenId: bigint;
 };
 
-/**
- * Replace `oldAddress` as validator operator with the caller.
- * @dev The caller must be the exact approved destination and must not already operate a validator.
- */
 export type DiesisStakingExecuteKeyRecoveryParams = {
   oldAddress: `0x${string}`;
 };
@@ -133,7 +136,7 @@ export type DiesisStakingHarvestRewardsParams = {
  * Harvest rewards and send to recipient.
  * @param tokenId The staking position NFT (owned by DiesisPosition).
  * @param recipient The address to receive the rewards.
- * @returns reward   The amount of rewards harvested.
+ * @returns reward The amount of rewards harvested.
  */
 export type DiesisStakingHarvestRewardsForPositionParams = {
   tokenId: bigint;
@@ -176,6 +179,14 @@ export type DiesisStakingInstantUnstakeForPositionParams = {
 };
 
 /**
+ * Merge controller-owned lots, including entitlement earned in the open checkpoint.
+ */
+export type DiesisStakingMergeStakeForPositionParams = {
+  fromTokenId: bigint;
+  toTokenId: bigint;
+};
+
+/**
  * Create an empty staking position for atomic splits (controller version).
  * @param validatorId The validator the new position is assigned to.
  * @returns tokenId The newly minted staking position NFT (owned by DiesisPosition, 0 stake).
@@ -200,8 +211,8 @@ export type DiesisStakingRecordBootstrapMintParams = {
 };
 
 /**
- * Account for one committed block's ordinary fees already credited by the node.
- * @dev Transaction settlement credits the full charged fee into locked staking custody. Sponsored fees remain in Patron and must never enter this route. The system caller attests the ordinary fee total; the balance bound is an additional consistency check, not a replacement for execution validation because staking also holds stake deposits.
+ * Account for one committed block's ordinary fees already credited by the node. Sponsored fees remain in Patron and must never enter this route. The system caller attests the ordinary fee total; the balance bound is an additional consistency check, not a replacement for execution validation because staking also holds stake deposits.
+ * @dev Transaction settlement credits the full charged fee into locked staking custody.
  */
 export type DiesisStakingRecordCheckpointFeesParams = {
   checkpoint: bigint;
@@ -218,7 +229,7 @@ export type DiesisStakingRecordEpochCertificationBoundaryParams = {
 /**
  * Register a new validator with a public key.
  * @returns validatorId the new validator ID
- * @returns tokenId     the operator bond position NFT minted to msg.sender
+ * @returns tokenId the operator bond position NFT minted to msg.sender
  */
 export type DiesisStakingRegisterValidatorParams = {
   pubkey: `0x${string}`;
@@ -257,7 +268,21 @@ export type DiesisStakingRequestUnstakeForPositionParams = {
 };
 
 /**
- * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients are aware of the ERC-721 protocol to prevent tokens from being forever locked. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must have been allowed to move this token by either {approve} or   {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
+ * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+     * are aware of the ERC-721 protocol to prevent tokens from being forever locked.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must have been allowed to move this token by either {approve} or
+     *   {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+     *   a safe transfer.
+     *
+     * Emits a {Transfer} event.
+
  */
 export type DiesisStakingSafeTransferFromAddressAddressUint256Params = {
   from: `0x${string}`;
@@ -266,7 +291,19 @@ export type DiesisStakingSafeTransferFromAddressAddressUint256Params = {
 };
 
 /**
- * @dev Safely transfers `tokenId` token from `from` to `to`. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
+ * @dev Safely transfers `tokenId` token from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+     *   a safe transfer.
+     *
+     * Emits a {Transfer} event.
+
  */
 export type DiesisStakingSafeTransferFromAddressAddressUint256BytesParams = {
   from: `0x${string}`;
@@ -280,7 +317,15 @@ export type DiesisStakingScheduleValidatorEpochParams = {
 };
 
 /**
- * @dev Approve or remove `operator` as an operator for the caller. Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller. Requirements: - The `operator` cannot be the address zero. Emits an {ApprovalForAll} event.
+ * @dev Approve or remove `operator` as an operator for the caller.
+     * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.
+     *
+     * Requirements:
+     *
+     * - The `operator` cannot be the address zero.
+     *
+     * Emits an {ApprovalForAll} event.
+
  */
 export type DiesisStakingSetApprovalForAllParams = {
   operator: `0x${string}`;
@@ -295,8 +340,8 @@ export type DiesisStakingSetConfigContractParams = {
 };
 
 /**
- * Schedule an operator reward cut change for a validator.
- * @dev Takes effect after the next checkpoint finalization (1-checkpoint cooldown).      Only callable by the validator's authority address.      Rate is capped at 20% (OPERATOR_TAKE_RATE_UPPER from DiesisConfig).      Upward changes are capped at 1 percentage point per checkpoint; reductions      can be scheduled immediately.
+ * Schedule an operator reward cut change for a validator.      Only callable by the validator's authority address.      Rate is capped at 20% (OPERATOR_TAKE_RATE_UPPER from DiesisConfig).      Upward changes are capped at 1 percentage point per checkpoint; reductions      can be scheduled immediately.
+ * @dev Takes effect after the next checkpoint finalization (1-checkpoint cooldown).
  * @param validatorId The validator to update.
  * @param rate The new operator cut as a fraction of 1e18 (e.g. 0.2e18 = 20%).
  */
@@ -387,7 +432,21 @@ export type DiesisStakingSwapDelegateForPositionParams = {
 };
 
 /**
- * @dev Transfers `tokenId` token from `from` to `to`. WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC-721 or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must understand this adds an external call which potentially creates a reentrancy vulnerability. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. Emits a {Transfer} event.
+ * @dev Transfers `tokenId` token from `from` to `to`.
+     *
+     * WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC-721
+     * or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must
+     * understand this adds an external call which potentially creates a reentrancy vulnerability.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     *
+     * Emits a {Transfer} event.
+
  */
 export type DiesisStakingTransferFromParams = {
   from: `0x${string}`;
@@ -396,7 +455,9 @@ export type DiesisStakingTransferFromParams = {
 };
 
 /**
- * @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
+ * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+
  */
 export type DiesisStakingTransferOwnershipParams = {
   newOwner: `0x${string}`;

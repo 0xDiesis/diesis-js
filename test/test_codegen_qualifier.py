@@ -11,7 +11,7 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 class QualifierTests(unittest.TestCase):
     def test_exact_source_and_release_tuple(self):
-        self.assertEqual(module.REVISION,'ef995163891c0469a7fa09a89a6e66c1705a7fe4')
+        self.assertEqual(module.REVISION,'17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d')
         self.assertEqual(module.FORGE_COMMIT,'cae51ad458f6abb64852b7709eb784352429825d')
         self.assertEqual(module.GENERATOR_COMMIT,'66d6e86e8aa6ebc06b22ebf8355cbaea256f0502')
     def test_zip_bytes_manifest_and_traversal(self):
@@ -39,7 +39,7 @@ class QualifierTests(unittest.TestCase):
                 self.assertEqual(run.call_args_list[1].args[0],['git',f'--work-tree={checkout}','-C',checkout,'status','--porcelain'])
     def test_unqualified_platform_aborts_before_download_or_build(self):
         from unittest.mock import patch
-        with patch.object(module.platform,'system',return_value='Darwin'), patch.object(module,'download') as download:
+        with patch.object(module.platform,'system',return_value='Windows'), patch.object(module,'download') as download:
             with self.assertRaises(ValueError):module.qualify(Path('/not/read'),Path('/not/write'))
             download.assert_not_called()
 
@@ -109,5 +109,21 @@ class AuditStreamTest(unittest.TestCase):
         self.assertEqual(json.loads(result),{'verified':[]})
 
 
-if __name__ == '__main__':
+
+
+class SolarPlatformTests(unittest.TestCase):
+    def test_darwin_arm64_reaches_source_identity_check(self):
+        from unittest.mock import patch
+        with patch.object(module.platform, "system", return_value="Darwin"), patch.object(module.platform, "machine", return_value="arm64"), patch.object(module.os, "access", return_value=True), patch.object(module, "run", side_effect=RuntimeError("source identity check")), tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "source identity check"):
+                module.qualify(Path(tmp), Path(tmp) / "unused-work")
+
+    def test_solar_release_identity_rejects_wrong_commit(self):
+        valid = "solar 0.3.0+commit.e7a91fc7\nSolc-Compatible Version: 0.8.38+commit.e7a91fc7.solar.0.3.0\nCommit SHA: e7a91fc70f29dc8d0c236d56a2aa7706dc2555cf\n"
+        module.validate_compiler_version(valid)
+        with self.assertRaises(ValueError):
+            module.validate_compiler_version(valid.replace("e7a91fc70f29dc8d0c236d56a2aa7706dc2555cf", "0" * 40))
+
+
+if __name__ == "__main__":
     unittest.main()

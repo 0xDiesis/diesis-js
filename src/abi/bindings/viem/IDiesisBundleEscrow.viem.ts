@@ -10,8 +10,8 @@ export function getIDiesisBundleEscrowContract<TClient extends Client>(
 }
 
 /**
- * Cancel a reservation and credit the full locked amount to the payer.
- * @dev Node-only (`msg.sender == address(0)`). Used when a bundle is rejected      or terminalized before settlement. Exactly-once via `settled`.
+ * Cancel a reservation and credit the full locked amount to the payer.      or terminalized before settlement. Exactly-once via `settled`.
+ * @dev Node-only (`msg.sender == address(0)`). Used when a bundle is rejected
  * @param payer The reserving payer keying the reservation.
  * @param planHash Committed bundle plan hash.
  * @param escrowNonce Reservation nonce.
@@ -24,8 +24,8 @@ export type IDiesisBundleEscrowCancelBundleParams = {
 };
 
 /**
- * Finalize a reservation after the member outcome is known.
- * @dev Node-only (`msg.sender == address(0)`). Credits `beneficiary` the      committed builder payment and the payer the capped skipped-work refund      plus the unearned reserve. Purely mutates claimable balances with      saturating arithmetic, so it can never revert on hostile terms or a      hostile recipient. Exactly-once via the `settled` guard.
+ * Finalize a reservation after the member outcome is known.      committed builder payment and the payer the capped skipped-work refund      plus the unearned reserve. Purely mutates claimable balances with      saturating arithmetic, so it can never revert on hostile terms or a      hostile recipient. Exactly-once via the `settled` guard.
+ * @dev Node-only (`msg.sender == address(0)`). Credits `beneficiary` the
  * @param payer The reserving payer keying the reservation.
  * @param planHash Committed bundle plan hash.
  * @param escrowNonce Reservation nonce.
@@ -44,8 +44,8 @@ export type IDiesisBundleEscrowFinalizeBundleParams = {
 };
 
 /**
- * Payer-initiated reclaim of an expired, unsettled reservation.
- * @dev Callable only by the reservation's payer (`msg.sender`), and only once      the committed expiry has passed. Credits the payer the full locked      amount. Exactly-once via `settled`.
+ * Payer-initiated reclaim of an expired, unsettled reservation.      the committed expiry has passed. Credits the payer the full locked      amount. Exactly-once via `settled`.
+ * @dev Callable only by the reservation's payer (`msg.sender`), and only once
  * @param planHash Committed bundle plan hash.
  * @param escrowNonce Reservation nonce.
  * @returns returned Full amount credited to the payer.
@@ -56,13 +56,13 @@ export type IDiesisBundleEscrowReclaimExpiredBundleParams = {
 };
 
 /**
- * Lock `maximumBuilderPayment + maximumRefund` for a bundle plan.
- * @dev Called by the payer as the bundle's reservation transaction. Must be      funded with exactly `maximumBuilderPayment + maximumRefund` native      wei. The reservation is keyed by `(msg.sender, planHash, escrowNonce)`;      a live reservation for that triple rejects nonce replay.
+ * Lock `maximumBuilderPayment + maximumRefund` for a bundle plan.      funded with exactly `maximumBuilderPayment + maximumRefund` native      wei. The reservation is keyed by `(msg.sender, planHash, escrowNonce)`;      a live reservation for that triple rejects nonce replay.        and plan hash.
+ * @dev Called by the payer as the bundle's reservation transaction. Must be
  * @param planHash Committed bundle plan hash.
  * @param maximumBuilderPayment Committed builder payment.
  * @param refundGasPrice Refund price per skipped gas unit.
  * @param maximumRefund Committed refund ceiling.
- * @param escrowNonce Reservation nonce keying the slot alongside the payer        and plan hash.
+ * @param escrowNonce Reservation nonce keying the slot alongside the payer
  * @param expiry Committed plan expiry (unix seconds).
  * @returns reservedTotal The total native wei locked.
  */

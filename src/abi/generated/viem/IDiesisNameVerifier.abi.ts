@@ -165,30 +165,6 @@ export const IDiesisNameVerifierAbi = [
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "node",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "attestationType",
-          "type": "bytes32"
-        }
-      ],
-      "name": "attestations",
-      "outputs": [
-        {
-          "internalType": "bytes32[]",
-          "name": "",
-          "type": "bytes32[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
           "name": "attestationId",
           "type": "bytes32"
         }
@@ -241,6 +217,30 @@ export const IDiesisNameVerifierAbi = [
           "internalType": "struct IDiesisNameVerifier.Attestation",
           "name": "",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "node",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "attestationType",
+          "type": "bytes32"
+        }
+      ],
+      "name": "attestations",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "",
+          "type": "bytes32[]"
         }
       ],
       "stateMutability": "view",

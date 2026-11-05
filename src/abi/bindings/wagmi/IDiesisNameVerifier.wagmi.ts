@@ -23,21 +23,21 @@ export function useIDiesisNameVerifierAttestationHash(address: Address, args: { 
   });
 }
 
-export function useIDiesisNameVerifierAttestationsBytes32Bytes32(address: Address, args: { node: `0x${string}`, attestationType: `0x${string}` }) {
-  return useReadContract({
-    address,
-    abi: IDiesisNameVerifierAbi,
-    functionName: 'attestations',
-    args: [args.node, args.attestationType],
-  });
-}
-
 export function useIDiesisNameVerifierAttestationsBytes32(address: Address, args: { attestationId: `0x${string}` }) {
   return useReadContract({
     address,
     abi: IDiesisNameVerifierAbi,
     functionName: 'attestations',
     args: [args.attestationId],
+  });
+}
+
+export function useIDiesisNameVerifierAttestationsBytes32Bytes32(address: Address, args: { node: `0x${string}`, attestationType: `0x${string}` }) {
+  return useReadContract({
+    address,
+    abi: IDiesisNameVerifierAbi,
+    functionName: 'attestations',
+    args: [args.node, args.attestationType],
   });
 }
 

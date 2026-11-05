@@ -18,8 +18,8 @@ export type IDiesisCoreVaultCancelExitParams = {
 };
 
 /**
- * Deposit `amount` of the strategy's quote asset and mint         proportional shares. Reverts if the strategy is paused.
- * @dev `msg.value` semantics depend on the precompile's chosen      payment routing; the canonical implementation accepts native      DS for DS-denominated sub-vaults and bridges for others.
+ * Deposit `amount` of the strategy's quote asset and mint         proportional shares. Reverts if the strategy is paused.      payment routing; the canonical implementation accepts native      DS for DS-denominated sub-vaults and bridges for others.
+ * @dev `msg.value` semantics depend on the precompile's chosen
  */
 export type IDiesisCoreVaultDepositParams = {
   id: number;

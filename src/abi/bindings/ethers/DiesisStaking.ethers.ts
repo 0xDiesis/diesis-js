@@ -52,6 +52,7 @@ export interface DiesisStakingMethods {
   epochIdentityDigest(epoch: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   epochIdentityPage(epoch: BigNumberish, cursor: BigNumberish, limit: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<([bigint, string, bigint, bigint, string, string, string, string, string, bigint] & { validatorId: bigint; consensusAddress: string; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: bigint })[]>;
   executeKeyRecovery(oldAddress: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  exitSequence(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   exitTickets(arg0: BigNumberish, arg1: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<[bigint, bigint, bigint, bigint] & { amount: bigint; validatorId: bigint; checkpoint: bigint; timestamp: bigint }>;
   expirePendingValidatorEpoch(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   finalizeCheckpoint(metrics: { offlineDurations: BigNumberish[]; missedBlocks: BigNumberish[]; uptimeDurations: BigNumberish[]; txFeesOriginated: BigNumberish[]; slotFillRates: BigNumberish[]; inclusionRates: BigNumberish[]; leaderPerformances: BigNumberish[] }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
@@ -69,6 +70,7 @@ export interface DiesisStakingMethods {
   isSlashable(validatorId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
   lastFeeAccrualBlock(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   latestFinalizedCheckpoint(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
+  mergeStakeForPosition(fromTokenId: BigNumberish, toTokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   mintEmptyPositionForSplit(validatorId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   mintTokens(amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   name(overrides?: Omit<Overrides, 'value'>): Promise<string>;
@@ -91,8 +93,10 @@ export interface DiesisStakingMethods {
   recordCheckpointFees(checkpoint: BigNumberish, blockNumber: BigNumberish, fee: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   recordEpochCertificationBoundary(boundaryNumber: BigNumberish, boundaryParentHash: BytesLike, checkpointDigest: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   recoveryAuthorizer(overrides?: Omit<Overrides, 'value'>): Promise<string>;
+  recoveryAuthorizerGeneration(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   registerValidator(pubkey: BytesLike, overrides?: Overrides): Promise<ContractTransactionResponse>;
   registerValidatorRoleKeys(validatorId: BigNumberish, targetEpoch: BigNumberish, keys: { consensusAddress: AddressLike; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike }, proofs: { consensusSignature: BytesLike; blsContextSignature: BytesLike; vrfX: BigNumberish; vrfY: BigNumberish; vrfSignature: BytesLike; quicSignature: BytesLike; relayerSignature: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  registeredValidatorIds(overrides?: Omit<Overrides, 'value'>): Promise<bigint[]>;
   renounceOwnership(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   requestKeyRecovery(newAddress: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   requestUnstake(tokenId: BigNumberish, requestId: BigNumberish, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;

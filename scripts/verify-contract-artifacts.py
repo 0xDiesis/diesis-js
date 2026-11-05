@@ -116,6 +116,12 @@ def forge_metadata(value):
     # Forge stores rawMetadata losslessly but its typed metadata projection drops
     # these fields. Normalize only that documented representation; raw stays exact.
     result = copy.deepcopy(value)
+    # Forge 1.8.3's typed projection predates Solar's compiler name and
+    # inserts null for absent source licenses. rawMetadata remains byte-exact.
+    result.get('compiler', {}).pop('name', None)
+    for source in result.get('sources', {}).values():
+        if source.get('license') is None:
+            source.pop('license', None)
     settings = result.get('settings', {})
     if 'remappings' in settings:
         settings['remappings'] = [x.removeprefix(':') for x in settings['remappings']]
@@ -201,7 +207,7 @@ def verify(preflight_path):
         require(generator['version'] == 'abi-typegen 0.8.0', 'generator version mismatch')
     compiler = preflight['solc']
     require(sha(regular(compiler['path'])) == compiler['sha256'], 'compiler hash mismatch')
-    require(compiler['longVersion'] == '0.8.35+commit.47b9dedd', 'compiler version mismatch')
+    require(compiler['longVersion'] == '0.8.38+commit.e7a91fc7.solar.0.3.0', 'compiler version mismatch')
     accepted_remappings = [line.strip() for line in pinned('remappings.txt').decode().splitlines() if line.strip() and not line.lstrip().startswith('#')]
     all_inputs, outputs, capture_receipts = {}, {}, []
     capture_root = Path(preflight['outputs']['captures'])
@@ -275,6 +281,7 @@ def verify(preflight_path):
         require(metadata['settings']['compilationTarget'] == {source:name}, 'metadata qualified identity mismatch')
         require(artifact.get('rawMetadata') == raw_metadata and forge_metadata(artifact.get('metadata')) == forge_metadata(metadata), 'artifact metadata mismatch: ' + identity)
         require(abi_bytes(artifact['abi']) == abi_bytes(compiled['abi']), 'artifact ABI mismatch: ' + identity)
+        require(isinstance(compiled['evm'].get('methodIdentifiers'), dict) and artifact.get('methodIdentifiers') == compiled['evm']['methodIdentifiers'], 'artifact method identifiers mismatch: ' + identity)
         for field in ['bytecode', 'deployedBytecode']:
             require(bytecode(artifact[field]) == bytecode(compiled['evm'][field]), 'artifact ' + field + ' mismatch: ' + identity)
         artifacts[identity] = {'artifactPath':path.relative_to(artifact_root).as_posix(), 'artifactSha256':sha(regular(path)), 'abiSha256':sha(abi_bytes(compiled['abi'])), 'metadataSha256':sha(raw_metadata.encode()), 'bytecodeSha256':sha(canonical(bytecode(compiled['evm']['bytecode']))), 'deployedBytecodeSha256':sha(canonical(bytecode(compiled['evm']['deployedBytecode'])))}

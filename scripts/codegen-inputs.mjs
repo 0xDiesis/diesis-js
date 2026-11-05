@@ -31,7 +31,7 @@ export async function codegenInputs() {
     manifest,
   ])
   const proof = JSON.parse(await readFile(manifest, 'utf8'))
-  if (proof.contractsRevision !== 'ef995163891c0469a7fa09a89a6e66c1705a7fe4')
+  if (proof.contractsRevision !== '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d')
     throw new Error('Wrong contracts revision')
   if ((await realpath(proof.artifactRoot)) !== artifacts)
     throw new Error('Artifact root mismatch')

@@ -20,7 +20,8 @@ export type IDiesisMarketsCheckCircuitBreakerParams = {
 };
 
 /**
- * @dev Legacy provisioning requires the current Config owner. Public issuance uses `deployTokenAndSpotBook`. `bond`, when nonzero, is deducted from the creator's WDS settlement balance. Reverts after the append-only 256-market ordinal namespace is full.
+ *  uses `deployTokenAndSpotBook`. `bond`, when nonzero, is deducted from the creator's WDS settlement balance. Reverts after the append-only 256-market ordinal namespace is full.
+ * @dev Legacy provisioning requires the current Config owner. Public issuance
  */
 export type IDiesisMarketsCreateSpotMarketParams = {
   baseToken: `0x${string}`;

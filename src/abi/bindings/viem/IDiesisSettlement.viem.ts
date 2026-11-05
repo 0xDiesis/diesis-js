@@ -10,8 +10,8 @@ export function getIDiesisSettlementContract<TClient extends Client>(
 }
 
 /**
- * Accept exact authorization terms as the session key before principal activation.
- * @dev One-use consent binds chain, endpoint, principal, key, terms and next generation.      This call changes neither sender identity nor the principal's active-session count.
+ * Accept exact authorization terms as the session key before principal activation.      This call changes neither sender identity nor the principal's active-session count.
+ * @dev One-use consent binds chain, endpoint, principal, key, terms and next generation.
  */
 export type IDiesisSettlementAcceptSessionKeyV2Params = {
   principal: `0x${string}`;
@@ -42,8 +42,8 @@ export type IDiesisSettlementCancelOrderNonceParams = {
 };
 
 /**
- * Credit a generic ERC-20 settlement balance on behalf of the router.
- * @dev Callable only by the fixed `DiesisSettlementRouter` address. The router has already pulled `amount` of `token` into its own custody, so this selector only mutates the ledger — it never touches token storage. Reverts on a zero `user`, zero `token`, or zero `amount`.
+ * Credit a generic ERC-20 settlement balance on behalf of the router. router has already pulled `amount` of `token` into its own custody, so this selector only mutates the ledger — it never touches token storage. Reverts on a zero `user`, zero `token`, or zero `amount`.
+ * @dev Callable only by the fixed `DiesisSettlementRouter` address. The
  */
 export type IDiesisSettlementCreditRouterDepositParams = {
   user: `0x${string}`;
@@ -52,8 +52,8 @@ export type IDiesisSettlementCreditRouterDepositParams = {
 };
 
 /**
- * Debit a generic ERC-20 settlement balance on behalf of the router.
- * @dev Callable only by the fixed `DiesisSettlementRouter` address. The ledger debit runs before the router releases custody; a reverted token transfer rolls this mutation back atomically. Preserves the locked-balance invariant (`balance - locked >= amount`) and reverts on a zero `user`, zero `token`, or zero `amount`.
+ * Debit a generic ERC-20 settlement balance on behalf of the router. ledger debit runs before the router releases custody; a reverted token transfer rolls this mutation back atomically. Preserves the locked-balance invariant (`balance - locked >= amount`) and reverts on a zero `user`, zero `token`, or zero `amount`.
+ * @dev Callable only by the fixed `DiesisSettlementRouter` address. The
  */
 export type IDiesisSettlementDebitRouterWithdrawalParams = {
   user: `0x${string}`;
@@ -89,8 +89,8 @@ export type IDiesisSettlementRegisterTradingKeyParams = {
 };
 
 /**
- * Principal or key may revoke an active session and advance its generation.
- * @dev A key may also cancel its pending consent. Expiry restores direct sender      identity; explicit revocation releases the principal's retained capacity.
+ * Principal or key may revoke an active session and advance its generation.      identity; explicit revocation releases the principal's retained capacity.
+ * @dev A key may also cancel its pending consent. Expiry restores direct sender
  */
 export type IDiesisSettlementRevokeSessionKeyV2Params = {
   sessionKey: `0x${string}`;

@@ -10,8 +10,8 @@ export function getIDiesisPerpDeployContract<TClient extends Client>(
 }
 
 /**
- * Apply one consensus-attested perpetual-market abandonment transition.
- * @dev Native-runtime only: the dispatcher accepts this fixed-width selector      only from the system caller (`address(0)`).
+ * Apply one consensus-attested perpetual-market abandonment transition.      only from the system caller (`address(0)`).
+ * @dev Native-runtime only: the dispatcher accepts this fixed-width selector
  */
 export type IDiesisPerpDeployApplyPerpAbandonmentV1Params = {
   marketId: `0x${string}`;
@@ -34,8 +34,8 @@ export type IDiesisPerpDeployApplyPerpAbandonmentV1Params = {
 };
 
 /**
- * Apply a canonical system-owned operator-bond slash.
- * @dev Native-runtime only: the dispatcher accepts this selector only from      the system caller (`address(0)`). It is ABI-visible but intentionally      not forwarded by `DiesisPerpDeploy`.
+ * Apply a canonical system-owned operator-bond slash.      the system caller (`address(0)`). It is ABI-visible but intentionally      not forwarded by `DiesisPerpDeploy`.
+ * @dev Native-runtime only: the dispatcher accepts this selector only from
  */
 export type IDiesisPerpDeployApplySlashParams = {
   marketId: `0x${string}`;
@@ -43,8 +43,8 @@ export type IDiesisPerpDeployApplySlashParams = {
 };
 
 /**
- * Sole production deployment path for a settled slot.
- * @dev Caller must be the recorded operator. The runtime validates all      dynamic fields before ABI allocation and requires their canonical      combined commitment to equal the auction registration evidence.      The fields are opaque bytes: this version does not parse them or      validate the signature bytes as attestations.
+ * Sole production deployment path for a settled slot.      dynamic fields before ABI allocation and requires their canonical      combined commitment to equal the auction registration evidence.      The fields are opaque bytes: this version does not parse them or      validate the signature bytes as attestations.
+ * @dev Caller must be the recorded operator. The runtime validates all
  */
 export type IDiesisPerpDeployDeployPerpParams = {
   slotId: `0x${string}`;
@@ -55,16 +55,16 @@ export type IDiesisPerpDeployDeployPerpParams = {
 };
 
 /**
- * Expire one incomplete auction deployment after its deadline.
- * @dev Native-runtime only. This covers both an untouched winner and a      cooling/live deployment that never completed canonical market      initialization. Missing bonds close without slashing; a posted bond      is atomically slashed before the deployment record closes.
+ * Expire one incomplete auction deployment after its deadline.      cooling/live deployment that never completed canonical market      initialization. Missing bonds close without slashing; a posted bond      is atomically slashed before the deployment record closes.
+ * @dev Native-runtime only. This covers both an untouched winner and a
  */
 export type IDiesisPerpDeployExpireUnactivatedPerpV1Params = {
   marketId: `0x${string}`;
 };
 
 /**
- * Finalize close on a market whose `Delisting` or `Slashed`         window has elapsed. Transitions to `Closed`.
- * @dev Reverts with `InvalidStateTransition` if the window has not      closed, or with `NoSuchMarket` if `marketId` is unknown.
+ * Finalize close on a market whose `Delisting` or `Slashed`         window has elapsed. Transitions to `Closed`.      closed, or with `NoSuchMarket` if `marketId` is unknown.
+ * @dev Reverts with `InvalidStateTransition` if the window has not
  */
 export type IDiesisPerpDeployFinalizeCloseParams = {
   marketId: `0x${string}`;
@@ -93,8 +93,8 @@ export type IDiesisPerpDeployInitializePerpMarketV1Params = {
 };
 
 /**
- * Atomically initialize the market and its first policy/keyset.
- * @dev This freezes the public V2 wire contract only. Native validation,      registry writes, and idempotence are introduced by X4b M2.
+ * Atomically initialize the market and its first policy/keyset.      registry writes, and idempotence are introduced by X4b M2.
+ * @dev This freezes the public V2 wire contract only. Native validation,
  */
 export type IDiesisPerpDeployInitializePerpMarketV2Params = {
   baseToken: `0x${string}`;
@@ -108,20 +108,20 @@ export type IDiesisPerpDeployInitializePerpMarketV2Params = {
 };
 
 /**
- * Operator-initiated voluntary delist. Opens a 30-day backstop         claim window before the bond becomes release-eligible.
- * @dev Reverts with `InvalidStateTransition` if the market is not `Live`,      or with `NoSuchMarket` if `marketId` is unknown.
+ * Operator-initiated voluntary delist. Opens a 30-day backstop         claim window before the bond becomes release-eligible.      or with `NoSuchMarket` if `marketId` is unknown.
+ * @dev Reverts with `InvalidStateTransition` if the market is not `Live`,
  */
 export type IDiesisPerpDeployInitiateDelistParams = {
   marketId: `0x${string}`;
 };
 
 /**
- * Advance one bounded step of market-close preparation.
- * @dev Cancels open orders with exact reserve release, settles funding,      and closes or transfers residual positions in restart-safe chunks,      charging a hard bound before mutation. Progress is persisted to the      canonical close cursor so repeated calls resume deterministically.      A `Slashed` market may be progressed permissionlessly because no      caller-controlled economic transition remains after slashing.      `finalizeClose` may only succeed once this returns `true`. Later      tasks implement the continuation; this freezes the release selector      and bounded argument layout.
+ * Advance one bounded step of market-close preparation.      and closes or transfers residual positions in restart-safe chunks,      charging a hard bound before mutation. Progress is persisted to the      canonical close cursor so repeated calls resume deterministically.      A `Slashed` market may be progressed permissionlessly because no      caller-controlled economic transition remains after slashing.      `finalizeClose` may only succeed once this returns `true`. Later      tasks implement the continuation; this freezes the release selector      and bounded argument layout.         market may be finalized.
+ * @dev Cancels open orders with exact reserve release, settles funding,
  * @param marketId The market being wound down.
  * @param maxOrders Maximum open orders to process this call.
  * @param maxPositions Maximum positions to process this call.
- * @returns readyToFinalize True once no dependent state remains and the         market may be finalized.
+ * @returns readyToFinalize True once no dependent state remains and the
  */
 export type IDiesisPerpDeployPreparePerpMarketCloseV1Params = {
   marketId: `0x${string}`;
@@ -130,16 +130,16 @@ export type IDiesisPerpDeployPreparePerpMarketCloseV1Params = {
 };
 
 /**
- * Promote an elapsed cooling market to `Live`.
- * @dev Permissionless: this only materializes the stored transition after      its cooling deadline, and never changes the recorded operator.
+ * Promote an elapsed cooling market to `Live`.      its cooling deadline, and never changes the recorded operator.
+ * @dev Permissionless: this only materializes the stored transition after
  */
 export type IDiesisPerpDeployPromoteToLiveParams = {
   marketId: `0x${string}`;
 };
 
 /**
- * Propose a timelocked, current-keyset-attested policy update.
- * @dev Signature validation and timelock persistence are introduced by      X4b M2; this packet intentionally freezes only the ABI.
+ * Propose a timelocked, current-keyset-attested policy update.      X4b M2; this packet intentionally freezes only the ABI.
+ * @dev Signature validation and timelock persistence are introduced by
  */
 export type IDiesisPerpDeployProposePerpPolicyV1Params = {
   marketId: `0x${string}`;
@@ -153,8 +153,8 @@ export type IDiesisPerpDeployProposePerpPolicyV1Params = {
 };
 
 /**
- * Record a settled auction registration before operator actions.
- * @dev Native-runtime only: the dispatcher accepts this selector only from      the system caller (`address(0)`). It is declared for ABI/indexer      parity but intentionally not forwarded by `DiesisPerpDeploy`.      An identical replay is a no-op; any commitment conflict reverts.
+ * Record a settled auction registration before operator actions.      the system caller (`address(0)`). It is declared for ABI/indexer      parity but intentionally not forwarded by `DiesisPerpDeploy`.      An identical replay is a no-op; any commitment conflict reverts.
+ * @dev Native-runtime only: the dispatcher accepts this selector only from
  */
 export type IDiesisPerpDeployRecordAuctionWinParams = {
   marketId: `0x${string}`;

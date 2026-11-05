@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One isolated Linux x86_64 ABI build; fail closed before SDK generation."""
+"""One isolated release-pinned Solar ABI build; fail closed before SDK generation."""
 import argparse
 import base64
 import hashlib
@@ -14,7 +14,9 @@ import tomllib
 import urllib.request
 import zipfile
 
-REVISION = 'ef995163891c0469a7fa09a89a6e66c1705a7fe4'
+REVISION = '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d'
+SOLAR_COMMIT = 'e7a91fc70f29dc8d0c236d56a2aa7706dc2555cf'
+COMPILER_VERSION = '0.8.38+commit.e7a91fc7.solar.0.3.0'
 FORGE_COMMIT = 'cae51ad458f6abb64852b7709eb784352429825d'
 GENERATOR_COMMIT = '66d6e86e8aa6ebc06b22ebf8355cbaea256f0502'
 SRI = 'sha512-Kcamsoy2aRv4R3NYl6moleJa8fWdApyAgtaxZjKci0kaU66WYMuzizf9HYnrvBmQvUBru8sNtAXMI0F++om4fg=='
@@ -113,8 +115,24 @@ def source_build_command(forge, common):
     return [forge, 'build', 'src', *common, '--skip', 'test', '--skip', 'script']
 
 
+def validate_compiler_version(version):
+    require('solar 0.3.0+commit.e7a91fc7' in version.splitlines(), 'Solar release version')
+    require('Solc-Compatible Version: ' + COMPILER_VERSION in version.splitlines(), 'compiler long version')
+    require('Commit SHA: ' + SOLAR_COMMIT in version.splitlines(), 'Solar source commit')
+
+
+def platform_assets():
+    supported = {
+        ('Linux', 'x86_64'): ('linux_amd64', 'x86_64-unknown-linux-gnu', '15a613746dd30ca772664824d97feddb5c5163ec2380aa556a2d270eacedc5fc'),
+        ('Darwin', 'arm64'): ('darwin_arm64', 'aarch64-apple-darwin', '6d213a61324b77d55868795b516661c84ec77b41c60befddb4f0cb7a0168d0b1'),
+    }
+    identity = (platform.system(), platform.machine())
+    require(identity in supported, 'qualified platforms are Linux x86_64 and Darwin arm64 only')
+    return supported[identity]
+
+
 def qualify(checkout, work):
-    require(platform.system() == 'Linux' and platform.machine() in ('x86_64','AMD64'), 'qualified platform is Linux x86_64 only')
+    forge_target, native_target, solar_digest = platform_assets()
     verifier = Path(__file__).with_name('verify-contract-artifacts.py')
     require(verifier.is_file() and not verifier.is_symlink(), 'reviewed verifier missing before build')
     wrapper = Path(__file__).with_name('solc-capture.py')
@@ -141,18 +159,19 @@ def qualify(checkout, work):
     if ref['type']=='tag':
         ref=json_download(ref['url'],work/'forge-tag-object.json')['object']
     require(ref['sha']==FORGE_COMMIT,'Forge release source mismatch')
-    assets=[a for a in release['assets'] if a['name']=='foundry_v1.8.3_linux_amd64.tar.gz']
+    assets=[a for a in release['assets'] if a['name']==f'foundry_v1.8.3_{forge_target}.tar.gz']
     require(len(assets)==1 and assets[0].get('digest','').startswith('sha256:'),'official Forge release digest unavailable')
     data=download(assets[0]['browser_download_url'],work/'forge.tar.gz')
     require(sha(data)==assets[0]['digest'].split(':')[1],'Forge archive checksum')
     forge=executable(work/'forge',tar_files(data)['forge'])
     forge_version=run([forge,'--version']);require('1.8.3' in forge_version and FORGE_COMMIT in forge_version,'Forge version/source tuple')
-    compiler_list=json_download('https://binaries.soliditylang.org/linux-amd64/list.json',work/'solc-list.json')
-    entries=[b for b in compiler_list['builds'] if b['version']=='0.8.35' and b['longVersion']=='0.8.35+commit.47b9dedd']
-    require(len(entries)==1,'official compiler tuple missing')
-    entry=entries[0];data=download('https://binaries.soliditylang.org/linux-amd64/'+entry['path'],work/'solc.bin')
-    require(sha(data)==entry['sha256'].removeprefix('0x'),'official compiler digest mismatch')
-    solc=executable(work/'solc',data);require('0.8.35+commit.47b9dedd' in run([solc,'--version']),'compiler long version')
+    solar_archive = f'solar-{native_target}.tar.gz'
+    data = download('https://github.com/paradigmxyz/solar/releases/download/v0.3.0/' + solar_archive, work / solar_archive)
+    require(sha(data) == solar_digest, 'Solar archive checksum')
+    binaries = [content for name, content in tar_files(data).items() if PurePosixPath(name).name == 'solar']
+    require(len(binaries) == 1, 'unique Solar executable required')
+    solc = executable(work / 'solar', binaries[0])
+    validate_compiler_version(run([solc, '--version']))
     registry=json_download('https://registry.npmjs.org/@0xdoublesharp/abi-typegen/0.8.0',work/'typegen-registry.json')
     require(registry['gitHead']==GENERATOR_COMMIT and registry['dist']['integrity']==SRI,'published generator identity')
     # npm's official audit verifies registry signatures and published provenance.
@@ -167,7 +186,7 @@ def qualify(checkout, work):
     data=download(registry['dist']['tarball'],work/'typegen-npm.tgz')
     require('sha512-'+base64.b64encode(hashlib.sha512(data).digest()).decode()==SRI,'npm SRI mismatch')
     npm=tar_files(data);checksums=json.loads(npm['package/checksums.json'])
-    archive_name='abi-typegen-x86_64-unknown-linux-gnu.tar.gz'
+    archive_name=f'abi-typegen-{native_target}.tar.gz'
     data=download('https://github.com/doublesharp/abi-typegen/releases/download/v0.8.0/'+archive_name,work/'typegen-platform.tgz')
     require(sha(data)==checksums['files'][archive_name],'generator platform checksum')
     typegen=executable(work/'abi-typegen',tar_files(data)['abi-typegen'])
@@ -185,7 +204,7 @@ def qualify(checkout, work):
     with (work/'build.log').open('wb') as log:
         result=subprocess.run([str(x) for x in command],cwd=checkout,env=env,stdout=log,stderr=subprocess.STDOUT)
     require(result.returncode==0,'sole Forge build failed; no automatic retry permitted')
-    proof={'checkout':str(checkout),'contractsRevision':REVISION,'dependencyManifest':str(dep_manifest),'solc':{'path':str(solc),'sha256':sha(solc.read_bytes()),'longVersion':'0.8.35+commit.47b9dedd'},'generator':{'path':str(typegen),'binarySha256':sha(typegen.read_bytes()),'version':'abi-typegen 0.8.0','sourceCommit':GENERATOR_COMMIT},'outputs':outputs,'forge':{'path':str(forge),'sha256':sha(forge.read_bytes()),'version':forge_version},'captureWrapperSha256':sha(wrapper.read_bytes())}
+    proof={'checkout':str(checkout),'contractsRevision':REVISION,'dependencyManifest':str(dep_manifest),'solc':{'path':str(solc),'sha256':sha(solc.read_bytes()),'longVersion':COMPILER_VERSION,'sourceCommit':SOLAR_COMMIT,'archiveSha256':solar_digest},'generator':{'path':str(typegen),'binarySha256':sha(typegen.read_bytes()),'version':'abi-typegen 0.8.0','sourceCommit':GENERATOR_COMMIT},'outputs':outputs,'forge':{'path':str(forge),'sha256':sha(forge.read_bytes()),'version':forge_version},'captureWrapperSha256':sha(wrapper.read_bytes())}
     proof['capturedCompilations']=[]
     for capture in sorted(Path(outputs['captures']).iterdir()):
         m=json.loads((capture/'manifest.json').read_text())

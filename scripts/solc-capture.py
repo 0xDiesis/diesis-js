@@ -17,6 +17,19 @@ def digest(data):
 def main():
     compiler = Path(os.environ['DIESIS_SDK_REAL_SOLC']).resolve(strict=True)
     args = sys.argv[1:]
+    if args == ['--version']:
+        # Forge expects solc's banner when a compiler is selected by file path.
+        # Solar explicitly declares its compatible version; compilation itself
+        # is delegated byte-for-byte and the real version is pinned by preflight.
+        result = subprocess.run([str(compiler), *args], capture_output=True)
+        lines = result.stdout.decode(errors='replace').splitlines()
+        compatible = [line.removeprefix('Solc-Compatible Version: ') for line in lines if line.startswith('Solc-Compatible Version: ')]
+        if result.returncode == 0 and lines and lines[0].startswith('solar ') and len(compatible) == 1:
+            sys.stdout.write('solc, the solidity compiler commandline interface\nVersion: ' + compatible[0] + '\n')
+        else:
+            sys.stdout.buffer.write(result.stdout)
+        sys.stderr.buffer.write(result.stderr)
+        return result.returncode
     capture = '--standard-json' in args
     stage = None
     if capture:

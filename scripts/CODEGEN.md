@@ -15,18 +15,19 @@ codegen:check` generates fresh intermediates and checks byte equality without
 editing tracked outputs. It does not compile, read contracts/src/abi, invoke the
 contracts package, or default to an existing out directory.
 
-CI invokes `qualify-contract-inputs.py` against exact contracts
-ef995163891c0469a7fa09a89a6e66c1705a7fe4, on Linux
-x86_64 only. It installs locked checksum-verified dependency archives, verifies
-Forge 1.8.3/source cae51ad and official solc 0.8.35+47b9dedd, verifies the npm08
-registry integrity/signatures/provenance and platform archive checksum, and runs
-one offline source-only build through the captured compiler. Full captured inputs
-and outputs are independently checked before generation. No caches, Permit2,
-submodules, circuits, test compile, retry, or contracts-owned generator is used.
-The Homebrew/macOS qualification and Linux CI are distinct platform records.
+`qualify-contract-inputs.py` accepts exact contracts
+`17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d` on Linux x86_64 or macOS arm64.
+It verifies locked dependency archives, Forge 1.8.3/source cae51ad, Solar
+0.3.0/source e7a91fc7 (Solidity 0.8.38), and abi-typegen 0.8.0 package integrity,
+npm signatures/provenance, and platform archive checksums. It performs one
+offline source-only build. The capture wrapper adapts Solar's declared compatible
+version to Forge's solc banner format; compiler inputs and outputs remain exact.
+The verifier checks those captured bytes against pinned source, dependencies,
+metadata, bytecode, and ABIs before generation. Forge's typed metadata projection
+omits Solar's compiler name and inserts absent license fields as null; raw
+metadata is compared without normalization.
 
-The portable Linux path is source-reviewed locally and tested with fake data;
-actual Linux tool execution and hosted CI remain separate qualification gates.
-Do not describe fake-fixture success as a successful compile or publication.
-Root owns accepted artifact generation and publication. Preserve generated-source,
-full SDK quality, consumer, provenance and independent review gates.
+The macOS arm64 path was executed for this revision. Linux CI uses the same
+checks but needs its own execution result. No package publication or deployed
+network validation is implied. Preserve generated-source, SDK quality, consumer,
+provenance and independent review gates.

@@ -49,10 +49,10 @@ export interface IDiesisPositionMethods {
   repayLiquidToken(tokenId: Numbers, burnAmount: Numbers): IDiesisPositionMethod<'nonpayable', void>;
   restakeRewards(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
   revokeFunctionApproval(tokenId: Numbers, fn: Numbers): IDiesisPositionMethod<'nonpayable', void>;
-  safeTransferFrom(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
-  "safeTransferFrom(address,address,uint256)"(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
   safeTransferFrom(from: string, to: string, tokenId: Numbers, data: string): IDiesisPositionMethod<'nonpayable', void>;
   "safeTransferFrom(address,address,uint256,bytes)"(from: string, to: string, tokenId: Numbers, data: string): IDiesisPositionMethod<'nonpayable', void>;
+  safeTransferFrom(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
+  "safeTransferFrom(address,address,uint256)"(from: string, to: string, tokenId: Numbers): IDiesisPositionMethod<'nonpayable', void>;
   setApprovalForAll(operator: string, approved: boolean): IDiesisPositionMethod<'nonpayable', void>;
   setFunctionApproval(tokenId: Numbers, fn: Numbers, delegatee: string, expires: Numbers, revokable: boolean): IDiesisPositionMethod<'nonpayable', void>;
   shareDebtOf(tokenId: Numbers): IDiesisPositionMethod<'nonpayable', bigint>;

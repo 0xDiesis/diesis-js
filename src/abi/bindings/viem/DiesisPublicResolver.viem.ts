@@ -9,14 +9,14 @@ export function getDiesisPublicResolverContract<TClient extends Client>(
   return getContract({ address, abi: DiesisPublicResolverAbi, client });
 }
 
-export type DiesisPublicResolverSetAddrBytes32Uint256BytesParams = {
+export type DiesisPublicResolverSetAddrBytes32AddressParams = {
   node: `0x${string}`;
-  coinType: bigint;
   value: `0x${string}`;
 };
 
-export type DiesisPublicResolverSetAddrBytes32AddressParams = {
+export type DiesisPublicResolverSetAddrBytes32Uint256BytesParams = {
   node: `0x${string}`;
+  coinType: bigint;
   value: `0x${string}`;
 };
 
@@ -70,7 +70,9 @@ export type DiesisPublicResolverSetWildcardPaymentRoutingAllowedParams = {
 };
 
 /**
- * @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
+ * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+
  */
 export type DiesisPublicResolverTransferOwnershipParams = {
   newOwner: `0x${string}`;

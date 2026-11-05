@@ -29,8 +29,8 @@ export interface IDiesisPositionMethods {
   repayLiquidToken(tokenId: BigNumberish, burnAmount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   restakeRewards(tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   revokeFunctionApproval(tokenId: BigNumberish, fn: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  safeTransferFromAddressAddressUint256(from: AddressLike, to: AddressLike, tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   safeTransferFromAddressAddressUint256Bytes(from: AddressLike, to: AddressLike, tokenId: BigNumberish, data: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  safeTransferFromAddressAddressUint256(from: AddressLike, to: AddressLike, tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setApprovalForAll(operator: AddressLike, approved: boolean, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setFunctionApproval(tokenId: BigNumberish, fn: BigNumberish, delegatee: AddressLike, expires: BigNumberish, revokable: boolean, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   shareDebtOf(tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
@@ -81,8 +81,8 @@ export type IDiesisPositionContract = Omit<BaseContract, keyof IDiesisPositionMe
 export function connectIDiesisPosition(address: string, runner: ContractRunner): IDiesisPositionContract {
   const contract = new Contract(address, IDiesisPositionAbi, runner);
   Object.assign(contract, {
-    safeTransferFromAddressAddressUint256: contract.getFunction("safeTransferFrom(address,address,uint256)"),
     safeTransferFromAddressAddressUint256Bytes: contract.getFunction("safeTransferFrom(address,address,uint256,bytes)"),
+    safeTransferFromAddressAddressUint256: contract.getFunction("safeTransferFrom(address,address,uint256)"),
   });
   return contract as unknown as IDiesisPositionContract;
 }

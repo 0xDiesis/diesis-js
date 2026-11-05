@@ -10,8 +10,8 @@ export function getDiesisSettlementRouterContract<TClient extends Client>(
 }
 
 /**
- * Deposit `amount` of `token`, crediting `beneficiary`'s settlement         balance.
- * @dev Pulls tokens from `msg.sender` into router custody, verifies the      exact received amount, then credits the settlement ledger. A      balance-delta mismatch reverts before any ledger mutation.
+ * Deposit `amount` of `token`, crediting `beneficiary`'s settlement         balance.      exact received amount, then credits the settlement ledger. A      balance-delta mismatch reverts before any ledger mutation.
+ * @dev Pulls tokens from `msg.sender` into router custody, verifies the
  * @param token The allowlisted ERC-20 token.
  * @param amount The amount to pull from the caller.
  * @param beneficiary The settlement account to credit.
@@ -24,8 +24,8 @@ export type DiesisSettlementRouterDepositParams = {
 };
 
 /**
- * Add or remove a token from the standard-collateral allowlist.
- * @dev PRECONDITION: governance MUST only admit a token that is standard      ERC-20, exact-balance-accounted, and neither fee-on-transfer nor      rebasing (no supply-elastic or balance-mutating hooks). The router's      single-transaction delta checks catch synchronous fee/rebase      behavior, but an asynchronously rebasing token can still render      pooled custody insolvent; admitting one is a governance error that      only the vetting at admission time can prevent.
+ * Add or remove a token from the standard-collateral allowlist.      ERC-20, exact-balance-accounted, and neither fee-on-transfer nor      rebasing (no supply-elastic or balance-mutating hooks). The router's      single-transaction delta checks catch synchronous fee/rebase      behavior, but an asynchronously rebasing token can still render      pooled custody insolvent; admitting one is a governance error that      only the vetting at admission time can prevent.
+ * @dev PRECONDITION: governance MUST only admit a token that is standard
  * @param token The ERC-20 token address.
  * @param allowed Whether the token may be deposited and withdrawn.
  */
@@ -35,15 +35,17 @@ export type DiesisSettlementRouterSetTokenAllowedParams = {
 };
 
 /**
- * @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
+ * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+
  */
 export type DiesisSettlementRouterTransferOwnershipParams = {
   newOwner: `0x${string}`;
 };
 
 /**
- * Withdraw `amount` of `token` from the caller's settlement balance         to `recipient`.
- * @dev Debits the settlement ledger and the aggregate liability first, then      releases custody. A failed token transfer reverts both mutations      atomically. Verifies the exact released amount against BOTH the      router's balance delta and the recipient's balance delta: the      recipient-delta check rejects outbound fee-on-transfer tokens that      would deliver less than the debited amount. An asynchronous shortfall      in pooled custody makes the releasing transfer revert on insufficient      balance, so the withdrawal fails closed for the affected caller      rather than corrupting other users' balances.
+ * Withdraw `amount` of `token` from the caller's settlement balance         to `recipient`.      releases custody. A failed token transfer reverts both mutations      atomically. Verifies the exact released amount against BOTH the      router's balance delta and the recipient's balance delta: the      recipient-delta check rejects outbound fee-on-transfer tokens that      would deliver less than the debited amount. An asynchronous shortfall      in pooled custody makes the releasing transfer revert on insufficient      balance, so the withdrawal fails closed for the affected caller      rather than corrupting other users' balances.
+ * @dev Debits the settlement ledger and the aggregate liability first, then
  * @param token The allowlisted ERC-20 token.
  * @param amount The amount to debit and release.
  * @param recipient The address that receives the released tokens.

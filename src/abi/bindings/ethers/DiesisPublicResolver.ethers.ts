@@ -22,8 +22,8 @@ export interface DiesisPublicResolverMethods {
   registry(overrides?: Omit<Overrides, 'value'>): Promise<string>;
   renounceOwnership(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   routeRecord(node: BytesLike, routeId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, bigint, string, string, string, boolean, boolean] & { routeId: string; routeKind: bigint; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }>;
-  setAddrBytes32Uint256Bytes(node: BytesLike, coinType: BigNumberish, value: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setAddrBytes32Address(node: BytesLike, value: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  setAddrBytes32Uint256Bytes(node: BytesLike, coinType: BigNumberish, value: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setAgentRecord(node: BytesLike, agentId: BytesLike, record: { agentId: BytesLike; endpoint: string; publicKey: BytesLike; capabilitiesHash: BytesLike; policyHash: BytesLike; validFrom: BigNumberish; validUntil: BigNumberish; enabled: boolean }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setContenthash(node: BytesLike, value: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setContractRecord(node: BytesLike, role: BytesLike, target: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
@@ -63,8 +63,8 @@ export function connectDiesisPublicResolver(address: string, runner: ContractRun
   Object.assign(contract, {
     addrBytes32: contract.getFunction("addr(bytes32)"),
     addrBytes32Uint256: contract.getFunction("addr(bytes32,uint256)"),
-    setAddrBytes32Uint256Bytes: contract.getFunction("setAddr(bytes32,uint256,bytes)"),
     setAddrBytes32Address: contract.getFunction("setAddr(bytes32,address)"),
+    setAddrBytes32Uint256Bytes: contract.getFunction("setAddr(bytes32,uint256,bytes)"),
   });
   return contract as unknown as DiesisPublicResolverContract;
 }

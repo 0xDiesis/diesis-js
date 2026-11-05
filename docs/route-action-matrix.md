@@ -19,7 +19,7 @@ direct identity, while explicit revocation releases retained capacity. Read the
 active `authorizationGeneration` after activation for any offline DXS3 bound
 session batch. Neither the acceptance return value nor `indexGeneration` is
 proof of an active binding. Canonical revision
-`ef995163891c0469a7fa09a89a6e66c1705a7fe4` has no bound-session V3 selector or
+`17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d` has no bound-session V3 selector or
 native DXS3 execution route. Bound preparation, signing and sending fail closed
 before signer or transport access; offline codecs and result hashing remain
 available. No unbound V2 fallback is used.

@@ -61,7 +61,9 @@ export type DiesisBaseRegistrarSetTimingParams = {
 };
 
 /**
- * @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
+ * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+
  */
 export type DiesisBaseRegistrarTransferOwnershipParams = {
   newOwner: `0x${string}`;

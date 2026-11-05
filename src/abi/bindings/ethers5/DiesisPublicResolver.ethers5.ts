@@ -22,8 +22,8 @@ export interface DiesisPublicResolverContract extends ethers.Contract {
   registry(overrides?: CallOverrides): Promise<string>;
   renounceOwnership(overrides?: Overrides): Promise<ethers.ContractTransaction>;
   routeRecord(node: BytesLike, routeId: BytesLike, overrides?: CallOverrides): Promise<[string, number, string, string, string, boolean, boolean] & { routeId: string; routeKind: number; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }>;
-  setAddrBytes32Uint256Bytes(node: BytesLike, coinType: BigNumberish, value: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setAddrBytes32Address(node: BytesLike, value: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  setAddrBytes32Uint256Bytes(node: BytesLike, coinType: BigNumberish, value: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setAgentRecord(node: BytesLike, agentId: BytesLike, record: { agentId: BytesLike; endpoint: string; publicKey: BytesLike; capabilitiesHash: BytesLike; policyHash: BytesLike; validFrom: BigNumberish; validUntil: BigNumberish; enabled: boolean }, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setContenthash(node: BytesLike, value: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setContractRecord(node: BytesLike, role: BytesLike, target: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
@@ -61,8 +61,8 @@ export function connectDiesisPublicResolver(
   Object.assign(contract, {
     addrBytes32: contract["addr(bytes32)"],
     addrBytes32Uint256: contract["addr(bytes32,uint256)"],
-    setAddrBytes32Uint256Bytes: contract["setAddr(bytes32,uint256,bytes)"],
     setAddrBytes32Address: contract["setAddr(bytes32,address)"],
+    setAddrBytes32Uint256Bytes: contract["setAddr(bytes32,uint256,bytes)"],
   });
   return contract as unknown as DiesisPublicResolverContract;
 }
