@@ -940,7 +940,7 @@ pnpm build         # emit JavaScript and declarations
 pnpm test:consumer # check built package declarations and Exchange migration examples
 ```
 
-The generator must be the independently verified raw abi-typegen 0.8.0 executable.
+The generator must be the independently verified raw abi-typegen 0.9.1 executable.
 The pinned package's download script is denied; installation alone does not provide
 that executable. No contracts checkout output or checked-in ABI fallback is used.
 See [the qualification tooling guide](scripts/CODEGEN.md) for the separate Linux CI

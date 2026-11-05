@@ -49,12 +49,12 @@ export async function codegenInputs() {
     .digest('hex')
   if (
     proof.generator?.binarySha256 !== binarySha256 ||
-    proof.generator?.version !== 'abi-typegen 0.8.0' ||
-    proof.generator?.sourceCommit !== '66d6e86e8aa6ebc06b22ebf8355cbaea256f0502'
+    proof.generator?.version !== 'abi-typegen 0.9.1' ||
+    proof.generator?.sourceCommit !== '9d9b8c38ce8bfdb12e29222ded734d7758321efb'
   )
     throw new Error('Generator provenance mismatch')
   const { stdout } = await exec(typegen, ['--version'])
-  if (!/^abi-typegen 0\.8\.0\s*$/.test(stdout))
-    throw new Error(`Exact abi-typegen 0.8.0 required: ${stdout.trim()}`)
+  if (!/^abi-typegen 0\.9\.1\s*$/.test(stdout))
+    throw new Error(`Exact abi-typegen 0.9.1 required: ${stdout.trim()}`)
   return { artifacts, typegen }
 }

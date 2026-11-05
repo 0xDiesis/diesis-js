@@ -13,7 +13,7 @@ class QualifierTests(unittest.TestCase):
     def test_exact_source_and_release_tuple(self):
         self.assertEqual(module.REVISION,'17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d')
         self.assertEqual(module.FORGE_COMMIT,'cae51ad458f6abb64852b7709eb784352429825d')
-        self.assertEqual(module.GENERATOR_COMMIT,'66d6e86e8aa6ebc06b22ebf8355cbaea256f0502')
+        self.assertEqual(module.GENERATOR_COMMIT,'9d9b8c38ce8bfdb12e29222ded734d7758321efb')
     def test_zip_bytes_manifest_and_traversal(self):
         stream=io.BytesIO()
         with zipfile.ZipFile(stream,'w') as z:z.writestr('src/a.sol',b'exact\x00bytes')
@@ -64,7 +64,7 @@ class VerifiedProvenanceBindingTest(unittest.TestCase):
     # structural binding only, not cryptographic acceptance of altered payloads.
     def receipt(self):
         import json
-        return json.loads((Path(__file__).parent / 'fixtures/npm-abi-typegen-0.8.0-verified-audit.json').read_text())
+        return json.loads((Path(__file__).parent / 'fixtures/npm-abi-typegen-0.9.1-verified-audit.json').read_text())
 
     def test_actual_verified_receipt_binds_published_source(self):
         module.validate_signature_provenance(self.receipt())
@@ -82,7 +82,7 @@ class VerifiedProvenanceBindingTest(unittest.TestCase):
             definition=statement['predicate']['buildDefinition']
             if mutation=='digest':statement['subject'][0]['digest']['sha512']='0'*128
             elif mutation=='commit':definition['resolvedDependencies'][0]['digest']['gitCommit']='0'*40
-            elif mutation=='subject':statement['subject'][0]['name']='pkg:npm/other@0.8.0'
+            elif mutation=='subject':statement['subject'][0]['name']='pkg:npm/other@0.9.1'
             elif mutation=='repo':definition['externalParameters']['workflow']['repository']='https://github.com/other/repo'
             elif mutation=='ref':definition['externalParameters']['workflow']['ref']='refs/heads/main'
             elif mutation=='path':definition['externalParameters']['workflow']['path']='.github/workflows/other.yml'

@@ -9,14 +9,14 @@ export function getDiesisPublicResolverContract<TClient extends Client>(
   return getContract({ address, abi: DiesisPublicResolverAbi, client });
 }
 
-export type DiesisPublicResolverSetAddrBytes32AddressParams = {
-  node: `0x${string}`;
-  value: `0x${string}`;
-};
-
 export type DiesisPublicResolverSetAddrBytes32Uint256BytesParams = {
   node: `0x${string}`;
   coinType: bigint;
+  value: `0x${string}`;
+};
+
+export type DiesisPublicResolverSetAddrBytes32AddressParams = {
+  node: `0x${string}`;
   value: `0x${string}`;
 };
 

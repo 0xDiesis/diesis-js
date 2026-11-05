@@ -29,8 +29,8 @@ export interface IDiesisPositionContract extends ethers.Contract {
   repayLiquidToken(tokenId: BigNumberish, burnAmount: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   restakeRewards(tokenId: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   revokeFunctionApproval(tokenId: BigNumberish, fn: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
-  safeTransferFromAddressAddressUint256Bytes(from: string, to: string, tokenId: BigNumberish, data: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   safeTransferFromAddressAddressUint256(from: string, to: string, tokenId: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  safeTransferFromAddressAddressUint256Bytes(from: string, to: string, tokenId: BigNumberish, data: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setApprovalForAll(operator: string, approved: boolean, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setFunctionApproval(tokenId: BigNumberish, fn: BigNumberish, delegatee: string, expires: BigNumberish, revokable: boolean, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   shareDebtOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -79,8 +79,8 @@ export function connectIDiesisPosition(
 ): IDiesisPositionContract {
   const contract = new ethers.Contract(address, IDiesisPositionAbi, signerOrProvider);
   Object.assign(contract, {
-    safeTransferFromAddressAddressUint256Bytes: contract["safeTransferFrom(address,address,uint256,bytes)"],
     safeTransferFromAddressAddressUint256: contract["safeTransferFrom(address,address,uint256)"],
+    safeTransferFromAddressAddressUint256Bytes: contract["safeTransferFrom(address,address,uint256,bytes)"],
   });
   return contract as unknown as IDiesisPositionContract;
 }

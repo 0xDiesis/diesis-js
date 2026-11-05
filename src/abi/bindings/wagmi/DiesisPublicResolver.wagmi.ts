@@ -202,24 +202,6 @@ export function useDiesisPublicResolverRenounceOwnership(
   };
 }
 
-export function useDiesisPublicResolverSetAddrBytes32Address(
-  address: Address,
-): Omit<UseWriteContractReturnType, 'writeContract'> & {
-  write: (args: { node: `0x${string}`, value: `0x${string}` }) => void;
-} {
-  const { writeContract, ...rest } = useWriteContract();
-  return {
-    ...rest,
-    write: (args: { node: `0x${string}`, value: `0x${string}` }) =>
-      writeContract({
-        address,
-        abi: DiesisPublicResolverAbi,
-        functionName: 'setAddr',
-        args: [args.node, args.value],
-      }),
-  };
-}
-
 export function useDiesisPublicResolverSetAddrBytes32Uint256Bytes(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
@@ -234,6 +216,24 @@ export function useDiesisPublicResolverSetAddrBytes32Uint256Bytes(
         abi: DiesisPublicResolverAbi,
         functionName: 'setAddr',
         args: [args.node, args.coinType, args.value],
+      }),
+  };
+}
+
+export function useDiesisPublicResolverSetAddrBytes32Address(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { node: `0x${string}`, value: `0x${string}` }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { node: `0x${string}`, value: `0x${string}` }) =>
+      writeContract({
+        address,
+        abi: DiesisPublicResolverAbi,
+        functionName: 'setAddr',
+        args: [args.node, args.value],
       }),
   };
 }

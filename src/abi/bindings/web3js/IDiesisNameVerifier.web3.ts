@@ -26,10 +26,10 @@ export interface IDiesisNameVerifierMethods {
   attest(node: string, subject: string, kind: string, digest: string, expiresAt: Numbers): IDiesisNameVerifierMethod<'nonpayable', string>;
   attestationDigest(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }): IDiesisNameVerifierMethod<'nonpayable', string>;
   attestationHash(attestation: { node: string; attestationType: string; issuer: string; subjectHash: string; evidenceHash: string; issuedAt: Numbers; validUntil: Numbers; extraData: string }): IDiesisNameVerifierMethod<'nonpayable', string>;
-  attestations(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
-  "attestations(bytes32)"(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
   attestations(node: string, attestationType: string): IDiesisNameVerifierMethod<'nonpayable', string[]>;
   "attestations(bytes32,bytes32)"(node: string, attestationType: string): IDiesisNameVerifierMethod<'nonpayable', string[]>;
+  attestations(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
+  "attestations(bytes32)"(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
   isAttested(node: string, attestationType: string, issuer: string): IDiesisNameVerifierMethod<'nonpayable', boolean>;
   isValid(attestationId: string): IDiesisNameVerifierMethod<'nonpayable', boolean>;
   issuers(issuer: string): IDiesisNameVerifierMethod<'nonpayable', boolean>;

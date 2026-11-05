@@ -3,3 +3,6 @@ packages: []
 allowBuilds:
   blake-hash: false
   '@0xdoublesharp/abi-typegen': false
+
+minimumReleaseAgeExclude:
+  - '@0xdoublesharp/abi-typegen@0.9.1'

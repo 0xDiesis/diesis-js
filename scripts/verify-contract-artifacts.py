@@ -204,7 +204,7 @@ def verify(preflight_path):
     generator = preflight.get('generator')
     if generator is not None:
         require(sha(regular(generator['path'])) == generator['binarySha256'], 'generator binary hash mismatch')
-        require(generator['version'] == 'abi-typegen 0.8.0', 'generator version mismatch')
+        require(generator['version'] == 'abi-typegen 0.9.1', 'generator version mismatch')
     compiler = preflight['solc']
     require(sha(regular(compiler['path'])) == compiler['sha256'], 'compiler hash mismatch')
     require(compiler['longVersion'] == '0.8.38+commit.e7a91fc7.solar.0.3.0', 'compiler version mismatch')

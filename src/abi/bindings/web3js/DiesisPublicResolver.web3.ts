@@ -44,10 +44,10 @@ export interface DiesisPublicResolverMethods {
   registry(): DiesisPublicResolverMethod<'nonpayable', string>;
   renounceOwnership(): DiesisPublicResolverMethod<'nonpayable', void>;
   routeRecord(node: string, routeId: string): DiesisPublicResolverMethod<'nonpayable', { routeId: string; routeKind: bigint; target: string; contractTarget: string; policyHash: string; wildcard: boolean; enabled: boolean }>;
-  setAddr(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
-  "setAddr(bytes32,address)"(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
   setAddr(node: string, coinType: Numbers, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
   "setAddr(bytes32,uint256,bytes)"(node: string, coinType: Numbers, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  setAddr(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
+  "setAddr(bytes32,address)"(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
   setAgentRecord(node: string, agentId: string, record: { agentId: string; endpoint: string; publicKey: string; capabilitiesHash: string; policyHash: string; validFrom: Numbers; validUntil: Numbers; enabled: boolean }): DiesisPublicResolverMethod<'nonpayable', void>;
   setContenthash(node: string, value: string): DiesisPublicResolverMethod<'nonpayable', void>;
   setContractRecord(node: string, role: string, target: string): DiesisPublicResolverMethod<'nonpayable', void>;

@@ -6,8 +6,8 @@ export interface IDiesisNameVerifierMethods {
   attest(node: BytesLike, subject: AddressLike, kind: BytesLike, digest: BytesLike, expiresAt: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   attestationDigest(attestation: { node: BytesLike; attestationType: BytesLike; issuer: AddressLike; subjectHash: BytesLike; evidenceHash: BytesLike; issuedAt: BigNumberish; validUntil: BigNumberish; extraData: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   attestationHash(attestation: { node: BytesLike; attestationType: BytesLike; issuer: AddressLike; subjectHash: BytesLike; evidenceHash: BytesLike; issuedAt: BigNumberish; validUntil: BigNumberish; extraData: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<string>;
-  attestationsBytes32(attestationId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, string, string, string, string, bigint, bigint, boolean] & { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
   attestationsBytes32Bytes32(node: BytesLike, attestationType: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<string[]>;
+  attestationsBytes32(attestationId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, string, string, string, string, bigint, bigint, boolean] & { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: bigint; expiresAt: bigint; revoked: boolean }>;
   isAttested(node: BytesLike, attestationType: BytesLike, issuer: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
   isValid(attestationId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
   issuers(issuer: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
@@ -32,8 +32,8 @@ export type IDiesisNameVerifierContract = Omit<BaseContract, keyof IDiesisNameVe
 export function connectIDiesisNameVerifier(address: string, runner: ContractRunner): IDiesisNameVerifierContract {
   const contract = new Contract(address, IDiesisNameVerifierAbi, runner);
   Object.assign(contract, {
-    attestationsBytes32: contract.getFunction("attestations(bytes32)"),
     attestationsBytes32Bytes32: contract.getFunction("attestations(bytes32,bytes32)"),
+    attestationsBytes32: contract.getFunction("attestations(bytes32)"),
   });
   return contract as unknown as IDiesisNameVerifierContract;
 }

@@ -6,8 +6,8 @@ export interface IDiesisNameVerifierContract extends ethers.Contract {
   attest(node: BytesLike, subject: string, kind: BytesLike, digest: BytesLike, expiresAt: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   attestationDigest(attestation: { node: BytesLike; attestationType: BytesLike; issuer: string; subjectHash: BytesLike; evidenceHash: BytesLike; issuedAt: BigNumberish; validUntil: BigNumberish; extraData: BytesLike }, overrides?: CallOverrides): Promise<string>;
   attestationHash(attestation: { node: BytesLike; attestationType: BytesLike; issuer: string; subjectHash: BytesLike; evidenceHash: BytesLike; issuedAt: BigNumberish; validUntil: BigNumberish; extraData: BytesLike }, overrides?: CallOverrides): Promise<string>;
-  attestationsBytes32(attestationId: BytesLike, overrides?: CallOverrides): Promise<[string, string, string, string, string, BigNumber, BigNumber, boolean] & { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: BigNumber; expiresAt: BigNumber; revoked: boolean }>;
   attestationsBytes32Bytes32(node: BytesLike, attestationType: BytesLike, overrides?: CallOverrides): Promise<string[]>;
+  attestationsBytes32(attestationId: BytesLike, overrides?: CallOverrides): Promise<[string, string, string, string, string, BigNumber, BigNumber, boolean] & { node: string; subject: string; kind: string; digest: string; issuer: string; issuedAt: BigNumber; expiresAt: BigNumber; revoked: boolean }>;
   isAttested(node: BytesLike, attestationType: BytesLike, issuer: string, overrides?: CallOverrides): Promise<boolean>;
   isValid(attestationId: BytesLike, overrides?: CallOverrides): Promise<boolean>;
   issuers(issuer: string, overrides?: CallOverrides): Promise<boolean>;
@@ -30,8 +30,8 @@ export function connectIDiesisNameVerifier(
 ): IDiesisNameVerifierContract {
   const contract = new ethers.Contract(address, IDiesisNameVerifierAbi, signerOrProvider);
   Object.assign(contract, {
-    attestationsBytes32: contract["attestations(bytes32)"],
     attestationsBytes32Bytes32: contract["attestations(bytes32,bytes32)"],
+    attestationsBytes32: contract["attestations(bytes32)"],
   });
   return contract as unknown as IDiesisNameVerifierContract;
 }

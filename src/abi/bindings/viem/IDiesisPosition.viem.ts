@@ -115,28 +115,6 @@ export type IDiesisPositionRevokeFunctionApprovalParams = {
 };
 
 /**
- * @dev Safely transfers `tokenId` token from `from` to `to`.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
-     *   a safe transfer.
-     *
-     * Emits a {Transfer} event.
-
- */
-export type IDiesisPositionSafeTransferFromAddressAddressUint256BytesParams = {
-  from: `0x${string}`;
-  to: `0x${string}`;
-  tokenId: bigint;
-  data: `0x${string}`;
-};
-
-/**
  * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
      * are aware of the ERC-721 protocol to prevent tokens from being forever locked.
      *
@@ -157,6 +135,28 @@ export type IDiesisPositionSafeTransferFromAddressAddressUint256Params = {
   from: `0x${string}`;
   to: `0x${string}`;
   tokenId: bigint;
+};
+
+/**
+ * @dev Safely transfers `tokenId` token from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+     *   a safe transfer.
+     *
+     * Emits a {Transfer} event.
+
+ */
+export type IDiesisPositionSafeTransferFromAddressAddressUint256BytesParams = {
+  from: `0x${string}`;
+  to: `0x${string}`;
+  tokenId: bigint;
+  data: `0x${string}`;
 };
 
 /**
