@@ -769,6 +769,34 @@ certified finality, and that block may still be orphaned. It does not sign an un
 hash, exchange relay action hash, ERC-4337 UserOperation hash and bundle execution
 plan hash identify different objects: query the corresponding status surface.
 
+### Read scaled spot-market pricing
+
+New spot pricing V1 markets have a distinct market ID and an immutable
+`priceDenominator`. Quantities remain raw base atoms; quote notional is
+`priceTicks * (rawQuantity / priceDenominator)`. The lot grid guarantees exact
+division. Legacy markets retain denominator one and their existing identities.
+
+```typescript
+import { quoteNotional } from '@diesis/sdk/exchange'
+
+const pricing = await publicClient.exchange.getMarketPricing({
+  marketId,
+  blockHash: canonicalBlock.hash,
+})
+const quoteAtoms = quoteNotional(priceTicks, rawQuantity, pricing.data)
+```
+
+The read preserves its block and index anchor, decodes u64 values as bigints,
+and checks the complete pricing metadata against the derived market identity.
+An unavailable requested snapshot refuses; it never substitutes a newer block.
+Discovery through `getMarket` and `getMarkets` also retains pricing fields.
+
+Direct DXA2 preparation supports pricing V1 for spot placement and replacement.
+Check the connected runtime's `spotPricingVersions`, canonical market state and
+the existing activation rules before dispatch. Pricing V1 perpetual preparation
+remains unavailable. Unversioned signed spot intents and bound-session V3 do not
+acquire priced-market support through this change.
+
 ### Check ordinary native finalized inclusion
 
 This recipe is for an **ordinary EVM transaction on Diesis**, using a qualified,

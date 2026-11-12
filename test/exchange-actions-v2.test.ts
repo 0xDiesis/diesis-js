@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import {
   bytesToHex,
   createWalletClient,
+  decodeFunctionData,
   hexToBytes,
   custom,
   keccak256,
@@ -12,6 +13,8 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
 
 import type { CancelReplaceAction } from '../src/exchange/actions-v2.js'
+import { IDiesisSpotBookAbi } from '../src/abi/index.js'
+import { DIESIS_SPOT_BOOK } from '../src/addresses.js'
 
 import {
   computeExchangeResultHash,
@@ -965,7 +968,7 @@ describe('signed DXA2 pricing version', () => {
   })
 
   it.each(['place', 'replacement'] as const)(
-    'refuses prospective %s pricing before transaction preparation or signing',
+    'refuses perpetual %s pricing V1 before transaction preparation or signing',
     (kind) => {
       const action =
         kind === 'place'
@@ -975,11 +978,11 @@ describe('signed DXA2 pricing version', () => {
         atomicity: 'atomicAll',
         actions: [action],
       }
-      // The wire codec remains available for independent future-native fixtures.
+      // The shared codec does not authorize the perpetual execution profile.
       expect(encodeExchangeActionBatch(batch)).toMatch(/^0x44584132/)
       expect(() =>
         prepareExchangeActionsTransaction({ book: 'perpetual', batch }),
-      ).toThrow('Pricing version 1 requires qualified native admission')
+      ).toThrow('Pricing version 1 is unsupported for perpetual execution')
       let signatures = 0
       const account = {
         signTransaction: async () => {
@@ -999,8 +1002,33 @@ describe('signed DXA2 pricing version', () => {
             maxPriorityFeePerGas: 1n,
           },
         }),
-      ).toThrow('Pricing version 1 requires qualified native admission')
+      ).toThrow('Pricing version 1 is unsupported for perpetual execution')
       expect(signatures).toBe(0)
+    },
+  )
+
+  it.each(['place', 'cancelReplace'] as const)(
+    'prepares a pricing V1 spot %s without changing its encoded original',
+    (kind) => {
+      const action =
+        kind === 'place'
+          ? { ...place(), pricingVersion: 1 as const }
+          : { ...replacement(), replacementPricingVersion: 1 as const }
+      const batch: ExchangeActionBatch = {
+        atomicity: 'atomicAll',
+        actions: [action],
+      }
+      const prepared = prepareExchangeActionsTransaction({
+        book: 'spot',
+        batch,
+      })
+      expect(prepared).toMatchObject({ to: DIESIS_SPOT_BOOK, value: 0n })
+      expect(
+        decodeFunctionData({ abi: IDiesisSpotBookAbi, data: prepared.data }),
+      ).toMatchObject({
+        functionName: 'submitExchangeActionsV2',
+        args: [encodeExchangeActionBatch(batch)],
+      })
     },
   )
 

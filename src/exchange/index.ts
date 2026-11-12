@@ -16,6 +16,10 @@ export * from './cancel-all.js'
 export * from './perps-signed.js'
 export * from './stops.js'
 export * from './market-pricing.js'
+export type {
+  GetMarketPricingParams,
+  MarketPricingInfo,
+} from './pricing-reads.js'
 export * from './perp-lifecycle.js'
 export type {
   ControlRead,

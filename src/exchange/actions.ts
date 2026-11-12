@@ -19,6 +19,13 @@ import {
   type GetAccountCustodyParams,
   type CustodyRead,
 } from './custody-reads.js'
+import {
+  assertMarketPricingObservation,
+  decodeMarketPricingMetadata,
+  marketPricingQuery,
+  type GetMarketPricingParams,
+  type MarketPricingInfo,
+} from './pricing-reads.js'
 import { IDiesisErc20FactoryAbi } from '../abi/index.js'
 import type { IDiesisErc20FactoryDeployParams } from '../abi/bindings/viem/index.js'
 import { DIESIS_ERC20_FACTORY } from '../addresses.js'
@@ -184,6 +191,9 @@ export type ExchangePublicActions = {
     }) => Promise<IndexedResponse<OrderBook>>
     getMarkets: () => Promise<IndexedResponse<MarketInfo[]>>
     getMarket: (params: { marketId: Hex }) => Promise<MarketInfo | null>
+    getMarketPricing: (
+      params: GetMarketPricingParams,
+    ) => Promise<IndexedResponse<MarketPricingInfo>>
     getAccount: (params: {
       address: Address
     }) => Promise<IndexedResponse<TradingAccount>>
@@ -326,9 +336,9 @@ function orderBook(value: unknown): OrderBook {
     asks: array(row.asks, 'asks').map(level),
   }
 }
-function market(value: unknown): MarketInfo {
+function market(value: unknown, requirePricing = false): MarketInfo {
   const row = object(value, 'market')
-  return {
+  const decoded: MarketInfo = {
     marketId: fixedHex(row.market_id, 32, 'market_id'),
     baseToken: fixedHex(row.base_token, 20, 'base_token'),
     quoteToken: fixedHex(row.quote_token, 20, 'quote_token'),
@@ -336,6 +346,10 @@ function market(value: unknown): MarketInfo {
     status: count(row.state, 8, 'state'),
     tickSize: integer(row.tick_size, 64, 'tick_size'),
     lotSize: integer(row.lot_size, 64, 'lot_size'),
+  }
+  return {
+    ...decoded,
+    ...decodeMarketPricingMetadata(row, decoded, requirePricing),
   }
 }
 function tradingAccount(value: unknown): TradingAccount {
@@ -986,13 +1000,28 @@ export function exchangePublicActions<
       },
       getMarkets: async () =>
         indexed(await request('exchange_getMarkets', []), (data) =>
-          array(data, 'markets').map(market),
+          array(data, 'markets').map((value) => market(value)),
         ),
       getMarket: async (params) => {
-        const value = await request('exchange_getMarket', [
-          marketId(params.marketId),
+        const requestedId = marketId(params.marketId)
+        const value = await request('exchange_getMarket', [requestedId])
+        if (value === null) return null
+        const decoded = market(value)
+        if (decoded.marketId.toLowerCase() !== requestedId.toLowerCase())
+          throw new Error(
+            'Market observation does not match requested identity',
+          )
+        return decoded
+      },
+      getMarketPricing: async (params) => {
+        const query = marketPricingQuery(params)
+        const raw = await request('exchange_getMarketPricing', [
+          query.marketId,
+          ...(query.blockHash === undefined ? [] : [query.blockHash]),
         ])
-        return value === null ? null : market(value)
+        const response = indexed(raw, (value) => market(value, true))
+        assertMarketPricingObservation(raw, response, query)
+        return response
       },
       getAccount: async (params) =>
         indexed(

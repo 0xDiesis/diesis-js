@@ -44,6 +44,9 @@ export interface MarketInfo {
   status: MarketStatus
   tickSize: bigint
   lotSize: bigint
+  pricingVersion?: 0 | 1
+  priceDenominator?: bigint
+  quantityUnit?: 'baseAtoms'
 }
 export interface TradingAccount {
   user: Address
@@ -150,6 +153,9 @@ export interface ExchangeRpcMarket {
   state: number
   tick_size: ExchangeRpcInteger
   lot_size: ExchangeRpcInteger
+  pricing_version?: 0 | 1
+  price_denominator?: string
+  quantity_unit?: 'baseAtoms'
 }
 export interface ExchangeRpcTokenBalance {
   token: Address

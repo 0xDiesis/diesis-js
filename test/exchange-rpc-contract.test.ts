@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { createPublicClient, custom, type Hex } from 'viem'
 import { exchangePublicActions } from '../src/exchange/actions.js'
+import { derivePricedMarketId } from '../src/exchange/market-pricing.js'
+import { marketId as deriveLegacyMarketId } from '../src/exchange/utils.js'
 
-const marketId = `0x${'11'.repeat(32)}` as Hex
 const user = `0x${'22'.repeat(20)}` as const
 const token = `0x${'33'.repeat(20)}` as const
+const marketId = deriveLegacyMarketId(user, token, 1)
 const blockHash = `0x${'42'.repeat(32)}` as Hex
 const indexDigest = `0x${'99'.repeat(32)}` as Hex
 const anchor = { blockNumber: 42, blockHash, indexDigest }
@@ -82,6 +84,165 @@ describe('native exchange RPC contracts', () => {
     ).toEqual([expected])
     expect(await rpc(market).exchange.getMarket({ marketId })).toEqual(expected)
     expect(await rpc(null).exchange.getMarket({ marketId })).toBeNull()
+  })
+  const pricedMarket = (denominator = 10n) => ({
+    ...market,
+    market_id: derivePricedMarketId(user, token, 0, {
+      pricingVersion: 1,
+      priceDenominator: denominator,
+    }),
+    market_type: 0,
+    tick_size: '5',
+    lot_size: denominator.toString(),
+    pricing_version: 1,
+    price_denominator: denominator.toString(),
+    quantity_unit: 'baseAtoms',
+  })
+
+  it('retains exact pricing metadata in market discovery and single reads', async () => {
+    const raw = pricedMarket(9_007_199_254_740_993n)
+    const expected = {
+      marketId: raw.market_id,
+      baseToken: user,
+      quoteToken: token,
+      marketType: 0,
+      status: 1,
+      tickSize: 5n,
+      lotSize: 9_007_199_254_740_993n,
+      pricingVersion: 1,
+      priceDenominator: 9_007_199_254_740_993n,
+      quantityUnit: 'baseAtoms',
+    }
+    expect(
+      (await rpc({ ...anchor, data: [raw] }).exchange.getMarkets()).data,
+    ).toEqual([expected])
+    expect(
+      await rpc(raw).exchange.getMarket({ marketId: raw.market_id }),
+    ).toEqual(expected)
+  })
+
+  it('never interprets a priced identity with missing metadata as legacy units', async () => {
+    const raw = pricedMarket()
+    const {
+      pricing_version: _version,
+      price_denominator: _denominator,
+      quantity_unit: _unit,
+      ...missing
+    } = raw
+    await expect(
+      rpc(missing).exchange.getMarket({ marketId: raw.market_id }),
+    ).rejects.toThrow()
+    await expect(
+      rpc({ ...anchor, data: [missing] }).exchange.getMarkets(),
+    ).rejects.toThrow()
+  })
+
+  it.each([
+    { price_denominator: undefined },
+    { quantity_unit: undefined },
+    { pricing_version: undefined },
+    { pricing_version: 2 },
+    { pricing_version: '1' },
+    { price_denominator: '01' },
+    { price_denominator: 10 },
+    { price_denominator: '0' },
+    { price_denominator: '18446744073709551616' },
+    { quantity_unit: 'lots' },
+    { lot_size: '11' },
+    { tick_size: '0' },
+    { market_type: 1 },
+    { market_id: marketId },
+  ])(
+    'rejects incomplete or inconsistent pricing metadata %j',
+    async (change) => {
+      const raw = { ...pricedMarket(), ...change }
+      await expect(
+        rpc(raw).exchange.getMarket({ marketId: raw.market_id }),
+      ).rejects.toThrow()
+      await expect(
+        rpc({ ...anchor, data: [raw] }).exchange.getMarkets(),
+      ).rejects.toThrow()
+    },
+  )
+
+  it('reads pricing at the exact requested index anchor', async () => {
+    const raw = pricedMarket()
+    const { exchange, requests } = rpc({ ...anchor, data: raw })
+    expect(
+      await exchange.getMarketPricing({ marketId: raw.market_id, blockHash }),
+    ).toMatchObject({
+      ...anchor,
+      blockNumber: 42n,
+      data: {
+        marketId: raw.market_id,
+        pricingVersion: 1,
+        priceDenominator: 10n,
+      },
+    })
+    expect(requests).toEqual([
+      {
+        method: 'exchange_getMarketPricing',
+        params: [raw.market_id, blockHash],
+      },
+    ])
+  })
+
+  it('does not return another valid market for a single-market request', async () => {
+    await expect(
+      rpc(pricedMarket()).exchange.getMarket({ marketId }),
+    ).rejects.toThrow()
+  })
+
+  it('retains pricing request identity while transport is pending', async () => {
+    const raw = pricedMarket()
+    let release!: () => void
+    const wait = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const client = createPublicClient({
+      transport: custom({
+        request: async () => {
+          await wait
+          return { ...anchor, data: raw }
+        },
+      }),
+    }).extend(exchangePublicActions)
+    const query = { marketId: raw.market_id, blockHash }
+    const read = client.exchange.getMarketPricing(query)
+    query.marketId = marketId
+    query.blockHash = `0x${'43'.repeat(32)}`
+    release()
+    expect(await read).toMatchObject({
+      blockHash,
+      data: { marketId: raw.market_id },
+    })
+  })
+
+  it('refuses pricing from a different market or canonical anchor', async () => {
+    const raw = pricedMarket()
+    await expect(
+      rpc({ ...anchor, data: raw }).exchange.getMarketPricing({ marketId }),
+    ).rejects.toThrow()
+    await expect(
+      rpc({ ...anchor, data: raw }).exchange.getMarketPricing({
+        marketId: raw.market_id,
+        blockHash: `0x${'43'.repeat(32)}`,
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('requires complete closed pricing observations instead of a legacy fallback', async () => {
+    const raw = pricedMarket()
+    for (const response of [
+      null,
+      { ...anchor, data: market },
+      { ...anchor, extra: true, data: raw },
+      { ...anchor, data: { ...raw, extra: true } },
+    ]) {
+      await expect(
+        rpc(response).exchange.getMarketPricing({ marketId: raw.market_id }),
+      ).rejects.toThrow()
+    }
   })
   it('decodes balances without losing uint256 precision', async () => {
     expect(

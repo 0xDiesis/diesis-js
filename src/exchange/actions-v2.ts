@@ -67,8 +67,8 @@ export type PlaceAction = {
   reduceOnly: boolean
   /**
    * Signed market units. Omission preserves legacy pricing version 0.
-   * Version 1 requires the coordinated native 0x04 flag implementation;
-   * accepted node 44bed910 rejects it. Qualify native admission before use.
+   * Version 1 selects immutable scaled units on supported new spot markets.
+   * Runtime capability and canonical market metadata must be checked before use.
    */
   pricingVersion?: 0 | 1
   marginType: ExchangeActionMarginType
@@ -107,7 +107,7 @@ export type CancelReplaceAction = {
   replacementPostOnly: boolean
   replacementReduceOnly: boolean
   /** Signed replacement units, checked before native cancellation or reservation. */
-  /** Version 1 requires separately qualified native 0x04 flag support. */
+  /** Version 1 is supported only by the scaled spot execution profile. */
   replacementPricingVersion?: 0 | 1
   replacementMarginType: ExchangeActionMarginType
   replacementPriceTicks: bigint
@@ -681,6 +681,7 @@ function placeActionWork(
   fills: number,
   remainderCancel: boolean,
   marginContribution = false,
+  priced = false,
 ): ActionWorkV2 {
   const twiceFills = fills * 2
   const changedLevels = fills + 2
@@ -693,7 +694,8 @@ function placeActionWork(
       fills * STORAGE_OPS_PER_FILL +
       searches * STORAGE_OPS_PER_SEARCH +
       (remainderCancel ? 40 : 0) +
-      (marginContribution ? POSITION_COLLATERAL_STORAGE_OPS : 0),
+      (marginContribution ? POSITION_COLLATERAL_STORAGE_OPS : 0) +
+      (priced ? 4 + twiceFills : 0),
     l3Logs,
     l3LogBytes: l3Logs * L3_LOG_BYTES,
     economicLogs:
@@ -753,6 +755,7 @@ function actionWorkFromModel(action: ExchangeAction): ActionWorkV2 {
       action.maxFills,
       placeLeavesRemainderCancel(action.orderKind, action.timeInForce),
       action.marginContribution !== undefined,
+      action.pricingVersion === 1,
     )
   }
   if (
@@ -771,6 +774,7 @@ function actionWorkFromModel(action: ExchangeAction): ActionWorkV2 {
           action.replacementTimeInForce,
         ),
         action.marginContribution !== undefined,
+        action.replacementPricingVersion === 1,
       ),
     )
   }
@@ -1294,6 +1298,7 @@ function exactWireRecordLength(
       readWireU16(bytes, offset + 84),
       wireRemainderCancel(bytes[offset + 53]!, bytes[offset + 54]!),
       (bytes[offset + 56]! & 0x04) !== 0,
+      (bytes[offset + 55]! & 0x04) !== 0,
     )
   }
   if (tag === 2 || tag === 3) return cancelActionWork(1)
@@ -1304,6 +1309,7 @@ function exactWireRecordLength(
         readWireU16(bytes, offset + 148),
         wireRemainderCancel(bytes[offset + 54]!, bytes[offset + 55]!),
         (bytes[offset + 57]! & 0x04) !== 0,
+        (bytes[offset + 56]! & 0x04) !== 0,
       ),
     )
   }
@@ -1403,10 +1409,10 @@ export function prepareExchangeActionsTransaction(parameters: {
   batch: ExchangeActionBatch
 }): { to: Address; data: Hex; value: 0n } {
   const encodedActions = encodeExchangeActionBatch(parameters.batch)
-  // The accepted native baseline rejects 0x04. Keep prospective codecs usable
-  // for fixtures while refusing wallet preparation/signing until native admission
-  // and cross-language vectors have been qualified together.
+  // Pricing V1 changes spot settlement only. Perpetual margin, PnL and funding
+  // retain their legacy units and cannot admit this flag.
   if (
+    parameters.book === 'perpetual' &&
     parameters.batch.actions.some(
       (action) =>
         (action.kind === 'place' && action.pricingVersion === 1) ||
@@ -1414,7 +1420,7 @@ export function prepareExchangeActionsTransaction(parameters: {
           action.replacementPricingVersion === 1),
     )
   ) {
-    throw new Error('Pricing version 1 requires qualified native admission')
+    throw new Error('Pricing version 1 is unsupported for perpetual execution')
   }
   let to: Address
   if (parameters.book === 'spot') to = DIESIS_SPOT_BOOK

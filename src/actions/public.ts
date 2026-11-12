@@ -21,7 +21,7 @@ export interface NetworkRules {
   [key: string]: unknown
 }
 
-/** Exact node 44bed wire response; observation is not execution authority. */
+/** Runtime observations; supported pricing versions do not grant execution authority. */
 export interface RuntimeCapabilities {
   configuredExecutionMode: string
   effectiveExecutionMode: string
@@ -30,6 +30,8 @@ export interface RuntimeCapabilities {
   downgradeReason: string | null
   checkpointReplayMode: string
   blockSequentialFallbackTotal: number
+  spotPricingVersions?: readonly (0 | 1)[]
+  perpetualPricingVersions?: readonly 0[]
 }
 /** Node 44bed pipeline_status.rs: serde camelCase, JSON integer fields. */
 export interface PipelineStatus {
