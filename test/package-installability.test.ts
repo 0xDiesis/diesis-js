@@ -117,7 +117,8 @@ describe('third-party package installability', () => {
     const config = readFileSync(workspaceConfig, 'utf8')
     expect(config).toContain('  blake-hash: false\n')
     expect(config).toContain("  '@0xdoublesharp/abi-typegen': false\n")
-    expect(config.match(/^  [^\n]+:/gmu)).toEqual([
+    const allowBuilds = config.match(/^allowBuilds:\n((?:[ \t].*\n|\n)*)/mu)?.[1]
+    expect(allowBuilds?.match(/^  [^\n]+:/gmu)).toEqual([
       '  blake-hash:',
       "  '@0xdoublesharp/abi-typegen':",
     ])
