@@ -162,8 +162,12 @@ const RADIX_WRITES_PER_CHANGED_LEVEL = 64
 const STORAGE_OPS_PER_CHANGED_LEVEL = 71
 const STORAGE_OPS_PER_FILL = 40
 const STORAGE_OPS_PER_SEARCH = 6
-const ECONOMIC_LOGS_PER_FILL = 2
-const ECONOMIC_LOG_BYTES_PER_FILL = 512
+// Each match emits two participant fills and their adjacent fee evidence.
+const ECONOMIC_LOGS_PER_FILL = 4
+const ECONOMIC_LOG_BYTES_PER_FILL = 960
+const ECONOMIC_LOGS_PER_PLACE = 1
+const ECONOMIC_LOG_BYTES_PER_PLACE = 256
+const TRADE_FILL_LOG_BYTES = 288
 const ECONOMIC_LOG_BYTES_PER_CANCEL = 256
 const L3_LOG_BYTES = 288
 const OUTCOME_LOG_BYTES = 256
@@ -626,6 +630,8 @@ type ActionWorkV2 = {
   l3LogBytes: number
   economicLogs: number
   economicLogBytes: number
+  fillLogs: number
+  fillLogBytes: number
   statefulScheduleRefinements: number
 }
 
@@ -636,6 +642,8 @@ const EMPTY_WORK: ActionWorkV2 = {
   l3LogBytes: 0,
   economicLogs: 0,
   economicLogBytes: 0,
+  fillLogs: 0,
+  fillLogBytes: 0,
   statefulScheduleRefinements: 0,
 }
 
@@ -654,6 +662,8 @@ function addActionWork(left: ActionWorkV2, right: ActionWorkV2): ActionWorkV2 {
     l3LogBytes: left.l3LogBytes + right.l3LogBytes,
     economicLogs: left.economicLogs + right.economicLogs,
     economicLogBytes: left.economicLogBytes + right.economicLogBytes,
+    fillLogs: left.fillLogs + right.fillLogs,
+    fillLogBytes: left.fillLogBytes + right.fillLogBytes,
     statefulScheduleRefinements,
   }
 }
@@ -687,13 +697,17 @@ function placeActionWork(
     l3Logs,
     l3LogBytes: l3Logs * L3_LOG_BYTES,
     economicLogs:
+      ECONOMIC_LOGS_PER_PLACE +
       fills * ECONOMIC_LOGS_PER_FILL +
       Number(remainderCancel) +
       Number(marginContribution),
     economicLogBytes:
+      ECONOMIC_LOG_BYTES_PER_PLACE +
       fills * ECONOMIC_LOG_BYTES_PER_FILL +
       (remainderCancel ? 256 : 0) +
       (marginContribution ? 256 : 0),
+    fillLogs: fills,
+    fillLogBytes: fills * TRADE_FILL_LOG_BYTES,
     statefulScheduleRefinements: 0,
   }
 }
@@ -784,9 +798,13 @@ function actionWorkFromModel(action: ExchangeAction): ActionWorkV2 {
 }
 
 function enforceActionWork(work: ActionWorkV2, actionCount: number): void {
-  const totalLogs = actionCount + work.l3Logs + work.economicLogs
+  const totalLogs =
+    actionCount + work.l3Logs + work.economicLogs + work.fillLogs
   const totalLogBytes =
-    actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes
+    actionCount * OUTCOME_LOG_BYTES +
+    work.l3LogBytes +
+    work.economicLogBytes +
+    work.fillLogBytes
   const dimensions = [
     ['radix writes', work.radixWrites, EXCHANGE_ACTION_LIMITS.maxRadixWrites],
     [
@@ -851,6 +869,9 @@ export type ExchangeActionAdmissionWork = {
   economicLogs: number
   /** Frozen bytes for state-independent economic logs. */
   economicLogBytes: number
+  /** Canonical ExchangeTradeFillV2 observation logs, one per matched trade. */
+  fillLogs: number
+  fillLogBytes: number
   /** Stateless total including outcome logs, before schedule-trigger refinement. */
   totalLogs: number
   /** Stateless total bytes before schedule-trigger refinement. */
@@ -885,9 +906,14 @@ export function exchangeActionBatchAdmissionWork(
     l3LogBytes: work.l3LogBytes,
     economicLogs: work.economicLogs,
     economicLogBytes: work.economicLogBytes,
-    totalLogs: actionCount + work.l3Logs + work.economicLogs,
+    fillLogs: work.fillLogs,
+    fillLogBytes: work.fillLogBytes,
+    totalLogs: actionCount + work.l3Logs + work.economicLogs + work.fillLogs,
     totalLogBytes:
-      actionCount * OUTCOME_LOG_BYTES + work.l3LogBytes + work.economicLogBytes,
+      actionCount * OUTCOME_LOG_BYTES +
+      work.l3LogBytes +
+      work.economicLogBytes +
+      work.fillLogBytes,
     statefulScheduleRefinements: work.statefulScheduleRefinements,
     requiresStatefulPreflight: true,
   }

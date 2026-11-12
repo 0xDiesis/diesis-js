@@ -609,7 +609,22 @@ describe('canonical exchange action V2 wire', () => {
     ).toBe(7)
   })
 
-  it('reserves one OrderCancelled economic log for every bounded cancel', () => {
+  it('reserves placement and both participant fill/fee pairs for each match', () => {
+    const work = exchangeActionBatchAdmissionWork({
+      atomicity: 'atomicAll',
+      actions: [{ ...place(), maxFills: 1 }],
+    })
+    expect(work).toMatchObject({
+      economicLogs: 5,
+      economicLogBytes: 1_216,
+      fillLogs: 1,
+      fillLogBytes: 288,
+      totalLogs: 10,
+      totalLogBytes: 2_624,
+    })
+  })
+
+  it('reserves cancellation separately from replacement placement and fills', () => {
     const cancelByOrderId = exchangeActionBatchAdmissionWork({
       atomicity: 'atomicAll',
       actions: [
@@ -675,10 +690,12 @@ describe('canonical exchange action V2 wire', () => {
     expect(cancelReplace).toMatchObject({
       l3Logs: 6,
       l3LogBytes: 1_728,
-      economicLogs: 5,
-      economicLogBytes: 1_280,
-      totalLogs: 12,
-      totalLogBytes: 3_264,
+      economicLogs: 10,
+      economicLogBytes: 2_432,
+      fillLogs: 2,
+      fillLogBytes: 576,
+      totalLogs: 19,
+      totalLogBytes: 4_992,
     })
   })
 
@@ -698,6 +715,8 @@ describe('canonical exchange action V2 wire', () => {
       l3LogBytes: 0,
       economicLogs: 0,
       economicLogBytes: 0,
+      fillLogs: 0,
+      fillLogBytes: 0,
       totalLogs: 2,
       totalLogBytes: 512,
       statefulScheduleRefinements: 2,
@@ -716,21 +735,19 @@ describe('canonical exchange action V2 wire', () => {
   })
 
   it('bounds IOC emission within max_log_bytes at the reservation boundary', () => {
-    // Four IOC places at seven fills each: the corrected 2*fills + 2
-    // reservation totals 34816 log bytes including remainder-cancel events,
-    // and its true emission equals the
-    // reservation, so the reserved total is what any log-byte ceiling checks.
-    // The equivalent GTC batch reserves exactly 32640 (<= max_log_bytes).
+    // Evaluate the log-byte dimension independently of the other work limits.
+    // Four placements with sixteen matches include placement, economic fill,
+    // fee and canonical trade events; IOC also reserves cancelled remainders.
     const iocPlace = (client: number): PlaceAction => ({
       ...place(client),
       timeInForce: { kind: 'ioc' },
-      maxFills: 7,
-      maxPriceLevels: 7,
+      maxFills: 4,
+      maxPriceLevels: 4,
     })
     const gtcPlace = (client: number): PlaceAction => ({
       ...place(client),
-      maxFills: 7,
-      maxPriceLevels: 7,
+      maxFills: 4,
+      maxPriceLevels: 4,
     })
     const ioc = exchangeActionBatchAdmissionWork({
       atomicity: 'continueOnReject',
@@ -740,11 +757,11 @@ describe('canonical exchange action V2 wire', () => {
       atomicity: 'continueOnReject',
       actions: [gtcPlace(1), gtcPlace(2), gtcPlace(3), gtcPlace(4)],
     })
-    expect(gtc.totalLogBytes).toBe(32_640)
+    expect(gtc.totalLogBytes).toBe(32_384)
     expect(gtc.totalLogBytes).toBeLessThanOrEqual(
       EXCHANGE_ACTION_LIMITS.maxLogBytes,
     )
-    expect(ioc.totalLogBytes).toBe(34_816)
+    expect(ioc.totalLogBytes).toBe(34_560)
     expect(ioc.totalLogBytes).toBeGreaterThan(
       EXCHANGE_ACTION_LIMITS.maxLogBytes,
     )
