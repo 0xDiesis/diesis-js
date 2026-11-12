@@ -10,6 +10,15 @@ import type {
 import { readContract, writeContract } from 'viem/actions'
 import { DiesisStakingAbi } from '../abi/index.js'
 import { DIESIS_STAKING } from '../addresses.js'
+export {
+  validatorShareReadActions,
+  decodeValidatorShareBinding,
+} from '../validator-shares.js'
+export type {
+  ValidatorShareBinding,
+  ValidatorShareBindingParams,
+  ValidatorShareReadActions,
+} from '../validator-shares.js'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 

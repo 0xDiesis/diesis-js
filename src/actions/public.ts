@@ -1,5 +1,9 @@
 import type { Client, Transport, Chain, Hex } from 'viem'
 import {
+  validatorShareReadActions,
+  type ValidatorShareReadActions,
+} from '../validator-shares.js'
+import {
   exchangePublicActions,
   type ExchangePublicActions,
 } from '../exchange/actions.js'
@@ -110,7 +114,8 @@ export type ExchangeActionStatus =
 
 export type DiesisPublicActions = ExchangePublicActions &
   BundleActions &
-  PatronageActions & {
+  PatronageActions &
+  ValidatorShareReadActions & {
     privacy: PrivacyReadActions['privacy']
     getPipelineStatus: () => Promise<PipelineStatus>
     /** Serialized witness bytes; null means no witness is available. */
@@ -145,6 +150,7 @@ export function diesisPublicActions<
     ...bundles,
     ...patronage,
     ...privacy,
+    ...validatorShareReadActions(client),
     getPipelineStatus: async () => {
       const response = await client.request({
         method: 'diesis_getPipelineStatus' as never,

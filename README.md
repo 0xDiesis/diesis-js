@@ -172,6 +172,18 @@ const walletClient = createWalletClient({
 | Diesis Mainnet | 1980     | `diesis`        |
 | Diesis Testnet | 19803    | `diesisTestnet` |
 
+`publicClient.getValidatorShareBinding({ validatorId: 1n, blockHash })`
+observes the governed Position-to-ValidatorShare association at an exact
+canonical block. Omit `blockHash` to select the current canonical head once.
+The response retains decimal strings for chain identity, timestamps and
+validator facts, and distinguishes verified, unbound, unsupported and invalid
+bindings. Retired validator identity is separate from current registration.
+The SDK checks the response against the requested validator, block and configured
+client chain. Core verifies the supported contract runtimes and immutable
+Position backlink; a verified observation still requires fresh operation
+simulation before signing. The standalone `validatorShareReadActions` decorator
+is also available from `@diesis/sdk/staking`.
+
 ## Read the exchange
 
 **In short.** Diesis runs its order books inside the chain, like a stock

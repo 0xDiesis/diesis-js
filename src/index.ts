@@ -22,6 +22,15 @@ export type { GenesisPrecompileName, NameServiceRecordType } from './names.js'
 
 // Client action decorators
 export {
+  validatorShareReadActions,
+  decodeValidatorShareBinding,
+} from './validator-shares.js'
+export type {
+  ValidatorShareBinding,
+  ValidatorShareBindingParams,
+  ValidatorShareReadActions,
+} from './validator-shares.js'
+export {
   diesisPublicActions,
   type DiesisPublicActions,
   type RuntimeCapabilities,
