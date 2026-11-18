@@ -17,7 +17,14 @@ import zipfile
 REVISION = '6fcf1f12b86aaac451f699ffb84d70e725bbb122'
 SOLAR_COMMIT = 'e7a91fc70f29dc8d0c236d56a2aa7706dc2555cf'
 COMPILER_VERSION = '0.8.38+commit.e7a91fc7.solar.0.3.0'
-FORGE_COMMIT = 'cae51ad458f6abb64852b7709eb784352429825d'
+# forgeds, the Diesis Foundry fork, published as commit-named release archives.
+FORGEDS_COMMIT = '4ca15fcba25aa61a1b436d28b428e30b459f3d56'
+FORGEDS_VERSION = 'forgeds Version: 1.9.1-dev'
+FORGEDS_RELEASE = 'https://github.com/doublesharp/foundry/releases/download/forgeds/'
+FORGEDS_DIGESTS = {
+    'darwin_arm64': '39c4b0fd5ab8cd7ee2b411a1e0a5ac8519a5566bdd25d50f90ae9bd47ab01f63',
+    'linux_amd64': 'a1341d56a7fc743b4d87853596baaf0931a6e4348106def1a6994bc793c5b62f',
+}
 GENERATOR_COMMIT = '9d9b8c38ce8bfdb12e29222ded734d7758321efb'
 SRI = 'sha512-Et+WDzyg+NWH0RFtOUqRoa5leK44PJnSAXPZ0bVTQjZqEydqBd5Z9XQu0Sv002PFVMs1BzfT3gsP4zkMoMGK7A=='
 
@@ -121,6 +128,32 @@ def validate_compiler_version(version):
     require('Commit SHA: ' + SOLAR_COMMIT in version.splitlines(), 'Solar source commit')
 
 
+def forgeds_asset(platform_name):
+    require(platform_name in FORGEDS_DIGESTS, 'no pinned forgeds archive for platform')
+    return f'forgeds-{FORGEDS_COMMIT[:7]}_{platform_name}.tar.gz', FORGEDS_DIGESTS[platform_name]
+
+
+def verify_forgeds_archive(data, published, pinned):
+    # The release-published checksum and the reviewed pin must both match the bytes.
+    fields = published.split()
+    require(len(fields) == 2 and fields[0] == pinned, 'published forgeds checksum differs from pin')
+    require(sha(data) == pinned, 'forgeds archive checksum')
+
+
+def validate_forgeds_version(version):
+    lines = version.splitlines()
+    require(FORGEDS_VERSION in lines, 'forgeds release version')
+    require('Commit SHA: ' + FORGEDS_COMMIT in lines, 'forgeds source commit')
+
+
+def forgeds_environment(base, work, extra):
+    # A fresh HOME keeps forgeds' shared compiler-output cache (~/.foundry/cache)
+    # from serving results that bypass the capture wrapper.
+    home = work / 'forgeds-home'
+    home.mkdir()
+    return dict(base, HOME=str(home), **extra)
+
+
 def platform_assets():
     supported = {
         ('Linux', 'x86_64'): ('linux_amd64', 'x86_64-unknown-linux-gnu', '15a613746dd30ca772664824d97feddb5c5163ec2380aa556a2d270eacedc5fc'),
@@ -154,17 +187,15 @@ def qualify(checkout, work):
         files = extract_zip(data, root)
         dependencies.append({'name':item['name'],'version':item['version'],'archivePath':str(archive),'archiveSha256':sha(data),'lockIntegrity':item['integrity'],'url':item['url'],'root':str(root),'files':files})
     dep_manifest=work/'dependencies.json';dep_manifest.write_text(json.dumps(dependencies))
-    release=json_download('https://api.github.com/repos/foundry-rs/foundry/releases/tags/v1.8.3',work/'forge-release.json')
-    ref=json_download('https://api.github.com/repos/foundry-rs/foundry/git/ref/tags/v1.8.3',work/'forge-tag.json')['object']
-    if ref['type']=='tag':
-        ref=json_download(ref['url'],work/'forge-tag-object.json')['object']
-    require(ref['sha']==FORGE_COMMIT,'Forge release source mismatch')
-    assets=[a for a in release['assets'] if a['name']==f'foundry_v1.8.3_{forge_target}.tar.gz']
-    require(len(assets)==1 and assets[0].get('digest','').startswith('sha256:'),'official Forge release digest unavailable')
-    data=download(assets[0]['browser_download_url'],work/'forge.tar.gz')
-    require(sha(data)==assets[0]['digest'].split(':')[1],'Forge archive checksum')
-    forge=executable(work/'forge',tar_files(data)['forge'])
-    forge_version=run([forge,'--version']);require('1.8.3' in forge_version and FORGE_COMMIT in forge_version,'Forge version/source tuple')
+    forgeds_archive,forgeds_digest=forgeds_asset(forge_target)
+    published=download(FORGEDS_RELEASE+forgeds_archive+'.sha256',work/(forgeds_archive+'.sha256')).decode()
+    data=download(FORGEDS_RELEASE+forgeds_archive,work/forgeds_archive)
+    verify_forgeds_archive(data,published,forgeds_digest)
+    members=[content for name,content in tar_files(data).items() if PurePosixPath(name).name=='forgeds']
+    require(len(members)==1,'unique forgeds executable required')
+    forge=executable(work/'forgeds',members[0])
+    forgeds_env=forgeds_environment(os.environ,work,{})
+    forge_version=run([forge,'--version'],env=forgeds_env);validate_forgeds_version(forge_version)
     solar_archive = f'solar-{native_target}.tar.gz'
     data = download('https://github.com/paradigmxyz/solar/releases/download/v0.3.0/' + solar_archive, work / solar_archive)
     require(sha(data) == solar_digest, 'Solar archive checksum')
@@ -194,17 +225,17 @@ def qualify(checkout, work):
     outputs={k:str(work/k) for k in ('out','cache','captures','build-info')}
     for directory in outputs.values():Path(directory).mkdir()
     wrapper=Path(__file__).with_name('solc-capture.py').resolve()
-    env=dict(os.environ,DIESIS_SDK_REAL_SOLC=str(solc),DIESIS_SDK_SOLC_CAPTURE_DIR=outputs['captures'])
+    env=dict(forgeds_env,DIESIS_SDK_REAL_SOLC=str(solc),DIESIS_SDK_SOLC_CAPTURE_DIR=outputs['captures'])
     common=['--root',str(checkout),'--offline','--use',str(wrapper),'--evm-version','osaka','--via-ir','--optimize','--optimizer-runs','200','--out',outputs['out'],'--cache-path',outputs['cache'],'--build-info','--build-info-path',outputs['build-info']]
     config=json.loads(run([forge,'config','--json',*common],cwd=checkout,env=env))
-    require(config['solc']==str(wrapper) and config['optimizer'] and config['optimizer_runs']==200 and config['via_ir'] and config['evm_version']=='osaka' and config['build_info'],'resolved compiler config mismatch')
+    require(config['solc']==str(wrapper) and config['optimizer'] and config['optimizer_runs']==200 and config['via_ir'] and config['evm_version']=='osaka' and config['build_info'] and config['out']==outputs['out'] and config['cache_path']==outputs['cache'],'resolved compiler config mismatch')
     (work/'forge-config.json').write_text(json.dumps(config))
     command=source_build_command(forge, common)
     (work/'build-argv.json').write_text(json.dumps([str(x) for x in command]))
     with (work/'build.log').open('wb') as log:
         result=subprocess.run([str(x) for x in command],cwd=checkout,env=env,stdout=log,stderr=subprocess.STDOUT)
-    require(result.returncode==0,'sole Forge build failed; no automatic retry permitted')
-    proof={'checkout':str(checkout),'contractsRevision':REVISION,'dependencyManifest':str(dep_manifest),'solc':{'path':str(solc),'sha256':sha(solc.read_bytes()),'longVersion':COMPILER_VERSION,'sourceCommit':SOLAR_COMMIT,'archiveSha256':solar_digest},'generator':{'path':str(typegen),'binarySha256':sha(typegen.read_bytes()),'version':'abi-typegen 0.9.1','sourceCommit':GENERATOR_COMMIT},'outputs':outputs,'forge':{'path':str(forge),'sha256':sha(forge.read_bytes()),'version':forge_version},'captureWrapperSha256':sha(wrapper.read_bytes())}
+    require(result.returncode==0,'sole forgeds build failed; no automatic retry permitted')
+    proof={'checkout':str(checkout),'contractsRevision':REVISION,'dependencyManifest':str(dep_manifest),'solc':{'path':str(solc),'sha256':sha(solc.read_bytes()),'longVersion':COMPILER_VERSION,'sourceCommit':SOLAR_COMMIT,'archiveSha256':solar_digest},'generator':{'path':str(typegen),'binarySha256':sha(typegen.read_bytes()),'version':'abi-typegen 0.9.1','sourceCommit':GENERATOR_COMMIT},'outputs':outputs,'forge':{'path':str(forge),'sha256':sha(forge.read_bytes()),'version':forge_version,'sourceCommit':FORGEDS_COMMIT,'archiveSha256':forgeds_digest},'captureWrapperSha256':sha(wrapper.read_bytes())}
     proof['capturedCompilations']=[]
     for capture in sorted(Path(outputs['captures']).iterdir()):
         m=json.loads((capture/'manifest.json').read_text())
