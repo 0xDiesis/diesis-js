@@ -14,7 +14,7 @@ import tomllib
 import urllib.request
 import zipfile
 
-REVISION = '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d'
+REVISION = '6fcf1f12b86aaac451f699ffb84d70e725bbb122'
 SOLAR_COMMIT = 'e7a91fc70f29dc8d0c236d56a2aa7706dc2555cf'
 COMPILER_VERSION = '0.8.38+commit.e7a91fc7.solar.0.3.0'
 FORGE_COMMIT = 'cae51ad458f6abb64852b7709eb784352429825d'

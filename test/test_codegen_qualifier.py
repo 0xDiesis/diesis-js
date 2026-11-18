@@ -11,7 +11,7 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 class QualifierTests(unittest.TestCase):
     def test_exact_source_and_release_tuple(self):
-        self.assertEqual(module.REVISION,'17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d')
+        self.assertEqual(module.REVISION,'6fcf1f12b86aaac451f699ffb84d70e725bbb122')
         self.assertEqual(module.FORGE_COMMIT,'cae51ad458f6abb64852b7709eb784352429825d')
         self.assertEqual(module.GENERATOR_COMMIT,'9d9b8c38ce8bfdb12e29222ded734d7758321efb')
     def test_zip_bytes_manifest_and_traversal(self):

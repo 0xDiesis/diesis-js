@@ -108,7 +108,7 @@ test('rejects wrong generator digest before running executable after fake verifi
         await readFile('scripts/abi-contracts.json', 'utf8'),
       ).map((contract) => ({ contract })),
       artifactRoot: root,
-      contractsRevision: '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d',
+      contractsRevision: '6fcf1f12b86aaac451f699ffb84d70e725bbb122',
       generator: {
         version: 'abi-typegen 0.9.1',
         sourceCommit: '9d9b8c38ce8bfdb12e29222ded734d7758321efb',
@@ -166,8 +166,8 @@ test('helpers have no contracts-owned build or stale ABI source fallback', async
     )
   }
   const names = JSON.parse(await readFile('scripts/abi-contracts.json', 'utf8'))
-  assert.equal(names.length, 45)
-  assert.equal(new Set(names).size, 45)
+  assert.equal(names.length, 47)
+  assert.equal(new Set(names).size, 47)
 })
 test('whole sync --check uses direct single-target viem output and ABI-only inventory', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'sdk-sync-layout-test-'))
@@ -214,7 +214,7 @@ test('whole sync --check uses direct single-target viem output and ABI-only inve
       JSON.stringify({
         selectedArtifacts: contracts.map((contract) => ({ contract })),
         artifactRoot: root,
-        contractsRevision: '17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d',
+        contractsRevision: '6fcf1f12b86aaac451f699ffb84d70e725bbb122',
         generator: {
           version: 'abi-typegen 0.9.1',
           sourceCommit: '9d9b8c38ce8bfdb12e29222ded734d7758321efb',

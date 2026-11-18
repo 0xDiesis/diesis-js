@@ -1000,7 +1000,7 @@ pnpm quality       # ABI drift check, lint, typecheck, format
 ```
 
 `pnpm codegen` uses independently qualified artifacts from accepted contracts
-revision `17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d`. Set absolute paths before
+revision `6fcf1f12b86aaac451f699ffb84d70e725bbb122`. Set absolute paths before
 running code generation or quality checks:
 
 ```bash
@@ -1009,7 +1009,7 @@ export DIESIS_ARTIFACT_MANIFEST=/absolute/path/manifest.json
 export DIESIS_ARTIFACTS_DIR=/absolute/path/qualified/out
 export ABI_TYPEGEN=/absolute/path/verified/abi-typegen
 pnpm codegen:check # reproduce without changing source
-pnpm codegen       # regenerate the 45 ABIs and five wrapper targets
+pnpm codegen       # regenerate the 47 ABIs and five wrapper targets
 pnpm build         # emit JavaScript and declarations
 pnpm test:consumer # check built package declarations and Exchange migration examples
 ```
