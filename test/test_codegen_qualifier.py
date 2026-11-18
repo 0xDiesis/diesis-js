@@ -12,7 +12,6 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 class QualifierTests(unittest.TestCase):
     def test_exact_source_and_release_tuple(self):
         self.assertEqual(module.REVISION,'6fcf1f12b86aaac451f699ffb84d70e725bbb122')
-        self.assertEqual(module.FORGE_COMMIT,'cae51ad458f6abb64852b7709eb784352429825d')
         self.assertEqual(module.GENERATOR_COMMIT,'9d9b8c38ce8bfdb12e29222ded734d7758321efb')
     def test_zip_bytes_manifest_and_traversal(self):
         stream=io.BytesIO()
@@ -99,6 +98,47 @@ class SourceBuildCommandTest(unittest.TestCase):
     def test_explicit_source_filter_and_offline_tuple_preserved(self):
         command=module.source_build_command('/verified/forge',['--offline','--use','/verified/wrapper'])
         self.assertEqual(command,['/verified/forge','build','src','--offline','--use','/verified/wrapper','--skip','test','--skip','script'])
+
+
+class ForgedsPinTest(unittest.TestCase):
+    COMMIT='4ca15fcba25aa61a1b436d28b428e30b459f3d56'
+    VERSION='forgeds Version: 1.9.1-dev\nCommit SHA: 4ca15fcba25aa61a1b436d28b428e30b459f3d56\nBuild Timestamp: 2026-11-08T18:08:13.913946000Z (1794161293)\nBuild Profile: release\n'
+    def test_pins_forgeds_4ca15fcb_instead_of_previous_toolchains(self):
+        self.assertEqual(module.FORGEDS_COMMIT,self.COMMIT)
+        self.assertFalse(hasattr(module,'FORGE_COMMIT'))
+        self.assertEqual(module.forgeds_asset('darwin_arm64'),('forgeds-4ca15fc_darwin_arm64.tar.gz','39c4b0fd5ab8cd7ee2b411a1e0a5ac8519a5566bdd25d50f90ae9bd47ab01f63'))
+        self.assertEqual(module.forgeds_asset('linux_amd64'),('forgeds-4ca15fc_linux_amd64.tar.gz','a1341d56a7fc743b4d87853596baaf0931a6e4348106def1a6994bc793c5b62f'))
+        with self.assertRaises(ValueError):module.forgeds_asset('win32_amd64')
+    def test_version_requires_exact_forgeds_commit(self):
+        module.validate_forgeds_version(self.VERSION)
+        for text in [
+            'forge Version: 1.8.3-stable\nCommit SHA: cae51ad458f6abb64852b7709eb784352429825d\n',
+            'forgeds Version: 1.8.8-dev\nCommit SHA: bb92ff96b819bcea5ced55228d122ac725e9ffd9\n',
+            self.VERSION.replace(self.COMMIT,self.COMMIT[:7]),
+            self.VERSION.replace('1.9.1-dev','1.9.2-dev'),
+            '',
+        ]:
+            with self.subTest(text=text), self.assertRaises(ValueError):module.validate_forgeds_version(text)
+    def test_archive_requires_pinned_and_published_digest(self):
+        data=b'forgeds archive bytes'
+        digest=module.sha(data)
+        module.verify_forgeds_archive(data,f'{digest}  forgeds.tar.gz\n',digest)
+        for archive,published,pinned in [
+            (data+b'x',f'{digest}  forgeds.tar.gz\n',digest),
+            (data,f'{"0"*64}  forgeds.tar.gz\n',digest),
+            (data,f'{digest}  forgeds.tar.gz\n','0'*64),
+            (data,'',digest),
+        ]:
+            with self.assertRaises(ValueError):module.verify_forgeds_archive(archive,published,pinned)
+    def test_forgeds_runs_with_fresh_home_inside_work(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            work=Path(tmp)
+            env=module.forgeds_environment({'HOME':'/Users/someone','PATH':'/bin'},work,{'EXTRA':'1'})
+            self.assertEqual(env['HOME'],str(work/'forgeds-home'))
+            self.assertEqual((env['PATH'],env['EXTRA']),('/bin','1'))
+            self.assertTrue((work/'forgeds-home').is_dir())
+            self.assertEqual(list((work/'forgeds-home').iterdir()),[])
+            with self.assertRaises(FileExistsError):module.forgeds_environment({},work,{})
 
 
 class AuditStreamTest(unittest.TestCase):
