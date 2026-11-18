@@ -36,7 +36,9 @@ export interface ValidatorShareBinding {
   }
 }
 
-export interface ValidatorShareReadActions {
+// A type alias, like the other action groups, keeps the implicit index
+// signature that viem's `client.extend` requires of the combined actions.
+export type ValidatorShareReadActions = {
   getValidatorShareBinding: (
     params: ValidatorShareBindingParams,
   ) => Promise<ValidatorShareBinding>
