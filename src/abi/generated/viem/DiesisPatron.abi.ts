@@ -907,6 +907,24 @@ export const DiesisPatronAbi = [
           "internalType": "address",
           "name": "beneficiary",
           "type": "address"
+        }
+      ],
+      "name": "revokeCampaignGrantAuthorizationV1",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "beneficiary",
+          "type": "address"
         },
         {
           "internalType": "uint256",
@@ -951,6 +969,49 @@ export const DiesisPatronAbi = [
         }
       ],
       "name": "rotateCampaignOwnerV1",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "campaignId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "target",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes4",
+          "name": "selector",
+          "type": "bytes4"
+        },
+        {
+          "internalType": "uint32",
+          "name": "maxTransactions",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "maxLifetimeSpend",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "expiry",
+          "type": "uint64"
+        }
+      ],
+      "name": "setCampaignGrantAuthorizationV1",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

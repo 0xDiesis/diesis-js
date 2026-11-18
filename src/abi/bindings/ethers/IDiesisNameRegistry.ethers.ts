@@ -19,7 +19,9 @@ export interface IDiesisNameRegistryMethods {
   setOwner(node: BytesLike, owner_: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setResolver(node: BytesLike, resolver_: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setSubnodeOwner(node: BytesLike, label: BytesLike, owner_: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  setSubnodeOwnerWithLabel(node: BytesLike, label: string, owner_: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setSubnodeRecord(node: BytesLike, label: BytesLike, owner_: AddressLike, resolver_: AddressLike, ttl_: BigNumberish, expiry_: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  setSubnodeRecordWithLabel(node: BytesLike, label: string, owner_: AddressLike, resolver_: AddressLike, ttl_: BigNumberish, expiry_: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setTTL(node: BytesLike, ttl_: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   ttl(node: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   filters: {
@@ -29,6 +31,7 @@ export interface IDiesisNameRegistryMethods {
     NamePolicyChanged(policy?: AddressLike | null): DeferredTopicFilter;
     OwnerChanged(node?: BytesLike | null, owner?: AddressLike | null): DeferredTopicFilter;
     ResolverChanged(node?: BytesLike | null, resolver?: AddressLike | null): DeferredTopicFilter;
+    SubnameLabel(parent?: BytesLike | null, node?: BytesLike | null): DeferredTopicFilter;
     TTLChanged(node?: BytesLike | null): DeferredTopicFilter;
   };
 }

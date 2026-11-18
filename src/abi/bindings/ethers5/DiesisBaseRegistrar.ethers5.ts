@@ -24,6 +24,8 @@ export interface DiesisBaseRegistrarContract extends ethers.Contract {
   defaultYearPrice(overrides?: CallOverrides): Promise<BigNumber>;
   fourCharYearPrice(overrides?: CallOverrides): Promise<BigNumber>;
   gracePeriod(overrides?: CallOverrides): Promise<BigNumber>;
+  labelSkeleton(label: string, overrides?: CallOverrides): Promise<string>;
+  lookalikeHolder(label: string, overrides?: CallOverrides): Promise<string>;
   maintenance(overrides?: CallOverrides): Promise<string>;
   maintenanceShare(overrides?: CallOverrides): Promise<BigNumber>;
   makeCommitment(label: string, owner_: string, resolver_: string, recordsHash: BytesLike, duration: BigNumberish, secret: BytesLike, reverseRecord: boolean, nonce: BigNumberish, overrides?: CallOverrides): Promise<string>;
@@ -36,11 +38,13 @@ export interface DiesisBaseRegistrarContract extends ethers.Contract {
   owner(overrides?: CallOverrides): Promise<string>;
   premiumPeriod(overrides?: CallOverrides): Promise<BigNumber>;
   register(label: string, owner_: string, resolver_: string, duration: BigNumberish, secret: BytesLike, reverseRecord: boolean, nonce: BigNumberish, resolverCalls: BytesLike[], overrides?: PayableOverrides): Promise<ethers.ContractTransaction>;
+  registeredSkeletonHolders(skeletonHash: BytesLike, overrides?: CallOverrides): Promise<string>;
   registry(overrides?: CallOverrides): Promise<string>;
   renew(label: string, duration: BigNumberish, overrides?: PayableOverrides): Promise<ethers.ContractTransaction>;
   renounceOwnership(overrides?: Overrides): Promise<ethers.ContractTransaction>;
   rentPrice(label: string, duration: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   reservedLabels(labelhash: BytesLike, overrides?: CallOverrides): Promise<boolean>;
+  reservedSkeletonHolders(skeletonHash: BytesLike, overrides?: CallOverrides): Promise<string>;
   reverseRegistrar(overrides?: CallOverrides): Promise<string>;
   setFeeSplit(burnShare_: BigNumberish, treasuryShare_: BigNumberish, maintenanceShare_: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setPricing(threeCharYearPrice_: BigNumberish, fourCharYearPrice_: BigNumberish, defaultYearPrice_: BigNumberish, startPremium_: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;

@@ -72,6 +72,14 @@ export type DiesisPatronReserveGrantV2Params = {
 };
 
 /**
+ * Campaign-owner form of `revokeGrantAuthorization` for the campaign's own grant jar.
+ */
+export type DiesisPatronRevokeCampaignGrantAuthorizationV1Params = {
+  campaignId: `0x${string}`;
+  beneficiary: `0x${string}`;
+};
+
+/**
  * Pre-burn one specific (beneficiary, nonce) voucher so it can never be claimed, without revoking the whole campaign.
  */
 export type DiesisPatronRevokeCampaignVoucherV1Params = {
@@ -94,6 +102,20 @@ export type DiesisPatronRevokeGrantAuthorizationParams = {
 export type DiesisPatronRotateCampaignOwnerV1Params = {
   campaignId: `0x${string}`;
   newOwner: `0x${string}`;
+};
+
+/**
+ * Campaign-owner form of `setGrantAuthorization`, limited to the campaign's own grant jar and the same exact bounds. beneficiary's grant resolves to the campaign jar, as after a voucher claim.
+ * @dev It does not assign the jar: the route takes effect only when the
+ */
+export type DiesisPatronSetCampaignGrantAuthorizationV1Params = {
+  campaignId: `0x${string}`;
+  beneficiary: `0x${string}`;
+  target: `0x${string}`;
+  selector: `0x${string}`;
+  maxTransactions: number;
+  maxLifetimeSpend: bigint;
+  expiry: bigint;
 };
 
 /**

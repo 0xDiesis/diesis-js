@@ -32,6 +32,19 @@ export type IDiesisMarketsCreateSpotMarketParams = {
 };
 
 /**
+ *  positive and divides lotSize exactly; identity commits it independently of legacy markets, including when denominator equals one.
+ * @dev Config-owner provisioning of immutable Spot V1 units. Denominator is
+ */
+export type IDiesisMarketsCreateSpotMarketV1Params = {
+  baseToken: `0x${string}`;
+  quoteToken: `0x${string}`;
+  tickSize: bigint;
+  lotSize: bigint;
+  priceDenominator: bigint;
+  bond: bigint;
+};
+
+/**
  * @dev Deploys a token through the factory and creates its USDC spot market atomically.
  */
 export type IDiesisMarketsDeployTokenAndSpotBookParams = {

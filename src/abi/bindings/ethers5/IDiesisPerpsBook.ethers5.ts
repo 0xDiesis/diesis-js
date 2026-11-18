@@ -25,8 +25,10 @@ export interface IDiesisPerpsBookContract extends ethers.Contract {
     IsolatedMarginAdjusted(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     MarkPriceUpdated(marketId?: BytesLike | null): ethers.EventFilter;
     OrderCancelled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
+    OrderFillFeeV1(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderFilled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderPlaced(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
+    PerpMaintenanceFault(marketId?: BytesLike | null): ethers.EventFilter;
     PositionClosed(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     PositionCollateralAdjusted(marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
   };

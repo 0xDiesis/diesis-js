@@ -324,6 +324,15 @@ export function useIDiesisSpotBookOrderCancelledEvent(address: Address, listener
   });
 }
 
+export function useIDiesisSpotBookOrderFillFeeV1Event(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisSpotBookAbi,
+    eventName: 'OrderFillFeeV1',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
 export function useIDiesisSpotBookOrderFilledEvent(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,

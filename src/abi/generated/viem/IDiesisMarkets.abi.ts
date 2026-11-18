@@ -76,6 +76,50 @@ export const IDiesisMarketsAbi = [
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "baseToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "quoteToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "tickSize",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "lotSize",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "priceDenominator",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint256",
+          "name": "bond",
+          "type": "uint256"
+        }
+      ],
+      "name": "createSpotMarketV1",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "bytes11",
           "name": "symbol",
           "type": "bytes11"
@@ -161,6 +205,30 @@ export const IDiesisMarketsAbi = [
           "type": "bytes32"
         }
       ],
+      "name": "getMarketPricing",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "pricingVersion",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint64",
+          "name": "priceDenominator",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        }
+      ],
       "name": "resumeMarket",
       "outputs": [
         {
@@ -226,6 +294,31 @@ export const IDiesisMarketsAbi = [
         }
       ],
       "name": "MarketCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "pricingVersion",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "priceDenominator",
+          "type": "uint64"
+        }
+      ],
+      "name": "MarketPricingDefinedV1",
       "type": "event"
     }
   ] as const;

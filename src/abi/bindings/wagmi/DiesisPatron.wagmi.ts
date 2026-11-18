@@ -400,6 +400,24 @@ export function useDiesisPatronReserveGrantV2(
   };
 }
 
+export function useDiesisPatronRevokeCampaignGrantAuthorizationV1(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { campaignId: `0x${string}`, beneficiary: `0x${string}` }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { campaignId: `0x${string}`, beneficiary: `0x${string}` }) =>
+      writeContract({
+        address,
+        abi: DiesisPatronAbi,
+        functionName: 'revokeCampaignGrantAuthorizationV1',
+        args: [args.campaignId, args.beneficiary],
+      }),
+  };
+}
+
 export function useDiesisPatronRevokeCampaignVoucherV1(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
@@ -450,6 +468,24 @@ export function useDiesisPatronRotateCampaignOwnerV1(
         abi: DiesisPatronAbi,
         functionName: 'rotateCampaignOwnerV1',
         args: [args.campaignId, args.newOwner],
+      }),
+  };
+}
+
+export function useDiesisPatronSetCampaignGrantAuthorizationV1(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { campaignId: `0x${string}`, beneficiary: `0x${string}`, target: `0x${string}`, selector: `0x${string}`, maxTransactions: number, maxLifetimeSpend: bigint, expiry: bigint }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { campaignId: `0x${string}`, beneficiary: `0x${string}`, target: `0x${string}`, selector: `0x${string}`, maxTransactions: number, maxLifetimeSpend: bigint, expiry: bigint }) =>
+      writeContract({
+        address,
+        abi: DiesisPatronAbi,
+        functionName: 'setCampaignGrantAuthorizationV1',
+        args: [args.campaignId, args.beneficiary, args.target, args.selector, args.maxTransactions, args.maxLifetimeSpend, args.expiry],
       }),
   };
 }

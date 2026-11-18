@@ -754,6 +754,49 @@ export const IDiesisSpotBookAbi = [
         {
           "indexed": true,
           "internalType": "bytes32",
+          "name": "marketId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "orderId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "trader",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "feeToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "chargedRaw",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "rebateCreditedRaw",
+          "type": "uint256"
+        }
+      ],
+      "name": "OrderFillFeeV1",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
           "name": "orderId",
           "type": "bytes32"
         },

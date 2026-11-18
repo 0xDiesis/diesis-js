@@ -966,8 +966,9 @@ pnpm quality       # ABI drift check, lint, typecheck, format
 ```
 
 `pnpm codegen` uses independently qualified artifacts from accepted contracts
-revision `6fcf1f12b86aaac451f699ffb84d70e725bbb122`. Set absolute paths before
-running code generation or quality checks:
+revision `6fcf1f12b86aaac451f699ffb84d70e725bbb122`, built with the pinned forgeds
+and Solar releases. Set absolute paths before running code generation or quality
+checks:
 
 ```bash
 export DIESIS_ARTIFACT_PREFLIGHT=/absolute/path/preflight.json

@@ -306,6 +306,15 @@ export function useIDiesisPerpsBookOrderCancelledEvent(address: Address, listene
   });
 }
 
+export function useIDiesisPerpsBookOrderFillFeeV1Event(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisPerpsBookAbi,
+    eventName: 'OrderFillFeeV1',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
 export function useIDiesisPerpsBookOrderFilledEvent(address: Address, listener: (log: any) => void) {
   return useWatchContractEvent({
     address,
@@ -320,6 +329,15 @@ export function useIDiesisPerpsBookOrderPlacedEvent(address: Address, listener: 
     address,
     abi: IDiesisPerpsBookAbi,
     eventName: 'OrderPlaced',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useIDiesisPerpsBookPerpMaintenanceFaultEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisPerpsBookAbi,
+    eventName: 'PerpMaintenanceFault',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

@@ -44,6 +44,8 @@ export interface DiesisBaseRegistrarMethods {
   defaultYearPrice(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
   fourCharYearPrice(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
   gracePeriod(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
+  labelSkeleton(label: string): DiesisBaseRegistrarMethod<'nonpayable', string>;
+  lookalikeHolder(label: string): DiesisBaseRegistrarMethod<'nonpayable', string>;
   maintenance(): DiesisBaseRegistrarMethod<'nonpayable', string>;
   maintenanceShare(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
   makeCommitment(label: string, owner_: string, resolver_: string, recordsHash: string, duration: Numbers, secret: string, reverseRecord: boolean, nonce: Numbers): DiesisBaseRegistrarMethod<'nonpayable', string>;
@@ -56,11 +58,13 @@ export interface DiesisBaseRegistrarMethods {
   owner(): DiesisBaseRegistrarMethod<'nonpayable', string>;
   premiumPeriod(): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
   register(label: string, owner_: string, resolver_: string, duration: Numbers, secret: string, reverseRecord: boolean, nonce: Numbers, resolverCalls: string[]): DiesisBaseRegistrarMethod<'payable', string>;
+  registeredSkeletonHolders(skeletonHash: string): DiesisBaseRegistrarMethod<'nonpayable', string>;
   registry(): DiesisBaseRegistrarMethod<'nonpayable', string>;
   renew(label: string, duration: Numbers): DiesisBaseRegistrarMethod<'payable', bigint>;
   renounceOwnership(): DiesisBaseRegistrarMethod<'nonpayable', void>;
   rentPrice(label: string, duration: Numbers): DiesisBaseRegistrarMethod<'nonpayable', bigint>;
   reservedLabels(labelhash: string): DiesisBaseRegistrarMethod<'nonpayable', boolean>;
+  reservedSkeletonHolders(skeletonHash: string): DiesisBaseRegistrarMethod<'nonpayable', string>;
   reverseRegistrar(): DiesisBaseRegistrarMethod<'nonpayable', string>;
   setFeeSplit(burnShare_: Numbers, treasuryShare_: Numbers, maintenanceShare_: Numbers): DiesisBaseRegistrarMethod<'nonpayable', void>;
   setPricing(threeCharYearPrice_: Numbers, fourCharYearPrice_: Numbers, defaultYearPrice_: Numbers, startPremium_: Numbers): DiesisBaseRegistrarMethod<'nonpayable', void>;

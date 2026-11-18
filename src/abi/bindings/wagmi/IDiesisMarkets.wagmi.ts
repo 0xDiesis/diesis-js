@@ -14,6 +14,15 @@ export function useIDiesisMarketsGetMarket(address: Address, args: { marketId: `
   });
 }
 
+export function useIDiesisMarketsGetMarketPricing(address: Address, args: { marketId: `0x${string}` }) {
+  return useReadContract({
+    address,
+    abi: IDiesisMarketsAbi,
+    functionName: 'getMarketPricing',
+    args: [args.marketId],
+  });
+}
+
 // ── Write hooks ────────────────────────────────────────────────────────
 
 export function useIDiesisMarketsCheckCircuitBreaker(
@@ -48,6 +57,24 @@ export function useIDiesisMarketsCreateSpotMarket(
         abi: IDiesisMarketsAbi,
         functionName: 'createSpotMarket',
         args: [args.baseToken, args.quoteToken, args.tickSize, args.lotSize, args.bond],
+      }),
+  };
+}
+
+export function useIDiesisMarketsCreateSpotMarketV1(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, priceDenominator: bigint, bond: bigint }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { baseToken: `0x${string}`, quoteToken: `0x${string}`, tickSize: bigint, lotSize: bigint, priceDenominator: bigint, bond: bigint }) =>
+      writeContract({
+        address,
+        abi: IDiesisMarketsAbi,
+        functionName: 'createSpotMarketV1',
+        args: [args.baseToken, args.quoteToken, args.tickSize, args.lotSize, args.priceDenominator, args.bond],
       }),
   };
 }
@@ -104,6 +131,15 @@ export function useIDiesisMarketsMarketCreatedEvent(address: Address, listener: 
     address,
     abi: IDiesisMarketsAbi,
     eventName: 'MarketCreated',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useIDiesisMarketsMarketPricingDefinedV1Event(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisMarketsAbi,
+    eventName: 'MarketPricingDefinedV1',
     onLogs: (logs) => logs.forEach(listener),
   });
 }
