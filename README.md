@@ -53,7 +53,7 @@ Git installation runs `prepare` to compile TypeScript. Consume this source-only
 work through its prebuilt local package after the repository's build and review:
 
 ```bash
-pnpm add /absolute/path/to/diesis-sdk-0.1.0.tgz viem
+pnpm add /absolute/path/to/diesis-sdk-0.2.0.tgz viem
 ```
 
 The tarball contains compiled JavaScript, declarations, ABIs and canonical chain
@@ -61,7 +61,7 @@ data. Consumers do not need the contracts repository or ABI generator. For sourc
 maintainers, `pnpm build` compiles the vendored bindings; ABI regeneration is a
 separate `pnpm codegen` operation requiring the explicitly selected contracts
 artifacts. Pack once after the final build with `pnpm pack --ignore-scripts`.
-Run `node scripts/check-packed-consumer.mjs /absolute/path/to/diesis-sdk-0.1.0.tgz`
+Run `node scripts/check-packed-consumer.mjs /absolute/path/to/diesis-sdk-0.2.0.tgz`
 to install the artifact into a fresh consumer and check declarations and an
 explicit deterministic HTTP RPC fixture. The delivery compatibility manifest
 records exact source revisions and the package SHA-256. Fixture success is
@@ -740,7 +740,6 @@ level; use the lifecycle `published` transition to observe actual publication.
 ```typescript
 const runtime = await publicClient.getRuntimeCapabilities()
 const pipeline = await publicClient.getPipelineStatus()
-const witnessBytes = await publicClient.getBlockWitness({ blockHash })
 const tx = await publicClient.getTransactionStatus({ hash: evmTransactionHash })
 const lineage = await publicClient.getTransactionLifecycle({
   hash: evmTransactionHash,
@@ -752,15 +751,44 @@ const relay = await publicClient.getExchangeActionStatus({
 
 The interfaces follow node commit `44bed910b4fd18c29e287ecd49a12982a90ac5bb`:
 `crates/rpc/src/server/{mod.rs,handler/api.rs,capabilities.rs}`,
-`tx_lifecycle.rs`, `exchange_relay.rs`, `pipeline_status.rs` and `witness.rs`,
-with pipeline and witness registration in `crates/node/src/run.rs`. Pipeline
-status preserves eight camelCase fields and `backpressureMode` of `healthy` or
-`throttle`. Block witness returns serialized hex bytes or `null`; these bytes
-are unverified and do not establish a valid proof or certified commitment.
-Availability depends on the node RPC configuration. RPC `u64` fields are JSON numbers;
+`tx_lifecycle.rs`, `exchange_relay.rs` and `pipeline_status.rs`, with pipeline
+registration in `crates/node/src/run.rs`. Pipeline status preserves eight
+camelCase fields and `backpressureMode` of `healthy` or `throttle`. RPC `u64` fields are JSON numbers;
 values beyond JavaScript's safe integer range need a lossless JSON transport.
 Block-number and consensus-round inputs reject values that ordinary JSON
 cannot represent exactly.
+
+## Verify account and storage state
+
+`getStateProof` calls `diesis_getStateProof` for one account and up to 32
+distinct storage slots at an exact block height. The response
+(`schemaVersion: 2`) carries the canonical RLP header, the quorum-signed MPQ7
+certificate and an EIP-1186 Merkle Patricia proof against the block's MPT state
+root. `getStateProof` checks only that the response answers the request.
+
+`verifyStateProof` authenticates the result against a block hash you already
+trust. It requires the header to hash to that block hash and carry the
+requested height, then follows the account path from the header's state root
+and each slot path from the proven account's storage root. A missing account
+returns `account: null`, and a missing slot returns zero. Any altered node,
+value, root or header fails.
+
+```typescript
+import { verifyStateProof } from '@diesis/sdk'
+
+const request = { blockNumber: 1234n, address, storageKeys: [slot] }
+const proof = await publicClient.getStateProof(request)
+const state = verifyStateProof(proof, request, { blockHash: trustedBlockHash })
+state.account?.balance // bigint
+state.storage[0].value // bigint
+```
+
+The SDK does not check the certificate's validator signatures. Take
+`trustedBlockHash` from a source you already trust, never from the same
+response. To authenticate the certificate against your own genesis committee
+and epoch history, pass `{ request, expectedBlockHash, response }` to the node's
+`diesis-state-proof-verify --mpt-trust-anchor PATH`. Standard `eth_getProof`
+returns the same EIP-1186 proof without the header and certificate.
 
 `walletClient.sendTransactionSync(serializedSignedTransaction)` sends signed
 transaction bytes to `diesis_sendRawTransactionSync` and returns the node's

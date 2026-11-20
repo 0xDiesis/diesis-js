@@ -92,8 +92,8 @@ describe('node 44bed public and wallet wire contracts', () => {
   })
 })
 
-// Source: node 44bed pipeline_status.rs and witness.rs, registered in node/run.rs.
-describe('pipeline and witness node wire contracts', () => {
+// Source: node 44bed pipeline_status.rs, registered in node/run.rs.
+describe('pipeline node wire contract', () => {
   it('returns all eight camelCase pipeline fields as JSON numbers and mode', async () => {
     const transport = client()
     const status = {
@@ -115,35 +115,8 @@ describe('pipeline and witness node wire contracts', () => {
       params: [],
     })
   })
-  it('returns hex witness bytes or null, without constructing a witness DTO', async () => {
-    const transport = client()
-    const actions = diesisPublicActions(transport as never)
-    transport.request
-      .mockResolvedValueOnce('0x00aabb' as never)
-      .mockResolvedValueOnce(null as never)
-    await expect(actions.getBlockWitness({ blockHash: hash })).resolves.toBe(
-      '0x00aabb',
-    )
-    await expect(
-      actions.getBlockWitness({ blockHash: hash }),
-    ).resolves.toBeNull()
-    expect(transport.request).toHaveBeenCalledWith({
-      method: 'diesis_getBlockWitness',
-      params: [hash],
-    })
-  })
-  it('rejects malformed B256 inputs before transport', async () => {
-    const transport = client()
-    for (const blockHash of ['0x12', hash + '00', '0x' + 'zz'.repeat(32), null])
-      await expect(
-        diesisPublicActions(transport as never).getBlockWitness({
-          blockHash: blockHash as never,
-        }),
-      ).rejects.toThrow('B256')
-    expect(transport.request).not.toHaveBeenCalled()
-  })
 })
-it('rejects unsafe pipeline numbers, invented modes and witness objects', async () => {
+it('rejects unsafe pipeline numbers and invented modes', async () => {
   const transport = client(),
     actions = diesisPublicActions(transport as never)
   const status = {
@@ -163,15 +136,5 @@ it('rejects unsafe pipeline numbers, invented modes and witness objects', async 
   ]) {
     transport.request.mockResolvedValueOnce(invalid as never)
     await expect(actions.getPipelineStatus()).rejects.toThrow()
-  }
-  for (const invalid of [
-    { blockHash: hash, witness: '0x00' },
-    '0x123',
-    undefined,
-  ]) {
-    transport.request.mockResolvedValueOnce(invalid as never)
-    await expect(actions.getBlockWitness({ blockHash: hash })).rejects.toThrow(
-      'bytes',
-    )
   }
 })

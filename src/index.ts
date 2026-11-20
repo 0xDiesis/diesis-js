@@ -185,3 +185,15 @@ export * from './exchange/actions-v2-results.js'
 
 export * from './names-read.js'
 export * from './rpc-errors.js'
+export {
+  parseStateProof,
+  stateProofRequest,
+  verifyStateProof,
+  STATE_PROOF_SCHEMA_VERSION,
+  MAX_STATE_PROOF_STORAGE_KEYS,
+  type AccountProof,
+  type StateProof,
+  type StateProofRequest,
+  type StateProofStorageEntry,
+  type VerifiedStateProof,
+} from './state-proof.js'

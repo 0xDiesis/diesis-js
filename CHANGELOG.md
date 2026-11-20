@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Breaking (0.2.0): state proofs use Merkle Patricia trie proofs.
+  `getStateProof` returns the `schemaVersion: 2` response from
+  `diesis_getStateProof`: canonical header, MPQ7 certificate and EIP-1186
+  account and storage proof. `verifyStateProof` authenticates the account and
+  requested slots against a block hash the caller trusts. `getBlockWitness` is
+  removed because nodes no longer serve `diesis_getBlockWitness`.
 - Exchange reads now match native RPC responses. `getMarkets`, `getOrderBook`,
   `getAccount`, `getTrades` and `estimateFill` return indexed envelopes: use `.data`
   for values and retain `blockNumber`, `blockHash` and `indexDigest` for provenance.

@@ -16,6 +16,12 @@ import {
   privacyReadActions,
   type PrivacyReadActions,
 } from '../privacy/actions.js'
+import {
+  parseStateProof,
+  stateProofRequest,
+  type StateProof,
+  type StateProofRequest,
+} from '../state-proof.js'
 
 export interface NetworkRules {
   [key: string]: unknown
@@ -120,8 +126,11 @@ export type DiesisPublicActions = ExchangePublicActions &
   ValidatorShareReadActions & {
     privacy: PrivacyReadActions['privacy']
     getPipelineStatus: () => Promise<PipelineStatus>
-    /** Serialized witness bytes; null means no witness is available. */
-    getBlockWitness: (params: { blockHash: Hex }) => Promise<Hex | null>
+    /**
+     * Unverified MPT account and storage proof at an exact height. Pass it to
+     * `verifyStateProof` with a block hash from a trusted source before use.
+     */
+    getStateProof: (request: StateProofRequest) => Promise<StateProof>
     getRules: () => Promise<NetworkRules>
     getRuntimeCapabilities: () => Promise<RuntimeCapabilities>
     getTransactionLifecycle: (params: {
@@ -160,23 +169,13 @@ export function diesisPublicActions<
       } as never)
       return pipelineStatus(response)
     },
-    getBlockWitness: async (params) => {
-      if (
-        typeof params?.blockHash !== 'string' ||
-        !/^0x[0-9a-fA-F]{64}$/.test(params.blockHash)
-      )
-        throw new Error('Block hash must be a canonical B256 hex value')
+    getStateProof: async (request) => {
+      const params = stateProofRequest(request)
       const response: unknown = await client.request({
-        method: 'diesis_getBlockWitness' as never,
-        params: [params.blockHash],
+        method: 'diesis_getStateProof' as never,
+        params: [params],
       } as never)
-      if (response === null) return null
-      if (
-        typeof response !== 'string' ||
-        !/^0x(?:[0-9a-fA-F]{2})*$/.test(response)
-      )
-        throw new Error('Invalid block witness bytes response')
-      return response as Hex
+      return parseStateProof(response, request)
     },
     getRules: () =>
       client.request({
