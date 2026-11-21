@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `decodeSignedActionError` recognizes `native_order_expiry_required` (code `-32015`):
+  native DAG orders must carry an expiry at most 600 seconds ahead. Submit
+  good-till-cancelled orders through the EVM or V2 path.
 - Breaking (0.2.0): state proofs use Merkle Patricia trie proofs.
   `getStateProof` returns the `schemaVersion: 2` response from
   `diesis_getStateProof`: canonical header, MPQ7 certificate and EIP-1186

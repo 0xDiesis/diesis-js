@@ -5,6 +5,7 @@ export const signedActionErrorReasons = [
   'invalid_signed_action',
   'signed_action_route_mismatch',
   'signed_action_expired',
+  'native_order_expiry_required',
   'exchange_relayer_unconfigured',
   'exchange_replay_conflict',
   'exchange_principal_capacity',
@@ -110,6 +111,7 @@ export function decodeSignedActionError(
               'invalid_signed_action',
               'signed_action_route_mismatch',
               'signed_action_expired',
+              'native_order_expiry_required',
             ].includes(reason)
           ? -32015
           : -32016

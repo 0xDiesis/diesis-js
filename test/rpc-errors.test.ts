@@ -216,3 +216,13 @@ it('preserves unknown errors with hostile prototypes', () => {
   )
   expect(() => decodeSignedActionError(raw)).not.toThrow()
 })
+
+it('decodes the native order expiry requirement as an invalid signed action', () => {
+  const expiry = { ...data, reason: 'native_order_expiry_required' }
+  expect(
+    decodeSignedActionError({ code: -32015, message: 'opaque', data: expiry }),
+  ).toMatchObject({ status: 'known', reason: 'native_order_expiry_required' })
+  expect(
+    decodeSignedActionError({ code: -32016, message: 'opaque', data: expiry }),
+  ).toMatchObject({ status: 'unknown' })
+})
