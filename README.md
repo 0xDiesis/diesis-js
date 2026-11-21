@@ -273,7 +273,13 @@ that the connected node admits the operation.
 There are distinct submission routes:
 
 - Supported native DAG intent ingress uses its own admission contract. Do not
-  apply the relay's queue rule to it or infer support from an ABI.
+  apply the relay's queue rule to it or infer support from an ABI. Native
+  orders must carry an expiry at most 600 seconds ahead; others fail with
+  `native_order_expiry_required`, and good-till-cancelled orders belong on the
+  EVM or V2 path. A native intent that is never executed behaves like a
+  transaction dropped from a mempool: its status disappears and the signed body
+  stays submittable until it expires. Invalidate its nonce (`cancelOrderNonce`
+  or `cancelNonceWord`) to be certain it never executes.
 - The sponsored relayer requires `DIESIS_EXCHANGE_RELAY_SUBMISSION=enabled`
   and an exclusively owned, funded relayer key. A default node has no such key
   and can reject sponsorship with a configuration error. Only its supported
