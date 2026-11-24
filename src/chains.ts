@@ -1,6 +1,10 @@
-import { defineChain } from 'viem'
+import { type Chain, type ChainFormatters, defineChain } from 'viem'
 
-export const diesis = defineChain({
+type ChainDefinition<Config extends Chain> = ReturnType<
+  typeof defineChain<ChainFormatters, Config>
+>
+
+const mainnet = {
   id: 1980,
   name: 'Diesis',
   nativeCurrency: { name: 'DS', symbol: 'DS', decimals: 18 },
@@ -10,9 +14,9 @@ export const diesis = defineChain({
   blockExplorers: {
     default: { name: 'Diesis Explorer', url: 'https://explorer.diesis.xyz' },
   },
-})
+} as const satisfies Chain
 
-export const diesisTestnet = defineChain({
+const testnet = {
   id: 19803,
   name: 'Diesis Testnet',
   nativeCurrency: { name: 'DS', symbol: 'DS', decimals: 18 },
@@ -26,4 +30,8 @@ export const diesisTestnet = defineChain({
     },
   },
   testnet: true,
-})
+} as const satisfies Chain
+
+export const diesis: ChainDefinition<typeof mainnet> = defineChain(mainnet)
+export const diesisTestnet: ChainDefinition<typeof testnet> =
+  defineChain(testnet)
