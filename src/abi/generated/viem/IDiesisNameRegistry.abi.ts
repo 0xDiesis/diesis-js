@@ -315,6 +315,35 @@ export const IDiesisNameRegistryAbi = [
           "type": "bytes32"
         },
         {
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "owner_",
+          "type": "address"
+        }
+      ],
+      "name": "setSubnodeOwnerWithLabel",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "node",
+          "type": "bytes32"
+        },
+        {
           "internalType": "bytes32",
           "name": "label",
           "type": "bytes32"
@@ -341,6 +370,50 @@ export const IDiesisNameRegistryAbi = [
         }
       ],
       "name": "setSubnodeRecord",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "node",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "internalType": "address",
+          "name": "owner_",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "resolver_",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "ttl_",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "expiry_",
+          "type": "uint64"
+        }
+      ],
+      "name": "setSubnodeRecordWithLabel",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -508,6 +581,31 @@ export const IDiesisNameRegistryAbi = [
         {
           "indexed": true,
           "internalType": "bytes32",
+          "name": "parent",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "node",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
+        }
+      ],
+      "name": "SubnameLabel",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
           "name": "node",
           "type": "bytes32"
         },
@@ -520,6 +618,11 @@ export const IDiesisNameRegistryAbi = [
       ],
       "name": "TTLChanged",
       "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidSubnameLabel",
+      "type": "error"
     },
     {
       "inputs": [],

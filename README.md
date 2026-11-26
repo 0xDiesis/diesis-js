@@ -426,7 +426,7 @@ and the binding, advances the generation and releases retained capacity. Expiry
 restores the key's direct identity, but capacity remains retained until explicit
 revocation. Revocation also invalidates old generation-bound schedules.
 
-Canonical contract revision `17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d` has
+Canonical contract revision `f0f9df1408efcf9bd8b996266ec91504e5e1e372` has
 no bound-session V3 method or native DXS3 execution route.
 `prepareBoundSessionActionsTransaction`, `signBoundSessionActionsTransaction`
 and `sendBoundSessionActionsTransaction` stop with an explicit unavailable error
@@ -1000,7 +1000,7 @@ pnpm quality       # ABI drift check, lint, typecheck, format
 ```
 
 `pnpm codegen` uses independently qualified artifacts from accepted contracts
-revision `6fcf1f12b86aaac451f699ffb84d70e725bbb122`. Set absolute paths before
+revision `f0f9df1408efcf9bd8b996266ec91504e5e1e372`. Set absolute paths before
 running code generation or quality checks:
 
 ```bash
@@ -1014,14 +1014,15 @@ pnpm build         # emit JavaScript and declarations
 pnpm test:consumer # check built package declarations and Exchange migration examples
 ```
 
-The generator must be the independently verified raw abi-typegen 0.9.1 executable.
+The generator must be the independently verified raw abi-typegen 0.9.3 executable.
 The pinned package's download script is denied; installation alone does not provide
 that executable. No contracts checkout output or checked-in ABI fallback is used.
 See [the qualification tooling guide](scripts/CODEGEN.md) for the separate Linux CI
 and local qualification boundaries.
 
 The public ABI barrels also export `AssociationVerifierV1Abi`,
-`DiesisEpochAuthorityAbi`, `TransferVerifierV1Abi` and `WithdrawVerifierV1Abi`.
+`DiesisEpochAuthorityAbi`, `DiesisSecurityAccountAbi`,
+`DiesisSecurityAccountFactoryAbi`, `TransferVerifierV1Abi`, and `WithdrawVerifierV1Abi`.
 
 ## License
 

@@ -37,9 +37,11 @@ export interface DiesisPatronContract extends ethers.Contract {
   reserveGrantV2(reservationId: BytesLike, sender: string, target: string, input: BytesLike, maximumFee: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   resolveGrant(sender: string, target: string, input: BytesLike, fee: BigNumberish, overrides?: CallOverrides): Promise<string>;
   resolveGrantContext(sender: string, target: string, input: BytesLike, fee: BigNumberish, overrides?: CallOverrides): Promise<[string, BigNumber, number, number, BigNumber, BigNumber] & { grantId: string; jarBalance: BigNumber; maxTransactions: number; transactionsUsed: number; maxLifetimeSpend: BigNumber; lifetimeSpent: BigNumber }>;
+  revokeCampaignGrantAuthorizationV1(campaignId: BytesLike, beneficiary: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   revokeCampaignVoucherV1(campaignId: BytesLike, beneficiary: string, nonce: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   revokeGrantAuthorization(beneficiary: string, grantId: BytesLike, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   rotateCampaignOwnerV1(campaignId: BytesLike, newOwner: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  setCampaignGrantAuthorizationV1(campaignId: BytesLike, beneficiary: string, target: string, selector: BytesLike, maxTransactions: BigNumberish, maxLifetimeSpend: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setCampaignRevokedV1(campaignId: BytesLike, revoked: boolean, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setGrantAuthorization(beneficiary: string, grantId: BytesLike, target: string, selector: BytesLike, maxTransactions: BigNumberish, maxLifetimeSpend: BigNumberish, expiry: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setPaused(paused_: boolean, overrides?: Overrides): Promise<ethers.ContractTransaction>;

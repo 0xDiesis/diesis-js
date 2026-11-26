@@ -31,7 +31,7 @@ export async function codegenInputs() {
     manifest,
   ])
   const proof = JSON.parse(await readFile(manifest, 'utf8'))
-  if (proof.contractsRevision !== '6fcf1f12b86aaac451f699ffb84d70e725bbb122')
+  if (proof.contractsRevision !== 'f0f9df1408efcf9bd8b996266ec91504e5e1e372')
     throw new Error('Wrong contracts revision')
   if ((await realpath(proof.artifactRoot)) !== artifacts)
     throw new Error('Artifact root mismatch')
@@ -49,12 +49,12 @@ export async function codegenInputs() {
     .digest('hex')
   if (
     proof.generator?.binarySha256 !== binarySha256 ||
-    proof.generator?.version !== 'abi-typegen 0.9.1' ||
-    proof.generator?.sourceCommit !== '9d9b8c38ce8bfdb12e29222ded734d7758321efb'
+    proof.generator?.version !== 'abi-typegen 0.9.3' ||
+    proof.generator?.sourceCommit !== 'fbf6f7468c952863f2318a450520ac0933cbd65d'
   )
     throw new Error('Generator provenance mismatch')
   const { stdout } = await exec(typegen, ['--version'])
-  if (!/^abi-typegen 0\.9\.1\s*$/.test(stdout))
-    throw new Error(`Exact abi-typegen 0.9.1 required: ${stdout.trim()}`)
+  if (!/^abi-typegen 0\.9\.3\s*$/.test(stdout))
+    throw new Error(`Exact abi-typegen 0.9.3 required: ${stdout.trim()}`)
   return { artifacts, typegen }
 }

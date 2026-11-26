@@ -71,8 +71,8 @@ export type DiesisPublicResolverSetWildcardPaymentRoutingAllowedParams = {
 
 /**
  * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-
+ *      * Can only be called by the current owner.
+ *
  */
 export type DiesisPublicResolverTransferOwnershipParams = {
   newOwner: `0x${string}`;

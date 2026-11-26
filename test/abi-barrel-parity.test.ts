@@ -97,7 +97,7 @@ describe('ABI provider entry-point parity', () => {
   )
 })
 
-describe('canonical 17f837ac bound-session ABI boundary', () => {
+describe('canonical f0f9df14 bound-session ABI boundary', () => {
   it.each([
     ['spot', abiBarrel.IDiesisSpotBookAbi],
     ['perpetual', abiBarrel.IDiesisPerpsBookAbi],

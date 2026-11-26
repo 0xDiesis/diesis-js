@@ -19,7 +19,9 @@ export interface IDiesisNameRegistryContract extends ethers.Contract {
   setOwner(node: BytesLike, owner_: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setResolver(node: BytesLike, resolver_: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setSubnodeOwner(node: BytesLike, label: BytesLike, owner_: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  setSubnodeOwnerWithLabel(node: BytesLike, label: string, owner_: string, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setSubnodeRecord(node: BytesLike, label: BytesLike, owner_: string, resolver_: string, ttl_: BigNumberish, expiry_: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
+  setSubnodeRecordWithLabel(node: BytesLike, label: string, owner_: string, resolver_: string, ttl_: BigNumberish, expiry_: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   setTTL(node: BytesLike, ttl_: BigNumberish, overrides?: Overrides): Promise<ethers.ContractTransaction>;
   ttl(node: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
   filters: {
@@ -29,6 +31,7 @@ export interface IDiesisNameRegistryContract extends ethers.Contract {
     NamePolicyChanged(policy?: string | null): ethers.EventFilter;
     OwnerChanged(node?: BytesLike | null, owner?: string | null): ethers.EventFilter;
     ResolverChanged(node?: BytesLike | null, resolver?: string | null): ethers.EventFilter;
+    SubnameLabel(parent?: BytesLike | null, node?: BytesLike | null): ethers.EventFilter;
     TTLChanged(node?: BytesLike | null): ethers.EventFilter;
   };
 }

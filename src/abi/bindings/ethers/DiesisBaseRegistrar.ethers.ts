@@ -24,6 +24,8 @@ export interface DiesisBaseRegistrarMethods {
   defaultYearPrice(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   fourCharYearPrice(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   gracePeriod(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
+  labelSkeleton(label: string, overrides?: Omit<Overrides, 'value'>): Promise<string>;
+  lookalikeHolder(label: string, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   maintenance(overrides?: Omit<Overrides, 'value'>): Promise<string>;
   maintenanceShare(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   makeCommitment(label: string, owner_: AddressLike, resolver_: AddressLike, recordsHash: BytesLike, duration: BigNumberish, secret: BytesLike, reverseRecord: boolean, nonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<string>;
@@ -36,11 +38,13 @@ export interface DiesisBaseRegistrarMethods {
   owner(overrides?: Omit<Overrides, 'value'>): Promise<string>;
   premiumPeriod(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   register(label: string, owner_: AddressLike, resolver_: AddressLike, duration: BigNumberish, secret: BytesLike, reverseRecord: boolean, nonce: BigNumberish, resolverCalls: BytesLike[], overrides?: Overrides): Promise<ContractTransactionResponse>;
+  registeredSkeletonHolders(skeletonHash: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   registry(overrides?: Omit<Overrides, 'value'>): Promise<string>;
   renew(label: string, duration: BigNumberish, overrides?: Overrides): Promise<ContractTransactionResponse>;
   renounceOwnership(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   rentPrice(label: string, duration: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   reservedLabels(labelhash: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
+  reservedSkeletonHolders(skeletonHash: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   reverseRegistrar(overrides?: Omit<Overrides, 'value'>): Promise<string>;
   setFeeSplit(burnShare_: BigNumberish, treasuryShare_: BigNumberish, maintenanceShare_: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setPricing(threeCharYearPrice_: BigNumberish, fourCharYearPrice_: BigNumberish, defaultYearPrice_: BigNumberish, startPremium_: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;

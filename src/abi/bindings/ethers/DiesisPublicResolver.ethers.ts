@@ -60,11 +60,15 @@ export type DiesisPublicResolverContract = Omit<BaseContract, keyof DiesisPublic
 
 export function connectDiesisPublicResolver(address: string, runner: ContractRunner): DiesisPublicResolverContract {
   const contract = new Contract(address, DiesisPublicResolverAbi, runner);
-  Object.assign(contract, {
-    addrBytes32: contract.getFunction("addr(bytes32)"),
-    addrBytes32Uint256: contract.getFunction("addr(bytes32,uint256)"),
-    setAddrBytes32Uint256Bytes: contract.getFunction("setAddr(bytes32,uint256,bytes)"),
-    setAddrBytes32Address: contract.getFunction("setAddr(bytes32,address)"),
-  });
-  return contract as unknown as DiesisPublicResolverContract;
+  const attachAliases = (target: Contract): DiesisPublicResolverContract => {
+    Object.assign(target, {
+      addrBytes32: target.getFunction("addr(bytes32)"),
+      addrBytes32Uint256: target.getFunction("addr(bytes32,uint256)"),
+      setAddrBytes32Uint256Bytes: target.getFunction("setAddr(bytes32,uint256,bytes)"),
+      setAddrBytes32Address: target.getFunction("setAddr(bytes32,address)"),
+      connect: (nextRunner: ContractRunner | null) => attachAliases(Contract.prototype.connect.call(target, nextRunner) as Contract),
+    });
+    return target as unknown as DiesisPublicResolverContract;
+  };
+  return attachAliases(contract);
 }

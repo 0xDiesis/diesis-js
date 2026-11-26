@@ -27,17 +27,17 @@ export type DiesisStakingAllocateExtraRewardParams = {
 
 /**
  * @dev Gives permission to `to` to transfer `tokenId` token to another account.
-     * The approval is cleared when the token is transferred.
-     *
-     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
-     *
-     * Requirements:
-     *
-     * - The caller must own the token or be an approved operator.
-     * - `tokenId` must exist.
-     *
-     * Emits an {Approval} event.
-
+ *      * The approval is cleared when the token is transferred.
+ *      *
+ *      * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
+ *      *
+ *      * Requirements:
+ *      *
+ *      * - The caller must own the token or be an approved operator.
+ *      * - `tokenId` must exist.
+ *      *
+ *      * Emits an {Approval} event.
+ *
  */
 export type DiesisStakingApproveParams = {
   to: `0x${string}`;
@@ -162,9 +162,9 @@ export type DiesisStakingInitializeParams = {
 };
 
 export type DiesisStakingInitializeEpochZeroParams = {
-  identity: { version: number; chainId: bigint; genesisHash: `0x${string}`; epoch: bigint; activationBlockNumber: bigint; previousIdentityDigest: `0x${string}`; validators: readonly { validatorId: bigint; consensusAddress: `0x${string}`; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: `0x${string}`; blsProofOfPossession: `0x${string}`; vrfPublicKey: `0x${string}`; quicTransportAddress: `0x${string}`; relayerAddress: `0x${string}`; status: number }[] };
-  bundles: readonly { consensusAddress: `0x${string}`; blsPublicKey: `0x${string}`; blsProofOfPossession: `0x${string}`; vrfPublicKey: `0x${string}`; quicTransportAddress: `0x${string}`; relayerAddress: `0x${string}` }[];
-  proofs: readonly { consensusSignature: `0x${string}`; blsContextSignature: `0x${string}`; vrfX: bigint; vrfY: bigint; vrfSignature: `0x${string}`; quicSignature: `0x${string}`; relayerSignature: `0x${string}` }[];
+  identity: { version: number; chainId: bigint; genesisHash: `0x${string}`; epoch: bigint; activationBlockNumber: bigint; previousIdentityDigest: `0x${string}`; validators: readonly { validatorId: bigint; consensusAddress: `0x${string}`; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: `0x${string}`; blsProofOfPossession: `0x${string}`; mlDsaPublicKeyHash: `0x${string}`; vrfPublicKey: `0x${string}`; quicTransportAddress: `0x${string}`; relayerAddress: `0x${string}`; status: number }[] };
+  bundles: readonly { consensusAddress: `0x${string}`; blsPublicKey: `0x${string}`; blsProofOfPossession: `0x${string}`; mlDsaPublicKeyHash: `0x${string}`; vrfPublicKey: `0x${string}`; quicTransportAddress: `0x${string}`; relayerAddress: `0x${string}` }[];
+  proofs: readonly { consensusSignature: `0x${string}`; blsKeyBindingSignature: `0x${string}`; mlDsaPublicKey: `0x${string}`; mlDsaKeyBindingSignature: `0x${string}`; vrfX: bigint; vrfY: bigint; vrfSignature: `0x${string}`; quicSignature: `0x${string}`; relayerSignature: `0x${string}` }[];
 };
 
 /**
@@ -238,8 +238,8 @@ export type DiesisStakingRegisterValidatorParams = {
 export type DiesisStakingRegisterValidatorRoleKeysParams = {
   validatorId: bigint;
   targetEpoch: bigint;
-  keys: { consensusAddress: `0x${string}`; blsPublicKey: `0x${string}`; blsProofOfPossession: `0x${string}`; vrfPublicKey: `0x${string}`; quicTransportAddress: `0x${string}`; relayerAddress: `0x${string}` };
-  proofs: { consensusSignature: `0x${string}`; blsContextSignature: `0x${string}`; vrfX: bigint; vrfY: bigint; vrfSignature: `0x${string}`; quicSignature: `0x${string}`; relayerSignature: `0x${string}` };
+  keys: { consensusAddress: `0x${string}`; blsPublicKey: `0x${string}`; blsProofOfPossession: `0x${string}`; mlDsaPublicKeyHash: `0x${string}`; vrfPublicKey: `0x${string}`; quicTransportAddress: `0x${string}`; relayerAddress: `0x${string}` };
+  proofs: { consensusSignature: `0x${string}`; blsKeyBindingSignature: `0x${string}`; mlDsaPublicKey: `0x${string}`; mlDsaKeyBindingSignature: `0x${string}`; vrfX: bigint; vrfY: bigint; vrfSignature: `0x${string}`; quicSignature: `0x${string}`; relayerSignature: `0x${string}` };
 };
 
 export type DiesisStakingRequestKeyRecoveryParams = {
@@ -269,20 +269,20 @@ export type DiesisStakingRequestUnstakeForPositionParams = {
 
 /**
  * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
-     * are aware of the ERC-721 protocol to prevent tokens from being forever locked.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If the caller is not `from`, it must have been allowed to move this token by either {approve} or
-     *   {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
-     *   a safe transfer.
-     *
-     * Emits a {Transfer} event.
-
+ *      * are aware of the ERC-721 protocol to prevent tokens from being forever locked.
+ *      *
+ *      * Requirements:
+ *      *
+ *      * - `from` cannot be the zero address.
+ *      * - `to` cannot be the zero address.
+ *      * - `tokenId` token must exist and be owned by `from`.
+ *      * - If the caller is not `from`, it must have been allowed to move this token by either {approve} or
+ *      *   {setApprovalForAll}.
+ *      * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+ *      *   a safe transfer.
+ *      *
+ *      * Emits a {Transfer} event.
+ *
  */
 export type DiesisStakingSafeTransferFromAddressAddressUint256Params = {
   from: `0x${string}`;
@@ -292,18 +292,18 @@ export type DiesisStakingSafeTransferFromAddressAddressUint256Params = {
 
 /**
  * @dev Safely transfers `tokenId` token from `from` to `to`.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
-     *   a safe transfer.
-     *
-     * Emits a {Transfer} event.
-
+ *      *
+ *      * Requirements:
+ *      *
+ *      * - `from` cannot be the zero address.
+ *      * - `to` cannot be the zero address.
+ *      * - `tokenId` token must exist and be owned by `from`.
+ *      * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+ *      * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon
+ *      *   a safe transfer.
+ *      *
+ *      * Emits a {Transfer} event.
+ *
  */
 export type DiesisStakingSafeTransferFromAddressAddressUint256BytesParams = {
   from: `0x${string}`;
@@ -318,14 +318,14 @@ export type DiesisStakingScheduleValidatorEpochParams = {
 
 /**
  * @dev Approve or remove `operator` as an operator for the caller.
-     * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.
-     *
-     * Requirements:
-     *
-     * - The `operator` cannot be the address zero.
-     *
-     * Emits an {ApprovalForAll} event.
-
+ *      * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.
+ *      *
+ *      * Requirements:
+ *      *
+ *      * - The `operator` cannot be the address zero.
+ *      *
+ *      * Emits an {ApprovalForAll} event.
+ *
  */
 export type DiesisStakingSetApprovalForAllParams = {
   operator: `0x${string}`;
@@ -433,20 +433,20 @@ export type DiesisStakingSwapDelegateForPositionParams = {
 
 /**
  * @dev Transfers `tokenId` token from `from` to `to`.
-     *
-     * WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC-721
-     * or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must
-     * understand this adds an external call which potentially creates a reentrancy vulnerability.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-     *
-     * Emits a {Transfer} event.
-
+ *      *
+ *      * WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC-721
+ *      * or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must
+ *      * understand this adds an external call which potentially creates a reentrancy vulnerability.
+ *      *
+ *      * Requirements:
+ *      *
+ *      * - `from` cannot be the zero address.
+ *      * - `to` cannot be the zero address.
+ *      * - `tokenId` token must be owned by `from`.
+ *      * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+ *      *
+ *      * Emits a {Transfer} event.
+ *
  */
 export type DiesisStakingTransferFromParams = {
   from: `0x${string}`;
@@ -456,8 +456,8 @@ export type DiesisStakingTransferFromParams = {
 
 /**
  * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-
+ *      * Can only be called by the current owner.
+ *
  */
 export type DiesisStakingTransferOwnershipParams = {
   newOwner: `0x${string}`;

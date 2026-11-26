@@ -324,6 +324,44 @@ export const DiesisBaseRegistrarAbi = [
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
+        }
+      ],
+      "name": "labelSkeleton",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
+        }
+      ],
+      "name": "lookalikeHolder",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "maintenance",
       "outputs": [
@@ -574,6 +612,25 @@ export const DiesisBaseRegistrarAbi = [
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "skeletonHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "registeredSkeletonHolders",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "labelhash",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "registry",
       "outputs": [
@@ -655,6 +712,25 @@ export const DiesisBaseRegistrarAbi = [
           "internalType": "bool",
           "name": "reserved",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "skeletonHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "reservedSkeletonHolders",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "labelhash",
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -1190,6 +1266,17 @@ export const DiesisBaseRegistrarAbi = [
     {
       "inputs": [],
       "name": "InvalidLabel",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "heldBy",
+          "type": "bytes32"
+        }
+      ],
+      "name": "LookalikeName",
       "type": "error"
     },
     {

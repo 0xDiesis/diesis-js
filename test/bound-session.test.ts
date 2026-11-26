@@ -105,7 +105,7 @@ describe('canonical contract boundary for bound-session submission', () => {
       expect(() =>
         prepareBoundSessionActionsTransaction({ ...parameters, book }),
       ).toThrow(
-        /bound-session submission is unavailable in canonical contract revision 17f837ac/,
+        /bound-session submission is unavailable in canonical contract revision f0f9df14/,
       )
     },
   )

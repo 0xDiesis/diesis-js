@@ -102,6 +102,44 @@ export const IDiesisBaseRegistrarAbi = [
           "internalType": "string",
           "name": "label",
           "type": "string"
+        }
+      ],
+      "name": "labelSkeleton",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
+        }
+      ],
+      "name": "lookalikeHolder",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "label",
+          "type": "string"
         },
         {
           "internalType": "address",
@@ -745,6 +783,17 @@ export const IDiesisBaseRegistrarAbi = [
     {
       "inputs": [],
       "name": "InvalidLabel",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "heldBy",
+          "type": "bytes32"
+        }
+      ],
+      "name": "LookalikeName",
       "type": "error"
     },
     {

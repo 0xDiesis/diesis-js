@@ -57,9 +57,11 @@ export interface DiesisPatronMethods {
   reserveGrantV2(reservationId: string, sender: string, target: string, input: string, maximumFee: Numbers): DiesisPatronMethod<'nonpayable', string>;
   resolveGrant(sender: string, target: string, input: string, fee: Numbers): DiesisPatronMethod<'nonpayable', string>;
   resolveGrantContext(sender: string, target: string, input: string, fee: Numbers): DiesisPatronMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; 3: bigint; 4: bigint; 5: bigint; grantId: string; jarBalance: bigint; maxTransactions: bigint; transactionsUsed: bigint; maxLifetimeSpend: bigint; lifetimeSpent: bigint; __length__: number }>;
+  revokeCampaignGrantAuthorizationV1(campaignId: string, beneficiary: string): DiesisPatronMethod<'nonpayable', void>;
   revokeCampaignVoucherV1(campaignId: string, beneficiary: string, nonce: Numbers): DiesisPatronMethod<'nonpayable', void>;
   revokeGrantAuthorization(beneficiary: string, grantId: string): DiesisPatronMethod<'nonpayable', void>;
   rotateCampaignOwnerV1(campaignId: string, newOwner: string): DiesisPatronMethod<'nonpayable', void>;
+  setCampaignGrantAuthorizationV1(campaignId: string, beneficiary: string, target: string, selector: string, maxTransactions: Numbers, maxLifetimeSpend: Numbers, expiry: Numbers): DiesisPatronMethod<'nonpayable', void>;
   setCampaignRevokedV1(campaignId: string, revoked: boolean): DiesisPatronMethod<'nonpayable', void>;
   setGrantAuthorization(beneficiary: string, grantId: string, target: string, selector: string, maxTransactions: Numbers, maxLifetimeSpend: Numbers, expiry: Numbers): DiesisPatronMethod<'nonpayable', void>;
   setPaused(paused_: boolean): DiesisPatronMethod<'nonpayable', void>;

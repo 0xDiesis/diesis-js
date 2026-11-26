@@ -27,6 +27,7 @@ export interface IDiesisSpotBookContract extends ethers.Contract {
     ExchangeL3MutationV2(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     ExchangeTradeFillV2(marketId?: BytesLike | null, makerOrderId?: BytesLike | null, takerOrderId?: BytesLike | null): ethers.EventFilter;
     OrderCancelled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
+    OrderFillFeeV1(marketId?: BytesLike | null, orderId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderFilled(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     OrderPlaced(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;
     StopOrderTriggered(orderId?: BytesLike | null, marketId?: BytesLike | null, trader?: string | null): ethers.EventFilter;

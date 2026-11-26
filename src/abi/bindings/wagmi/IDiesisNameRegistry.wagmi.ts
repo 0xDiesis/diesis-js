@@ -222,6 +222,24 @@ export function useIDiesisNameRegistrySetSubnodeOwner(
   };
 }
 
+export function useIDiesisNameRegistrySetSubnodeOwnerWithLabel(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { node: `0x${string}`, label: string, owner_: `0x${string}` }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { node: `0x${string}`, label: string, owner_: `0x${string}` }) =>
+      writeContract({
+        address,
+        abi: IDiesisNameRegistryAbi,
+        functionName: 'setSubnodeOwnerWithLabel',
+        args: [args.node, args.label, args.owner_],
+      }),
+  };
+}
+
 export function useIDiesisNameRegistrySetSubnodeRecord(
   address: Address,
 ): Omit<UseWriteContractReturnType, 'writeContract'> & {
@@ -235,6 +253,24 @@ export function useIDiesisNameRegistrySetSubnodeRecord(
         address,
         abi: IDiesisNameRegistryAbi,
         functionName: 'setSubnodeRecord',
+        args: [args.node, args.label, args.owner_, args.resolver_, args.ttl_, args.expiry_],
+      }),
+  };
+}
+
+export function useIDiesisNameRegistrySetSubnodeRecordWithLabel(
+  address: Address,
+): Omit<UseWriteContractReturnType, 'writeContract'> & {
+  write: (args: { node: `0x${string}`, label: string, owner_: `0x${string}`, resolver_: `0x${string}`, ttl_: bigint, expiry_: bigint }) => void;
+} {
+  const { writeContract, ...rest } = useWriteContract();
+  return {
+    ...rest,
+    write: (args: { node: `0x${string}`, label: string, owner_: `0x${string}`, resolver_: `0x${string}`, ttl_: bigint, expiry_: bigint }) =>
+      writeContract({
+        address,
+        abi: IDiesisNameRegistryAbi,
+        functionName: 'setSubnodeRecordWithLabel',
         args: [args.node, args.label, args.owner_, args.resolver_, args.ttl_, args.expiry_],
       }),
   };
@@ -310,6 +346,15 @@ export function useIDiesisNameRegistryResolverChangedEvent(address: Address, lis
     address,
     abi: IDiesisNameRegistryAbi,
     eventName: 'ResolverChanged',
+    onLogs: (logs) => logs.forEach(listener),
+  });
+}
+
+export function useIDiesisNameRegistrySubnameLabelEvent(address: Address, listener: (log: any) => void) {
+  return useWatchContractEvent({
+    address,
+    abi: IDiesisNameRegistryAbi,
+    eventName: 'SubnameLabel',
     onLogs: (logs) => logs.forEach(listener),
   });
 }

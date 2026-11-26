@@ -161,7 +161,7 @@ function validateSessionKey(
 }
 
 /**
- * Validate the offline wrapper and fail closed. Canonical contracts at 17f837ac
+ * Validate the offline wrapper and fail closed. Canonical contracts at f0f9df14
  * expose no bound-session V3 method. This never substitutes unbound V2 calldata.
  */
 export function prepareBoundSessionActionsTransaction(
@@ -182,7 +182,7 @@ export function prepareBoundSessionActionsTransaction(
     throw new Error(`unknown exchange book ${String(parameters.book)}`)
   }
   throw new Error(
-    'bound-session submission is unavailable in canonical contract revision 17f837ac61c4e1088fb4acbb95e45d6f1d7b8e9d',
+    'bound-session submission is unavailable in canonical contract revision f0f9df1408efcf9bd8b996266ec91504e5e1e372',
   )
 }
 

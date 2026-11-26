@@ -835,6 +835,11 @@ export const DiesisStakingAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -1169,6 +1174,11 @@ export const DiesisStakingAbi = [
                   "type": "bytes"
                 },
                 {
+                  "internalType": "bytes32",
+                  "name": "mlDsaPublicKeyHash",
+                  "type": "bytes32"
+                },
+                {
                   "internalType": "bytes",
                   "name": "vrfPublicKey",
                   "type": "bytes"
@@ -1216,6 +1226,11 @@ export const DiesisStakingAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -1244,7 +1259,17 @@ export const DiesisStakingAbi = [
             },
             {
               "internalType": "bytes",
-              "name": "blsContextSignature",
+              "name": "blsKeyBindingSignature",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaPublicKey",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaKeyBindingSignature",
               "type": "bytes"
             },
             {
@@ -1927,6 +1952,11 @@ export const DiesisStakingAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -1955,7 +1985,17 @@ export const DiesisStakingAbi = [
             },
             {
               "internalType": "bytes",
-              "name": "blsContextSignature",
+              "name": "blsKeyBindingSignature",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaPublicKey",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaKeyBindingSignature",
               "type": "bytes"
             },
             {
@@ -2158,6 +2198,11 @@ export const DiesisStakingAbi = [
               "internalType": "bytes",
               "name": "blsProofOfPossession",
               "type": "bytes"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
             },
             {
               "internalType": "bytes",

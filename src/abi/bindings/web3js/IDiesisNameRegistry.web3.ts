@@ -39,7 +39,9 @@ export interface IDiesisNameRegistryMethods {
   setOwner(node: string, owner_: string): IDiesisNameRegistryMethod<'nonpayable', void>;
   setResolver(node: string, resolver_: string): IDiesisNameRegistryMethod<'nonpayable', void>;
   setSubnodeOwner(node: string, label: string, owner_: string): IDiesisNameRegistryMethod<'nonpayable', string>;
+  setSubnodeOwnerWithLabel(node: string, label: string, owner_: string): IDiesisNameRegistryMethod<'nonpayable', string>;
   setSubnodeRecord(node: string, label: string, owner_: string, resolver_: string, ttl_: Numbers, expiry_: Numbers): IDiesisNameRegistryMethod<'nonpayable', string>;
+  setSubnodeRecordWithLabel(node: string, label: string, owner_: string, resolver_: string, ttl_: Numbers, expiry_: Numbers): IDiesisNameRegistryMethod<'nonpayable', string>;
   setTTL(node: string, ttl_: Numbers): IDiesisNameRegistryMethod<'nonpayable', void>;
   ttl(node: string): IDiesisNameRegistryMethod<'nonpayable', bigint>;
 }

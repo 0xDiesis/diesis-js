@@ -14,7 +14,7 @@ import tomllib
 import urllib.request
 import zipfile
 
-REVISION = '6fcf1f12b86aaac451f699ffb84d70e725bbb122'
+REVISION = 'f0f9df1408efcf9bd8b996266ec91504e5e1e372'
 SOLAR_COMMIT = 'e7a91fc70f29dc8d0c236d56a2aa7706dc2555cf'
 COMPILER_VERSION = '0.8.38+commit.e7a91fc7.solar.0.3.0'
 # forgeds, the Diesis Foundry fork, published as commit-named release archives.
@@ -25,8 +25,8 @@ FORGEDS_DIGESTS = {
     'darwin_arm64': '39c4b0fd5ab8cd7ee2b411a1e0a5ac8519a5566bdd25d50f90ae9bd47ab01f63',
     'linux_amd64': 'a1341d56a7fc743b4d87853596baaf0931a6e4348106def1a6994bc793c5b62f',
 }
-GENERATOR_COMMIT = '9d9b8c38ce8bfdb12e29222ded734d7758321efb'
-SRI = 'sha512-Et+WDzyg+NWH0RFtOUqRoa5leK44PJnSAXPZ0bVTQjZqEydqBd5Z9XQu0Sv002PFVMs1BzfT3gsP4zkMoMGK7A=='
+GENERATOR_COMMIT = 'fbf6f7468c952863f2318a450520ac0933cbd65d'
+SRI = 'sha512-65WfWmjtwff3cP031oVM1ARmyFmeCuLvTPOjHzUccVYA+4nmbym5BzARO8oLkvhTQIwsXVDJlx1CZuOItdUHkg=='
 
 
 def require(condition, message):
@@ -101,7 +101,7 @@ def run(args, cwd=None, env=None, stdout_only=False):
 def validate_signature_provenance(report):
     """Bind an npm-verified DSSE statement; this function does not verify signatures."""
     require(isinstance(report, dict) and not report.get('invalid') and not report.get('missing'), 'npm audit errors')
-    packages = [item for item in report.get('verified', []) if item.get('name') == '@0xdoublesharp/abi-typegen' and item.get('version') == '0.9.1']
+    packages = [item for item in report.get('verified', []) if item.get('name') == '@0xdoublesharp/abi-typegen' and item.get('version') == '0.9.3']
     require(len(packages) == 1, 'exact verified package required')
     bundles = [item for item in packages[0].get('attestationBundles', []) if item.get('predicateType') == 'https://slsa.dev/provenance/v1']
     require(len(bundles) == 1, 'unique verified SLSA statement required')
@@ -112,11 +112,11 @@ def validate_signature_provenance(report):
     statement = json.loads(base64.b64decode(payload, validate=True))
     require(statement.get('_type') == 'https://in-toto.io/Statement/v1' and statement.get('predicateType') == 'https://slsa.dev/provenance/v1', 'wrong SLSA statement')
     expected_digest = base64.b64decode(SRI.split('-', 1)[1], validate=True).hex()
-    require(statement.get('subject') == [{'name':'pkg:npm/%400xdoublesharp/abi-typegen@0.9.1', 'digest':{'sha512':expected_digest}}], 'SLSA subject differs from pinned package integrity')
+    require(statement.get('subject') == [{'name':'pkg:npm/%400xdoublesharp/abi-typegen@0.9.3', 'digest':{'sha512':expected_digest}}], 'SLSA subject differs from pinned package integrity')
     definition = statement['predicate']['buildDefinition']
     require(definition.get('buildType') == 'https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1', 'wrong release build type')
-    require(definition.get('externalParameters', {}).get('workflow') == {'ref':'refs/tags/v0.9.1', 'repository':'https://github.com/doublesharp/abi-typegen', 'path':'.github/workflows/release.yml'}, 'wrong release workflow')
-    require(definition.get('resolvedDependencies') == [{'uri':'git+https://github.com/doublesharp/abi-typegen@refs/tags/v0.9.1', 'digest':{'gitCommit':GENERATOR_COMMIT}}], 'wrong release source commit')
+    require(definition.get('externalParameters', {}).get('workflow') == {'ref':'refs/tags/v0.9.3', 'repository':'https://github.com/0xdoublesharp/abi-typegen', 'path':'.github/workflows/release.yml'}, 'wrong release workflow')
+    require(definition.get('resolvedDependencies') == [{'uri':'git+https://github.com/0xdoublesharp/abi-typegen@refs/tags/v0.9.3', 'digest':{'gitCommit':GENERATOR_COMMIT}}], 'wrong release source commit')
 
 def source_build_command(forge, common):
     return [forge, 'build', 'src', *common, '--skip', 'test', '--skip', 'script']
@@ -203,12 +203,12 @@ def qualify(checkout, work):
     require(len(binaries) == 1, 'unique Solar executable required')
     solc = executable(work / 'solar', binaries[0])
     validate_compiler_version(run([solc, '--version']))
-    registry=json_download('https://registry.npmjs.org/@0xdoublesharp/abi-typegen/0.9.1',work/'typegen-registry.json')
+    registry=json_download('https://registry.npmjs.org/@0xdoublesharp/abi-typegen/0.9.3',work/'typegen-registry.json')
     require(registry['gitHead']==GENERATOR_COMMIT and registry['dist']['integrity']==SRI,'published generator identity')
     # npm's official audit verifies registry signatures and published provenance.
     # Isolated install is script-free; it does not execute the download shim.
     npm_audit=work/'npm-provenance';npm_audit.mkdir()
-    (npm_audit/'package.json').write_text(json.dumps({'private':True,'packageManager':json.loads((Path(__file__).parents[1]/'package.json').read_text())['packageManager'],'dependencies':{'@0xdoublesharp/abi-typegen':'0.9.1'}}))
+    (npm_audit/'package.json').write_text(json.dumps({'private':True,'packageManager':json.loads((Path(__file__).parents[1]/'package.json').read_text())['packageManager'],'dependencies':{'@0xdoublesharp/abi-typegen':'0.9.3'}}))
     run(['pnpm','install','--ignore-scripts','--registry=https://registry.npmjs.org'],cwd=npm_audit)
     audit_text = run(['npm', 'audit', 'signatures', '--json', '--include-attestations', '--registry=https://registry.npmjs.org'], cwd=npm_audit, stdout_only=True)
     audit = json.loads(audit_text)
@@ -218,10 +218,10 @@ def qualify(checkout, work):
     require('sha512-'+base64.b64encode(hashlib.sha512(data).digest()).decode()==SRI,'npm SRI mismatch')
     npm=tar_files(data);checksums=json.loads(npm['package/checksums.json'])
     archive_name=f'abi-typegen-{native_target}.tar.gz'
-    data=download('https://github.com/doublesharp/abi-typegen/releases/download/v0.9.1/'+archive_name,work/'typegen-platform.tgz')
+    data=download('https://github.com/0xdoublesharp/abi-typegen/releases/download/v0.9.3/'+archive_name,work/'typegen-platform.tgz')
     require(sha(data)==checksums['files'][archive_name],'generator platform checksum')
     typegen=executable(work/'abi-typegen',tar_files(data)['abi-typegen'])
-    require(run([typegen,'--version']).strip()=='abi-typegen 0.9.1','generator actual version')
+    require(run([typegen,'--version']).strip()=='abi-typegen 0.9.3','generator actual version')
     outputs={k:str(work/k) for k in ('out','cache','captures','build-info')}
     for directory in outputs.values():Path(directory).mkdir()
     wrapper=Path(__file__).with_name('solc-capture.py').resolve()
@@ -235,7 +235,37 @@ def qualify(checkout, work):
     with (work/'build.log').open('wb') as log:
         result=subprocess.run([str(x) for x in command],cwd=checkout,env=env,stdout=log,stderr=subprocess.STDOUT)
     require(result.returncode==0,'sole forgeds build failed; no automatic retry permitted')
-    proof={'checkout':str(checkout),'contractsRevision':REVISION,'dependencyManifest':str(dep_manifest),'solc':{'path':str(solc),'sha256':sha(solc.read_bytes()),'longVersion':COMPILER_VERSION,'sourceCommit':SOLAR_COMMIT,'archiveSha256':solar_digest},'generator':{'path':str(typegen),'binarySha256':sha(typegen.read_bytes()),'version':'abi-typegen 0.9.1','sourceCommit':GENERATOR_COMMIT},'outputs':outputs,'forge':{'path':str(forge),'sha256':sha(forge.read_bytes()),'version':forge_version,'sourceCommit':FORGEDS_COMMIT,'archiveSha256':forgeds_digest},'captureWrapperSha256':sha(wrapper.read_bytes())}
+    proof = {
+        'checkout': str(checkout),
+        'contractsRevision': REVISION,
+        'dependencyManifest': str(dep_manifest),
+        'solc': {
+            'path': str(solc),
+            'sha256': sha(solc.read_bytes()),
+            'longVersion': COMPILER_VERSION,
+            'sourceCommit': SOLAR_COMMIT,
+            'archiveSha256': solar_digest,
+        },
+        'generator': {
+            'path': str(typegen),
+            'binarySha256': sha(typegen.read_bytes()),
+            'version': 'abi-typegen 0.9.3',
+            'sourceCommit': GENERATOR_COMMIT,
+            'target': native_target,
+            'packageIntegrity': SRI,
+            'archivePath': str(work / 'typegen-platform.tgz'),
+            'archiveSha256': checksums['files'][archive_name],
+        },
+        'forge': {
+            'path': str(forge),
+            'sha256': sha(forge.read_bytes()),
+            'version': forge_version,
+            'sourceCommit': FORGEDS_COMMIT,
+            'archiveSha256': forgeds_digest,
+        },
+        'outputs': outputs,
+        'captureWrapperSha256': sha(wrapper.read_bytes()),
+    }
     proof['capturedCompilations']=[]
     for capture in sorted(Path(outputs['captures']).iterdir()):
         m=json.loads((capture/'manifest.json').read_text())

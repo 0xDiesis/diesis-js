@@ -8,13 +8,33 @@ import argparse
 import copy
 import ast
 import hashlib
+import io
 import json
 from pathlib import Path, PurePosixPath
 import posixpath
 import re
 import subprocess
+import tarfile
 import tomllib
 import zipfile
+
+
+CONTRACTS_REVISION = 'f0f9df1408efcf9bd8b996266ec91504e5e1e372'
+GENERATOR_SOURCE = 'fbf6f7468c952863f2318a450520ac0933cbd65d'
+GENERATOR_INTEGRITY = 'sha512-65WfWmjtwff3cP031oVM1ARmyFmeCuLvTPOjHzUccVYA+4nmbym5BzARO8oLkvhTQIwsXVDJlx1CZuOItdUHkg=='
+# From checksums.json in the SRI-pinned, provenance-verified npm package.
+GENERATOR_ARCHIVES = {
+    'aarch64-apple-darwin': 'eadb57b6629980470ed7f7be0605df242eae2f12b8988fd9c4acf2fb7ce15860',
+    'x86_64-unknown-linux-gnu': 'ac05b8edc9516c115711315e6cfd87dc854f33de2fced09aa8001d482e145802',
+}
+FORGEDS_SOURCE = '4ca15fcba25aa61a1b436d28b428e30b459f3d56'
+# Archive and executable pins from the contracts repository's setup action.
+FORGEDS_DIGESTS = {
+    '39c4b0fd5ab8cd7ee2b411a1e0a5ac8519a5566bdd25d50f90ae9bd47ab01f63':
+        'a94c0565fc86a3cc91b73b745bfa76dfb5dfafbaf3beaba536b36651fd9e044d',
+    'a1341d56a7fc743b4d87853596baaf0931a6e4348106def1a6994bc793c5b62f':
+        '236083c70a100792a61206fb48aa082813671c0e5623bf11d7d0a03ea02ded5d',
+}
 
 
 def sha(data):
@@ -44,6 +64,27 @@ def regular(path):
     path = Path(path)
     require(not path.is_symlink() and path.is_file(), f'not a regular file: {path}')
     return path.read_bytes()
+
+
+def verify_generator(generator):
+    require(generator['sourceCommit'] == GENERATOR_SOURCE, 'generator source mismatch')
+    require(generator['version'] == 'abi-typegen 0.9.3', 'generator version mismatch')
+    require(generator['packageIntegrity'] == GENERATOR_INTEGRITY, 'generator package integrity mismatch')
+    archive = regular(generator['archivePath'])
+    pinned = GENERATOR_ARCHIVES.get(generator['target'])
+    require(sha(archive) == pinned == generator['archiveSha256'], 'generator release archive mismatch')
+    with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as release:
+        binaries = [member for member in release if member.name == 'abi-typegen']
+        require(len(binaries) == 1 and binaries[0].isfile(), 'unique generator executable required')
+        binary_digest = sha(release.extractfile(binaries[0]).read())
+    require(sha(regular(generator['path'])) == binary_digest == generator['binarySha256'], 'generator binary hash mismatch')
+
+
+def verify_forgeds(forge):
+    require(forge['sourceCommit'] == FORGEDS_SOURCE, 'forgeds source mismatch')
+    require('Commit SHA: ' + FORGEDS_SOURCE in forge['version'].splitlines(), 'forgeds version mismatch')
+    pinned = FORGEDS_DIGESTS.get(forge['archiveSha256'])
+    require(sha(regular(forge['path'])) == pinned == forge['sha256'], 'forgeds binary hash mismatch')
 
 
 def safe_relative(name):
@@ -116,7 +157,7 @@ def forge_metadata(value):
     # Forge stores rawMetadata losslessly but its typed metadata projection drops
     # these fields. Normalize only that documented representation; raw stays exact.
     result = copy.deepcopy(value)
-    # Forge 1.8.3's typed projection predates Solar's compiler name and
+    # The typed projection omits Solar's compiler name and
     # inserts null for absent source licenses. rawMetadata remains byte-exact.
     result.get('compiler', {}).pop('name', None)
     for source in result.get('sources', {}).values():
@@ -147,7 +188,7 @@ def verify(preflight_path):
     preflight = load(preflight_path)
     checkout = Path(preflight['checkout']).resolve(strict=True)
     revision = preflight['contractsRevision']
-    require(re.fullmatch('[a-f0-9]{40}', revision) is not None, 'unpinned Git revision')
+    require(revision == CONTRACTS_REVISION, 'wrong contracts revision')
     require(git(checkout, 'rev-parse', revision).decode().strip() == revision, 'Git revision mismatch')
     tracked = git(checkout, 'ls-tree', '-r', '-z', revision).split(b'\0')
     sources = {}
@@ -201,10 +242,10 @@ def verify(preflight_path):
                     require(name not in sources, 'duplicate source identity')
                     sources[name] = data
         dep_receipts.append({'name':identity[0], 'version':identity[1], 'archiveSha256':lock['checksum'], 'fileHashes':listed})
-    generator = preflight.get('generator')
-    if generator is not None:
-        require(sha(regular(generator['path'])) == generator['binarySha256'], 'generator binary hash mismatch')
-        require(generator['version'] == 'abi-typegen 0.9.1', 'generator version mismatch')
+    generator = preflight['generator']
+    verify_generator(generator)
+    forge = preflight['forge']
+    verify_forgeds(forge)
     compiler = preflight['solc']
     require(sha(regular(compiler['path'])) == compiler['sha256'], 'compiler hash mismatch')
     require(compiler['longVersion'] == '0.8.38+commit.e7a91fc7.solar.0.3.0', 'compiler version mismatch')
@@ -285,7 +326,33 @@ def verify(preflight_path):
         for field in ['bytecode', 'deployedBytecode']:
             require(bytecode(artifact[field]) == bytecode(compiled['evm'][field]), 'artifact ' + field + ' mismatch: ' + identity)
         artifacts[identity] = {'artifactPath':path.relative_to(artifact_root).as_posix(), 'artifactSha256':sha(regular(path)), 'abiSha256':sha(abi_bytes(compiled['abi'])), 'metadataSha256':sha(raw_metadata.encode()), 'bytecodeSha256':sha(canonical(bytecode(compiled['evm']['bytecode']))), 'deployedBytecodeSha256':sha(canonical(bytecode(compiled['evm']['deployedBytecode'])))}
-    return {'version':1, 'preflightSha256':sha(regular(preflight_path)), 'contractsRevision':revision, 'compiler':compiler, 'generator':preflight.get('generator'), 'dependencies':dep_receipts, 'inputSources':dict(sorted(all_inputs.items())), 'captures':capture_receipts, 'artifacts':artifacts, 'artifactRoot':str(artifact_root.resolve()), 'selectedArtifacts':[{'contract':identity.rsplit(':',1)[1], 'source':identity.rsplit(':',1)[0], 'path':entry['artifactPath'], 'sha256':entry['artifactSha256'], 'abiSha256':entry['abiSha256']} for identity, entry in artifacts.items()], 'limitations':['Consistency and pinned-input provenance only; not compiler correctness, EVM execution, deployment or ABI generator qualification.', 'Import lexer supports literal ASCII Solidity import forms; escaped paths and ambiguous remappings fail closed. No import callback/network resolution allowed.']}
+    return {
+        'version': 1,
+        'preflightSha256': sha(regular(preflight_path)),
+        'contractsRevision': revision,
+        'compiler': compiler,
+        'forge': forge,
+        'generator': generator,
+        'dependencies': dep_receipts,
+        'inputSources': dict(sorted(all_inputs.items())),
+        'captures': capture_receipts,
+        'artifacts': artifacts,
+        'artifactRoot': str(artifact_root.resolve()),
+        'selectedArtifacts': [
+            {
+                'contract': identity.rsplit(':', 1)[1],
+                'source': identity.rsplit(':', 1)[0],
+                'path': entry['artifactPath'],
+                'sha256': entry['artifactSha256'],
+                'abiSha256': entry['abiSha256'],
+            }
+            for identity, entry in artifacts.items()
+        ],
+        'limitations': [
+            'Consistency and pinned-input provenance only. Does not establish compiler or generator correctness, EVM execution, or deployment.',
+            'Import lexer supports literal ASCII Solidity import forms; escaped paths and ambiguous remappings fail closed. No import callback/network resolution allowed.',
+        ],
+    }
 
 
 def main():

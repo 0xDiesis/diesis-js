@@ -7,3 +7,4 @@ playwright-report/
 .DS_Store
 **/__pycache__/
 *.pyc
+test/fixtures/npm-abi-typegen-*-verified-audit.json

@@ -37,9 +37,11 @@ export interface DiesisPatronMethods {
   reserveGrantV2(reservationId: BytesLike, sender: AddressLike, target: AddressLike, input: BytesLike, maximumFee: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   resolveGrant(sender: AddressLike, target: AddressLike, input: BytesLike, fee: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   resolveGrantContext(sender: AddressLike, target: AddressLike, input: BytesLike, fee: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<[string, bigint, bigint, bigint, bigint, bigint] & { grantId: string; jarBalance: bigint; maxTransactions: bigint; transactionsUsed: bigint; maxLifetimeSpend: bigint; lifetimeSpent: bigint }>;
+  revokeCampaignGrantAuthorizationV1(campaignId: BytesLike, beneficiary: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   revokeCampaignVoucherV1(campaignId: BytesLike, beneficiary: AddressLike, nonce: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   revokeGrantAuthorization(beneficiary: AddressLike, grantId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   rotateCampaignOwnerV1(campaignId: BytesLike, newOwner: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  setCampaignGrantAuthorizationV1(campaignId: BytesLike, beneficiary: AddressLike, target: AddressLike, selector: BytesLike, maxTransactions: BigNumberish, maxLifetimeSpend: BigNumberish, expiry: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setCampaignRevokedV1(campaignId: BytesLike, revoked: boolean, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setGrantAuthorization(beneficiary: AddressLike, grantId: BytesLike, target: AddressLike, selector: BytesLike, maxTransactions: BigNumberish, maxLifetimeSpend: BigNumberish, expiry: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   setPaused(paused_: boolean, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;

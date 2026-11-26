@@ -97,7 +97,7 @@ test('rejects wrong generator digest before running executable after fake verifi
       'import sys\nsys.exit(0)\n',
     )
     const binary = path.join(root, 'fake-typegen')
-    await writeFile(binary, '#!/bin/sh\nprintf "abi-typegen 0.9.1\\n"\n')
+    await writeFile(binary, '#!/bin/sh\nprintf "abi-typegen 0.9.3\\n"\n')
     await chmod(binary, 0o700)
     await copyFile(
       'scripts/abi-contracts.json',
@@ -108,10 +108,10 @@ test('rejects wrong generator digest before running executable after fake verifi
         await readFile('scripts/abi-contracts.json', 'utf8'),
       ).map((contract) => ({ contract })),
       artifactRoot: root,
-      contractsRevision: '6fcf1f12b86aaac451f699ffb84d70e725bbb122',
+      contractsRevision: 'f0f9df1408efcf9bd8b996266ec91504e5e1e372',
       generator: {
-        version: 'abi-typegen 0.9.1',
-        sourceCommit: '9d9b8c38ce8bfdb12e29222ded734d7758321efb',
+        version: 'abi-typegen 0.9.3',
+        sourceCommit: 'fbf6f7468c952863f2318a450520ac0933cbd65d',
         binarySha256: '0'.repeat(64),
       },
     }
@@ -190,7 +190,7 @@ test('whole sync --check uses direct single-target viem output and ABI-only inve
     const binary = path.join(root, 'fake-typegen')
     await writeFile(
       binary,
-      `#!${process.execPath}\nconst fs=require('node:fs');const path=require('node:path');const args=process.argv.slice(2);if(args[0]==='--version'){console.log('abi-typegen 0.9.1');process.exit(0)};fs.writeFileSync(${JSON.stringify(path.join(root, 'argv.json'))},JSON.stringify(args));const out=args[args.indexOf('--out')+1];fs.mkdirSync(out,{recursive:true});const names=args[args.indexOf('--contracts')+1].split(',');for(const name of names)fs.writeFileSync(path.join(out,name+'.abi.ts'),'export const '+name+'Abi = [] as const\\n');fs.writeFileSync(path.join(out,'index.ts'),'// fixture ABI index\\n');if(!args.includes('--no-wrappers'))fs.writeFileSync(path.join(out,'wrapper.ts'),'// wrapper\\n');\n`,
+      `#!${process.execPath}\nconst fs=require('node:fs');const path=require('node:path');const args=process.argv.slice(2);if(args[0]==='--version'){console.log('abi-typegen 0.9.3');process.exit(0)};fs.writeFileSync(${JSON.stringify(path.join(root, 'argv.json'))},JSON.stringify(args));const out=args[args.indexOf('--out')+1];fs.mkdirSync(out,{recursive:true});const names=args[args.indexOf('--contracts')+1].split(',');for(const name of names)fs.writeFileSync(path.join(out,name+'.abi.ts'),'export const '+name+'Abi = [] as const\\n');fs.writeFileSync(path.join(out,'index.ts'),'// fixture ABI index\\n');if(!args.includes('--no-wrappers'))fs.writeFileSync(path.join(out,'wrapper.ts'),'// wrapper\\n');\n`,
     )
     await chmod(binary, 0o700)
     const destination = path.join(root, 'src/abi/generated/viem')
@@ -214,10 +214,10 @@ test('whole sync --check uses direct single-target viem output and ABI-only inve
       JSON.stringify({
         selectedArtifacts: contracts.map((contract) => ({ contract })),
         artifactRoot: root,
-        contractsRevision: '6fcf1f12b86aaac451f699ffb84d70e725bbb122',
+        contractsRevision: 'f0f9df1408efcf9bd8b996266ec91504e5e1e372',
         generator: {
-          version: 'abi-typegen 0.9.1',
-          sourceCommit: '9d9b8c38ce8bfdb12e29222ded734d7758321efb',
+          version: 'abi-typegen 0.9.3',
+          sourceCommit: 'fbf6f7468c952863f2318a450520ac0933cbd65d',
           binarySha256: createHash('sha256')
             .update(await readFile(binary))
             .digest('hex'),

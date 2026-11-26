@@ -15,6 +15,8 @@ export * from './DiesisPatron.abi.js';
 export * from './DiesisPrivacyPools.abi.js';
 export * from './DiesisPublicResolver.abi.js';
 export * from './DiesisReverseRegistrar.abi.js';
+export * from './DiesisSecurityAccount.abi.js';
+export * from './DiesisSecurityAccountFactory.abi.js';
 export * from './DiesisSettlementRouter.abi.js';
 export * from './DiesisShieldedPool.abi.js';
 export * from './DiesisStaking.abi.js';

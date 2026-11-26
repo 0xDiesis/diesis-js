@@ -31,9 +31,13 @@ export type IDiesisNameVerifierContract = Omit<BaseContract, keyof IDiesisNameVe
 
 export function connectIDiesisNameVerifier(address: string, runner: ContractRunner): IDiesisNameVerifierContract {
   const contract = new Contract(address, IDiesisNameVerifierAbi, runner);
-  Object.assign(contract, {
-    attestationsBytes32Bytes32: contract.getFunction("attestations(bytes32,bytes32)"),
-    attestationsBytes32: contract.getFunction("attestations(bytes32)"),
-  });
-  return contract as unknown as IDiesisNameVerifierContract;
+  const attachAliases = (target: Contract): IDiesisNameVerifierContract => {
+    Object.assign(target, {
+      attestationsBytes32Bytes32: target.getFunction("attestations(bytes32,bytes32)"),
+      attestationsBytes32: target.getFunction("attestations(bytes32)"),
+      connect: (nextRunner: ContractRunner | null) => attachAliases(Contract.prototype.connect.call(target, nextRunner) as Contract),
+    });
+    return target as unknown as IDiesisNameVerifierContract;
+  };
+  return attachAliases(contract);
 }

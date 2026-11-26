@@ -80,9 +80,13 @@ export type IDiesisPositionContract = Omit<BaseContract, keyof IDiesisPositionMe
 
 export function connectIDiesisPosition(address: string, runner: ContractRunner): IDiesisPositionContract {
   const contract = new Contract(address, IDiesisPositionAbi, runner);
-  Object.assign(contract, {
-    safeTransferFromAddressAddressUint256: contract.getFunction("safeTransferFrom(address,address,uint256)"),
-    safeTransferFromAddressAddressUint256Bytes: contract.getFunction("safeTransferFrom(address,address,uint256,bytes)"),
-  });
-  return contract as unknown as IDiesisPositionContract;
+  const attachAliases = (target: Contract): IDiesisPositionContract => {
+    Object.assign(target, {
+      safeTransferFromAddressAddressUint256: target.getFunction("safeTransferFrom(address,address,uint256)"),
+      safeTransferFromAddressAddressUint256Bytes: target.getFunction("safeTransferFrom(address,address,uint256,bytes)"),
+      connect: (nextRunner: ContractRunner | null) => attachAliases(Contract.prototype.connect.call(target, nextRunner) as Contract),
+    });
+    return target as unknown as IDiesisPositionContract;
+  };
+  return attachAliases(contract);
 }

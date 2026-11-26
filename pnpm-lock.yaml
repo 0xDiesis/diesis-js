@@ -194,8 +194,8 @@ importers:
         version: 0.7.6
     devDependencies:
       '@0xdoublesharp/abi-typegen':
-        specifier: 0.9.1
-        version: 0.9.1
+        specifier: 0.9.3
+        version: 0.9.3
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.15.0)
@@ -250,8 +250,8 @@ importers:
 
 packages:
 
-  '@0xdoublesharp/abi-typegen@0.9.1':
-    resolution: {integrity: sha512-Et+WDzyg+NWH0RFtOUqRoa5leK44PJnSAXPZ0bVTQjZqEydqBd5Z9XQu0Sv002PFVMs1BzfT3gsP4zkMoMGK7A==}
+  '@0xdoublesharp/abi-typegen@0.9.3':
+    resolution: {integrity: sha512-65WfWmjtwff3cP031oVM1ARmyFmeCuLvTPOjHzUccVYA+4nmbym5BzARO8oLkvhTQIwsXVDJlx1CZuOItdUHkg==}
     hasBin: true
 
   '@adraffy/ens-normalize@1.11.1':
@@ -1884,7 +1884,7 @@ packages:
 
 snapshots:
 
-  '@0xdoublesharp/abi-typegen@0.9.1': {}
+  '@0xdoublesharp/abi-typegen@0.9.3': {}
 
   '@adraffy/ens-normalize@1.11.1': {}
 

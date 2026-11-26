@@ -44,9 +44,24 @@ export type IDiesisNameRegistrySetSubnodeOwnerParams = {
   owner_: `0x${string}`;
 };
 
+export type IDiesisNameRegistrySetSubnodeOwnerWithLabelParams = {
+  node: `0x${string}`;
+  label: string;
+  owner_: `0x${string}`;
+};
+
 export type IDiesisNameRegistrySetSubnodeRecordParams = {
   node: `0x${string}`;
   label: `0x${string}`;
+  owner_: `0x${string}`;
+  resolver_: `0x${string}`;
+  ttl_: bigint;
+  expiry_: bigint;
+};
+
+export type IDiesisNameRegistrySetSubnodeRecordWithLabelParams = {
+  node: `0x${string}`;
+  label: string;
   owner_: `0x${string}`;
   resolver_: `0x${string}`;
   ttl_: bigint;

@@ -87,6 +87,40 @@ export const DiesisEpochAuthorityAbi = [
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "transitionDigest",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "committeeIndexes",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "mlDsaKeys",
+          "type": "bytes[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "signatures",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "attestEpochTransitionMlDsa",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "attested",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "cancelPendingValidatorEpoch",
       "outputs": [],
@@ -151,6 +185,19 @@ export const DiesisEpochAuthorityAbi = [
       "name": "certifyValidatorEpoch",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "committeeCap",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -332,6 +379,11 @@ export const DiesisEpochAuthorityAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -355,6 +407,91 @@ export const DiesisEpochAuthorityAbi = [
           "internalType": "struct IDiesisEpochIdentity.ValidatorIdentityV1[]",
           "name": "page",
           "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "oldEpoch",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "oldIdentityDigest",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "nextIdentityDigest",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint64",
+              "name": "activationBlockNumber",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "certificationBoundaryNumber",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "certificationBoundaryParentHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "certifiedCheckpointDigest",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "signerBitmap",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "aggregateSignature",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct IDiesisEpochAuthority.EpochTransitionCertificateV1",
+          "name": "certificate",
+          "type": "tuple"
+        }
+      ],
+      "name": "epochTransitionDigest",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "transitionDigest",
+          "type": "bytes32"
+        }
+      ],
+      "name": "epochTransitionMlDsaAttestations",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -434,6 +571,11 @@ export const DiesisEpochAuthorityAbi = [
                   "type": "bytes"
                 },
                 {
+                  "internalType": "bytes32",
+                  "name": "mlDsaPublicKeyHash",
+                  "type": "bytes32"
+                },
+                {
                   "internalType": "bytes",
                   "name": "vrfPublicKey",
                   "type": "bytes"
@@ -481,6 +623,11 @@ export const DiesisEpochAuthorityAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -509,7 +656,17 @@ export const DiesisEpochAuthorityAbi = [
             },
             {
               "internalType": "bytes",
-              "name": "blsContextSignature",
+              "name": "blsKeyBindingSignature",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaPublicKey",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaKeyBindingSignature",
               "type": "bytes"
             },
             {
@@ -565,6 +722,25 @@ export const DiesisEpochAuthorityAbi = [
       "name": "invalidatePendingValidator",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "keyHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "mlDsaPublicKey",
+      "outputs": [
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -698,6 +874,11 @@ export const DiesisEpochAuthorityAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -726,7 +907,17 @@ export const DiesisEpochAuthorityAbi = [
             },
             {
               "internalType": "bytes",
-              "name": "blsContextSignature",
+              "name": "blsKeyBindingSignature",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaPublicKey",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "mlDsaKeyBindingSignature",
               "type": "bytes"
             },
             {
@@ -833,6 +1024,11 @@ export const DiesisEpochAuthorityAbi = [
               "type": "bytes"
             },
             {
+              "internalType": "bytes32",
+              "name": "mlDsaPublicKeyHash",
+              "type": "bytes32"
+            },
+            {
               "internalType": "bytes",
               "name": "vrfPublicKey",
               "type": "bytes"
@@ -934,6 +1130,11 @@ export const DiesisEpochAuthorityAbi = [
                   "internalType": "bytes",
                   "name": "blsProofOfPossession",
                   "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "mlDsaPublicKeyHash",
+                  "type": "bytes32"
                 },
                 {
                   "internalType": "bytes",
@@ -1051,6 +1252,60 @@ export const DiesisEpochAuthorityAbi = [
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "validatorId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint64",
+          "name": "targetEpoch",
+          "type": "uint64"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "genesisHash",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "consensusAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "blsPublicKey",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "mlDsaKey",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "blsSignature",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "mlDsaSignature",
+          "type": "bytes"
+        }
+      ],
+      "name": "verifyKeyBinding",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "bindingDigest",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "anonymous": false,
       "inputs": [
         {
@@ -1067,6 +1322,122 @@ export const DiesisEpochAuthorityAbi = [
         }
       ],
       "name": "EpochIdentityPinned",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "transitionDigest",
+          "type": "bytes32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "oldEpoch",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "oldIdentityDigest",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "nextIdentityDigest",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint64",
+              "name": "activationBlockNumber",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "certificationBoundaryNumber",
+              "type": "uint64"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "certificationBoundaryParentHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "certifiedCheckpointDigest",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "bytes",
+              "name": "signerBitmap",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "aggregateSignature",
+              "type": "bytes"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct IDiesisEpochAuthority.EpochTransitionCertificateV1",
+          "name": "certificate",
+          "type": "tuple"
+        }
+      ],
+      "name": "EpochTransitionCertified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "transitionDigest",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "signers",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "committeeIndexes",
+          "type": "uint256[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes[]",
+          "name": "signatures",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "EpochTransitionMlDsaAttested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "bindingDigest",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "mlDsaPublicKeyHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "KeyBindingVerified",
       "type": "event"
     },
     {
@@ -1167,6 +1538,22 @@ export const DiesisEpochAuthorityAbi = [
         }
       ],
       "name": "DuplicateBlsPublicKey",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "firstValidatorId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "secondValidatorId",
+          "type": "uint256"
+        }
+      ],
+      "name": "DuplicateMlDsaPublicKey",
       "type": "error"
     },
     {
@@ -1330,6 +1717,11 @@ export const DiesisEpochAuthorityAbi = [
         }
       ],
       "name": "InvalidVrfPublicKey",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MissingMlDsaAttestation",
       "type": "error"
     },
     {
@@ -1519,6 +1911,17 @@ export const DiesisEpochAuthorityAbi = [
     {
       "inputs": [],
       "name": "ZeroGenesisHash",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "validatorId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ZeroMlDsaPublicKeyHash",
       "type": "error"
     },
     {

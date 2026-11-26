@@ -169,6 +169,24 @@ export function useDiesisBaseRegistrarGracePeriod(address: Address) {
   });
 }
 
+export function useDiesisBaseRegistrarLabelSkeleton(address: Address, args: { label: string }) {
+  return useReadContract({
+    address,
+    abi: DiesisBaseRegistrarAbi,
+    functionName: 'labelSkeleton',
+    args: [args.label],
+  });
+}
+
+export function useDiesisBaseRegistrarLookalikeHolder(address: Address, args: { label: string }) {
+  return useReadContract({
+    address,
+    abi: DiesisBaseRegistrarAbi,
+    functionName: 'lookalikeHolder',
+    args: [args.label],
+  });
+}
+
 export function useDiesisBaseRegistrarMaintenance(address: Address) {
   return useReadContract({
     address,
@@ -260,6 +278,15 @@ export function useDiesisBaseRegistrarPremiumPeriod(address: Address) {
   });
 }
 
+export function useDiesisBaseRegistrarRegisteredSkeletonHolders(address: Address, args: { skeletonHash: `0x${string}` }) {
+  return useReadContract({
+    address,
+    abi: DiesisBaseRegistrarAbi,
+    functionName: 'registeredSkeletonHolders',
+    args: [args.skeletonHash],
+  });
+}
+
 export function useDiesisBaseRegistrarRegistry(address: Address) {
   return useReadContract({
     address,
@@ -283,6 +310,15 @@ export function useDiesisBaseRegistrarReservedLabels(address: Address, args: { l
     abi: DiesisBaseRegistrarAbi,
     functionName: 'reservedLabels',
     args: [args.labelhash],
+  });
+}
+
+export function useDiesisBaseRegistrarReservedSkeletonHolders(address: Address, args: { skeletonHash: `0x${string}` }) {
+  return useReadContract({
+    address,
+    abi: DiesisBaseRegistrarAbi,
+    functionName: 'reservedSkeletonHolders',
+    args: [args.skeletonHash],
   });
 }
 

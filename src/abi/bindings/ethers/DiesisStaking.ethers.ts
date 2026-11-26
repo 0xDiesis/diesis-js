@@ -50,7 +50,7 @@ export interface DiesisStakingMethods {
   consensusKeyByNode(arg0: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<string>;
   epochCandidate(validatorId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<[string, bigint, bigint] & { operator: string; bonded: bigint; marks: bigint }>;
   epochIdentityDigest(epoch: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<string>;
-  epochIdentityPage(epoch: BigNumberish, cursor: BigNumberish, limit: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<([bigint, string, bigint, bigint, string, string, string, string, string, bigint] & { validatorId: bigint; consensusAddress: string; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: bigint })[]>;
+  epochIdentityPage(epoch: BigNumberish, cursor: BigNumberish, limit: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<([bigint, string, bigint, bigint, string, string, string, string, string, string, bigint] & { validatorId: bigint; consensusAddress: string; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: bigint })[]>;
   executeKeyRecovery(oldAddress: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   exitSequence(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   exitTickets(arg0: BigNumberish, arg1: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<[bigint, bigint, bigint, bigint] & { amount: bigint; validatorId: bigint; checkpoint: bigint; timestamp: bigint }>;
@@ -63,7 +63,7 @@ export interface DiesisStakingMethods {
   harvestRewardsForPosition(tokenId: BigNumberish, recipient: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   increaseStakeForPosition(tokenId: BigNumberish, overrides?: Overrides): Promise<ContractTransactionResponse>;
   initialize(finalizedCheckpoint: BigNumberish, _totalSupply: BigNumberish, configContract: AddressLike, owner_: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
-  initializeEpochZero(identity: { version: BigNumberish; chainId: BigNumberish; genesisHash: BytesLike; epoch: BigNumberish; activationBlockNumber: BigNumberish; previousIdentityDigest: BytesLike; validators: { validatorId: BigNumberish; consensusAddress: AddressLike; bondedStakeWei: BigNumberish; votingPower: BigNumberish; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike; status: BigNumberish }[] }, bundles: { consensusAddress: AddressLike; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike }[], proofs: { consensusSignature: BytesLike; blsContextSignature: BytesLike; vrfX: BigNumberish; vrfY: BigNumberish; vrfSignature: BytesLike; quicSignature: BytesLike; relayerSignature: BytesLike }[], overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  initializeEpochZero(identity: { version: BigNumberish; chainId: BigNumberish; genesisHash: BytesLike; epoch: BigNumberish; activationBlockNumber: BigNumberish; previousIdentityDigest: BytesLike; validators: { validatorId: BigNumberish; consensusAddress: AddressLike; bondedStakeWei: BigNumberish; votingPower: BigNumberish; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; mlDsaPublicKeyHash: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike; status: BigNumberish }[] }, bundles: { consensusAddress: AddressLike; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; mlDsaPublicKeyHash: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike }[], proofs: { consensusSignature: BytesLike; blsKeyBindingSignature: BytesLike; mlDsaPublicKey: BytesLike; mlDsaKeyBindingSignature: BytesLike; vrfX: BigNumberish; vrfY: BigNumberish; vrfSignature: BytesLike; quicSignature: BytesLike; relayerSignature: BytesLike }[], overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   initialized(overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
   instantUnstakeForPosition(tokenId: BigNumberish, amount: BigNumberish, fee: BigNumberish, recipient: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   isApprovedForAll(owner: AddressLike, operator: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<boolean>;
@@ -95,7 +95,7 @@ export interface DiesisStakingMethods {
   recoveryAuthorizer(overrides?: Omit<Overrides, 'value'>): Promise<string>;
   recoveryAuthorizerGeneration(overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   registerValidator(pubkey: BytesLike, overrides?: Overrides): Promise<ContractTransactionResponse>;
-  registerValidatorRoleKeys(validatorId: BigNumberish, targetEpoch: BigNumberish, keys: { consensusAddress: AddressLike; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike }, proofs: { consensusSignature: BytesLike; blsContextSignature: BytesLike; vrfX: BigNumberish; vrfY: BigNumberish; vrfSignature: BytesLike; quicSignature: BytesLike; relayerSignature: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  registerValidatorRoleKeys(validatorId: BigNumberish, targetEpoch: BigNumberish, keys: { consensusAddress: AddressLike; blsPublicKey: BytesLike; blsProofOfPossession: BytesLike; mlDsaPublicKeyHash: BytesLike; vrfPublicKey: BytesLike; quicTransportAddress: AddressLike; relayerAddress: AddressLike }, proofs: { consensusSignature: BytesLike; blsKeyBindingSignature: BytesLike; mlDsaPublicKey: BytesLike; mlDsaKeyBindingSignature: BytesLike; vrfX: BigNumberish; vrfY: BigNumberish; vrfSignature: BytesLike; quicSignature: BytesLike; relayerSignature: BytesLike }, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   registeredValidatorIds(overrides?: Omit<Overrides, 'value'>): Promise<bigint[]>;
   renounceOwnership(overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   requestKeyRecovery(newAddress: AddressLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
@@ -103,7 +103,7 @@ export interface DiesisStakingMethods {
   requestUnstakeForPosition(tokenId: BigNumberish, requestId: BigNumberish, amount: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   rewardsAccruedThrough(arg0: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<bigint>;
   roleDigest(validatorId: BigNumberish, targetEpoch: BigNumberish, role: BigNumberish, publicIdentity: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<string>;
-  roleKeyBundle(bundleId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, string, string, string, string, string] & { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }>;
+  roleKeyBundle(bundleId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, string, string, string, string, string, string] & { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }>;
   safeTransferFromAddressAddressUint256(from: AddressLike, to: AddressLike, tokenId: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   safeTransferFromAddressAddressUint256Bytes(from: AddressLike, to: AddressLike, tokenId: BigNumberish, data: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   scheduleValidatorEpoch(activationBlockNumber: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
@@ -174,9 +174,13 @@ export type DiesisStakingContract = Omit<BaseContract, keyof DiesisStakingMethod
 
 export function connectDiesisStaking(address: string, runner: ContractRunner): DiesisStakingContract {
   const contract = new Contract(address, DiesisStakingAbi, runner);
-  Object.assign(contract, {
-    safeTransferFromAddressAddressUint256: contract.getFunction("safeTransferFrom(address,address,uint256)"),
-    safeTransferFromAddressAddressUint256Bytes: contract.getFunction("safeTransferFrom(address,address,uint256,bytes)"),
-  });
-  return contract as unknown as DiesisStakingContract;
+  const attachAliases = (target: Contract): DiesisStakingContract => {
+    Object.assign(target, {
+      safeTransferFromAddressAddressUint256: target.getFunction("safeTransferFrom(address,address,uint256)"),
+      safeTransferFromAddressAddressUint256Bytes: target.getFunction("safeTransferFrom(address,address,uint256,bytes)"),
+      connect: (nextRunner: ContractRunner | null) => attachAliases(Contract.prototype.connect.call(target, nextRunner) as Contract),
+    });
+    return target as unknown as DiesisStakingContract;
+  };
+  return attachAliases(contract);
 }

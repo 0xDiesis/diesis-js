@@ -70,7 +70,7 @@ export interface DiesisStakingMethods {
   consensusKeyByNode(arg0: Numbers): DiesisStakingMethod<'nonpayable', string>;
   epochCandidate(validatorId: Numbers): DiesisStakingMethod<'nonpayable', { 0: string; 1: bigint; 2: bigint; operator: string; bonded: bigint; marks: bigint; __length__: number }>;
   epochIdentityDigest(epoch: Numbers): DiesisStakingMethod<'nonpayable', string>;
-  epochIdentityPage(epoch: Numbers, cursor: Numbers, limit: Numbers): DiesisStakingMethod<'nonpayable', { validatorId: bigint; consensusAddress: string; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: bigint }[]>;
+  epochIdentityPage(epoch: Numbers, cursor: Numbers, limit: Numbers): DiesisStakingMethod<'nonpayable', { validatorId: bigint; consensusAddress: string; bondedStakeWei: bigint; votingPower: bigint; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: bigint }[]>;
   executeKeyRecovery(oldAddress: string): DiesisStakingMethod<'nonpayable', void>;
   exitSequence(): DiesisStakingMethod<'nonpayable', bigint>;
   exitTickets(arg0: Numbers, arg1: Numbers): DiesisStakingMethod<'nonpayable', { 0: bigint; 1: bigint; 2: bigint; 3: bigint; amount: bigint; validatorId: bigint; checkpoint: bigint; timestamp: bigint; __length__: number }>;
@@ -83,7 +83,7 @@ export interface DiesisStakingMethods {
   harvestRewardsForPosition(tokenId: Numbers, recipient: string): DiesisStakingMethod<'nonpayable', bigint>;
   increaseStakeForPosition(tokenId: Numbers): DiesisStakingMethod<'payable', void>;
   initialize(finalizedCheckpoint: Numbers, _totalSupply: Numbers, configContract: string, owner_: string): DiesisStakingMethod<'nonpayable', void>;
-  initializeEpochZero(identity: { version: Numbers; chainId: Numbers; genesisHash: string; epoch: Numbers; activationBlockNumber: Numbers; previousIdentityDigest: string; validators: { validatorId: Numbers; consensusAddress: string; bondedStakeWei: Numbers; votingPower: Numbers; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: Numbers }[] }, bundles: { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }[], proofs: { consensusSignature: string; blsContextSignature: string; vrfX: Numbers; vrfY: Numbers; vrfSignature: string; quicSignature: string; relayerSignature: string }[]): DiesisStakingMethod<'nonpayable', boolean>;
+  initializeEpochZero(identity: { version: Numbers; chainId: Numbers; genesisHash: string; epoch: Numbers; activationBlockNumber: Numbers; previousIdentityDigest: string; validators: { validatorId: Numbers; consensusAddress: string; bondedStakeWei: Numbers; votingPower: Numbers; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string; status: Numbers }[] }, bundles: { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }[], proofs: { consensusSignature: string; blsKeyBindingSignature: string; mlDsaPublicKey: string; mlDsaKeyBindingSignature: string; vrfX: Numbers; vrfY: Numbers; vrfSignature: string; quicSignature: string; relayerSignature: string }[]): DiesisStakingMethod<'nonpayable', boolean>;
   initialized(): DiesisStakingMethod<'nonpayable', boolean>;
   instantUnstakeForPosition(tokenId: Numbers, amount: Numbers, fee: Numbers, recipient: string): DiesisStakingMethod<'nonpayable', bigint>;
   isApprovedForAll(owner: string, operator: string): DiesisStakingMethod<'nonpayable', boolean>;
@@ -115,7 +115,7 @@ export interface DiesisStakingMethods {
   recoveryAuthorizer(): DiesisStakingMethod<'nonpayable', string>;
   recoveryAuthorizerGeneration(): DiesisStakingMethod<'nonpayable', bigint>;
   registerValidator(pubkey: string): DiesisStakingMethod<'payable', { 0: bigint; 1: bigint; validatorId: bigint; tokenId: bigint; __length__: number }>;
-  registerValidatorRoleKeys(validatorId: Numbers, targetEpoch: Numbers, keys: { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }, proofs: { consensusSignature: string; blsContextSignature: string; vrfX: Numbers; vrfY: Numbers; vrfSignature: string; quicSignature: string; relayerSignature: string }): DiesisStakingMethod<'nonpayable', string>;
+  registerValidatorRoleKeys(validatorId: Numbers, targetEpoch: Numbers, keys: { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }, proofs: { consensusSignature: string; blsKeyBindingSignature: string; mlDsaPublicKey: string; mlDsaKeyBindingSignature: string; vrfX: Numbers; vrfY: Numbers; vrfSignature: string; quicSignature: string; relayerSignature: string }): DiesisStakingMethod<'nonpayable', string>;
   registeredValidatorIds(): DiesisStakingMethod<'nonpayable', bigint[]>;
   renounceOwnership(): DiesisStakingMethod<'nonpayable', void>;
   requestKeyRecovery(newAddress: string): DiesisStakingMethod<'nonpayable', void>;
@@ -123,7 +123,7 @@ export interface DiesisStakingMethods {
   requestUnstakeForPosition(tokenId: Numbers, requestId: Numbers, amount: Numbers): DiesisStakingMethod<'nonpayable', void>;
   rewardsAccruedThrough(arg0: Numbers): DiesisStakingMethod<'nonpayable', bigint>;
   roleDigest(validatorId: Numbers, targetEpoch: Numbers, role: Numbers, publicIdentity: string): DiesisStakingMethod<'nonpayable', string>;
-  roleKeyBundle(bundleId: string): DiesisStakingMethod<'nonpayable', { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }>;
+  roleKeyBundle(bundleId: string): DiesisStakingMethod<'nonpayable', { consensusAddress: string; blsPublicKey: string; blsProofOfPossession: string; mlDsaPublicKeyHash: string; vrfPublicKey: string; quicTransportAddress: string; relayerAddress: string }>;
   safeTransferFrom(from: string, to: string, tokenId: Numbers): DiesisStakingMethod<'nonpayable', void>;
   "safeTransferFrom(address,address,uint256)"(from: string, to: string, tokenId: Numbers): DiesisStakingMethod<'nonpayable', void>;
   safeTransferFrom(from: string, to: string, tokenId: Numbers, data: string): DiesisStakingMethod<'nonpayable', void>;

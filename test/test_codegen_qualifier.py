@@ -1,5 +1,7 @@
+import base64
 import importlib.util
 import io
+import json
 from pathlib import Path
 import tarfile
 import tempfile
@@ -11,8 +13,8 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 class QualifierTests(unittest.TestCase):
     def test_exact_source_and_release_tuple(self):
-        self.assertEqual(module.REVISION,'6fcf1f12b86aaac451f699ffb84d70e725bbb122')
-        self.assertEqual(module.GENERATOR_COMMIT,'9d9b8c38ce8bfdb12e29222ded734d7758321efb')
+        self.assertEqual(module.REVISION,'f0f9df1408efcf9bd8b996266ec91504e5e1e372')
+        self.assertEqual(module.GENERATOR_COMMIT,'fbf6f7468c952863f2318a450520ac0933cbd65d')
     def test_zip_bytes_manifest_and_traversal(self):
         stream=io.BytesIO()
         with zipfile.ZipFile(stream,'w') as z:z.writestr('src/a.sol',b'exact\x00bytes')
@@ -59,18 +61,48 @@ class PackageManagerBoundaryTest(unittest.TestCase):
 
 
 class VerifiedProvenanceBindingTest(unittest.TestCase):
-    # The stored receipt was verified by npm audit signatures. Mutations test
-    # structural binding only, not cryptographic acceptance of altered payloads.
+    # Model the fields returned by npm audit. The qualifier runs npm to perform
+    # the cryptographic checks before it validates these fields.
     def receipt(self):
-        import json
-        return json.loads((Path(__file__).parent / 'fixtures/npm-abi-typegen-0.9.1-verified-audit.json').read_text())
+        predicate_type = 'https://slsa.dev/provenance/v1'
+        repository = 'https://github.com/0xdoublesharp/abi-typegen'
+        ref = 'refs/tags/v0.9.3'
+        statement = {
+            '_type': 'https://in-toto.io/Statement/v1',
+            'predicateType': predicate_type,
+            'subject': [{
+                'name': 'pkg:npm/%400xdoublesharp/abi-typegen@0.9.3',
+                'digest': {'sha512': 'eb959f5a68edc1f7f770fd37d6854cd40466c8599e0ae2ef4cf3a31f351c715600fb89e66f29b90730113bca0b92f853408c2c5d50c9971d4266e388b5d50792'},
+            }],
+            'predicate': {'buildDefinition': {
+                'buildType': 'https://slsa-framework.github.io/github-actions-buildtypes/workflow/v1',
+                'externalParameters': {'workflow': {
+                    'ref': ref,
+                    'repository': repository,
+                    'path': '.github/workflows/release.yml',
+                }},
+                'resolvedDependencies': [{
+                    'uri': f'git+{repository}@{ref}',
+                    'digest': {'gitCommit': 'fbf6f7468c952863f2318a450520ac0933cbd65d'},
+                }],
+            }},
+        }
+        return {'verified': [{
+            'name': '@0xdoublesharp/abi-typegen',
+            'version': '0.9.3',
+            'attestationBundles': [
+                {'predicateType': 'https://github.com/npm/attestation/tree/main/specs/publish/v0.1'},
+                {'predicateType': predicate_type, 'bundle': {'dsseEnvelope': {
+                    'payloadType': 'application/vnd.in-toto+json',
+                    'payload': base64.b64encode(json.dumps(statement).encode()).decode(),
+                }}},
+            ],
+        }]}
 
-    def test_actual_verified_receipt_binds_published_source(self):
+    def test_provenance_binds_published_source(self):
         module.validate_signature_provenance(self.receipt())
 
     def test_rejects_subject_digest_source_workflow_and_ambiguous_receipts(self):
-        import base64
-        import json
         import copy
         original = self.receipt()
         for mutation in ['digest','commit','subject','repo','ref','path','uri','publish-only','zero','duplicate']:
@@ -81,7 +113,7 @@ class VerifiedProvenanceBindingTest(unittest.TestCase):
             definition=statement['predicate']['buildDefinition']
             if mutation=='digest':statement['subject'][0]['digest']['sha512']='0'*128
             elif mutation=='commit':definition['resolvedDependencies'][0]['digest']['gitCommit']='0'*40
-            elif mutation=='subject':statement['subject'][0]['name']='pkg:npm/other@0.9.1'
+            elif mutation=='subject':statement['subject'][0]['name']='pkg:npm/other@0.9.3'
             elif mutation=='repo':definition['externalParameters']['workflow']['repository']='https://github.com/other/repo'
             elif mutation=='ref':definition['externalParameters']['workflow']['ref']='refs/heads/main'
             elif mutation=='path':definition['externalParameters']['workflow']['path']='.github/workflows/other.yml'

@@ -5,12 +5,15 @@ import { IDiesisMarketsAbi } from '../../generated/viem/IDiesisMarkets.abi.js';
 export interface IDiesisMarketsMethods {
   checkCircuitBreaker(marketId: BytesLike, currentPrice: BigNumberish, referencePrice: BigNumberish, thresholdBps: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   createSpotMarket(baseToken: AddressLike, quoteToken: AddressLike, tickSize: BigNumberish, lotSize: BigNumberish, bond: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
+  createSpotMarketV1(baseToken: AddressLike, quoteToken: AddressLike, tickSize: BigNumberish, lotSize: BigNumberish, priceDenominator: BigNumberish, bond: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   deployTokenAndSpotBook(symbol: BytesLike, name: string, initialSupply: BigNumberish, dsBond: BigNumberish, usdcFee: BigNumberish, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   getMarket(marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[string, string, bigint] & { slot0: string; slot1: string; maxOpenInterest: bigint }>;
+  getMarketPricing(marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<[bigint, bigint] & { pricingVersion: bigint; priceDenominator: bigint }>;
   resumeMarket(marketId: BytesLike, overrides?: Omit<Overrides, 'value'>): Promise<ContractTransactionResponse>;
   filters: {
     CircuitBreakerTriggered(marketId?: BytesLike | null): DeferredTopicFilter;
     MarketCreated(marketId?: BytesLike | null): DeferredTopicFilter;
+    MarketPricingDefinedV1(marketId?: BytesLike | null): DeferredTopicFilter;
   };
 }
 
